@@ -35,6 +35,9 @@
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab active">
         {{ icon('user-check', size=15) }} Employees ({{ employees|length }})
       </a>
+      <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
+        {{ icon('file-text', size=15) }} Templates
+      </a>
     </div>
 
     <!-- Filter & Search Controls Bar -->
@@ -87,8 +90,7 @@
               <th>Assigned Position</th>
               <th>Duration</th>
               <th>Application ID</th>
-              <th>Account Status</th>
-              <th>Created On</th>
+              <th>Offer Letter</th>
               <th style="text-align: right;">Actions</th>
             </tr>
           </thead>
@@ -123,15 +125,36 @@
                   </a>
                 </td>
                 <td>
-                  <span class="badge-status active">{{ emp.account_status|capitalize }}</span>
-                </td>
-                <td style="font-size: 0.825rem; color: var(--color-text-dim);">
-                  {{ emp.created_at.strftime('%b %d, %Y') }}
+                  {% set doc = emp.offer_letter_doc %}
+                  {% if not doc %}
+                    <span class="badge-status inactive" style="font-size: 0.725rem;">Not Generated</span>
+                  {% elif doc.status == 'SENT' or doc.email_status == 'sent' %}
+                    <span class="badge-status active" style="font-size: 0.725rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Sent</span>
+                  {% elif doc.status == 'VERIFIED' %}
+                    <span class="badge-status" style="font-size: 0.725rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">Verified</span>
+                  {% else %}
+                    <span class="badge-status" style="font-size: 0.725rem; background: rgba(234, 179, 8, 0.15); color: #facc15; border-color: rgba(234, 179, 8, 0.3);">Generated</span>
+                  {% endif %}
                 </td>
                 <td>
-                  <div class="action-buttons" style="justify-content: flex-end;">
-                    <a href="{{ url_for('admin.view_employee', employee_id=emp.employee_id) }}" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
-                      View Profile
+                  <div class="action-buttons" style="justify-content: flex-end; flex-wrap: wrap; gap: 4px;">
+                    {% set doc = emp.offer_letter_doc %}
+                    {% if not doc %}
+                      <a href="{{ url_for('admin.generate_offer_letter', employee_id=emp.employee_id) }}" class="btn btn-primary btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; gap: 4px;">
+                        {{ icon('sparkles', size=12) }} Generate
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('admin.preview_offer_letter', employee_id=emp.employee_id) }}" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; gap: 4px;" title="Preview DOCX">
+                        {{ icon('download', size=12) }} Preview
+                      </a>
+                      {% if doc.email_status != 'sent' %}
+                        <a href="{{ url_for('admin.verify_offer_letter', employee_id=emp.employee_id) }}" class="btn btn-primary btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; gap: 4px;">
+                          {{ icon('send', size=12) }} Verify &amp; Send
+                        </a>
+                      {% endif %}
+                    {% endif %}
+                    <a href="{{ url_for('admin.view_employee', employee_id=emp.employee_id) }}" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem;">
+                      Profile
                     </a>
                   </div>
                 </td>

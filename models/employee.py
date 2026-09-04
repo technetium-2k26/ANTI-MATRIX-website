@@ -57,6 +57,14 @@ class Employee(db.Model):
     def candidate_phone(self):
         return self.application.phone if self.application else ''
 
+    @property
+    def offer_letter_doc(self):
+        """Returns the latest generated Offer Letter document for this employee if any."""
+        for doc in self.documents:
+            if doc.document_type == 'offer_letter':
+                return doc
+        return None
+
     @classmethod
     def generate_unique_employee_id(cls, max_attempts: int = 2000) -> str:
         """

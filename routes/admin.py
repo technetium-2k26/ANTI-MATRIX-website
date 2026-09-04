@@ -5,7 +5,12 @@ from flask import (
     abort, current_app, send_from_directory
 )
 from flask_login import current_user
-from models import db, JobPosting, JobApplication, Payment, User, Employee
+from werkzeug.utils import secure_filename
+from models import (
+    db, JobPosting, JobApplication, Payment, User, Employee,
+    DocumentTemplate, EmailTemplate, EmployeeDocument
+)
+from services.offer_letter_service import generate_offer_letter_docx, send_offer_letter_email
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -496,4 +501,269 @@ def view_employee(employee_id):
         app=employee.application,
         job=employee.application.job
     )
+
+
+# =====================================================================
+# TEMPLATE MANAGEMENT (EMAIL & DOCUMENT TEMPLATES)
+# =====================================================================
+
+@admin_bp.route('/templates', methods=['GET'])
+@admin_required
+def templates():
+    """Template Management Hub for Email and Document Templates."""
+    # Ensure standard templates exist
+    app_success_email = EmailTemplate.query.filter_by(template_type='application_successful').first()
+    offer_letter_email = EmailTemplate.query.filter_by(template_type='offer_letter').first()
+    
+    offer_doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter').first()
+    exp_doc_template = DocumentTemplate.query.filter_by(template_type='experience_letter').first()
+    cert_doc_template = DocumentTemplate.query.filter_by(template_type='certificate').first()
+
+    return render_template(
+        'admin/templates.html',
+        app_success_email=app_success_email,
+        offer_letter_email=offer_letter_email,
+        offer_doc_template=offer_doc_template,
+        exp_doc_template=exp_doc_template,
+        cert_doc_template=cert_doc_template
+    )
+
+
+@admin_bp.route('/templates/email/<string:template_type>', methods=['POST'])
+@admin_required
+def update_email_template(template_type):
+    """Update subject and body for an Email Template."""
+    valid_types = ['application_successful', 'offer_letter']
+    if template_type not in valid_types:
+        flash('Invalid email template type.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    subject = (request.form.get('subject') or '').strip()
+    body = (request.form.get('body') or '').strip()
+
+    if not subject or not body:
+        flash('Subject and Body are required for email templates.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    email_tmpl = EmailTemplate.query.filter_by(template_type=template_type).first()
+    if not email_tmpl:
+        name_map = {
+            'application_successful': 'Application Successful Confirmation',
+            'offer_letter': 'Offer Letter Delivery'
+        }
+        email_tmpl = EmailTemplate(
+            template_type=template_type,
+            name=name_map.get(template_type, template_type.title()),
+            subject=subject,
+            body=body
+        )
+        db.session.add(email_tmpl)
+    else:
+        email_tmpl.subject = subject
+        email_tmpl.body = body
+
+    db.session.commit()
+    flash(f"Email template '{email_tmpl.name}' updated successfully.", 'success')
+    return redirect(url_for('admin.templates'))
+
+
+@admin_bp.route('/templates/document/<string:template_type>/upload', methods=['POST'])
+@admin_required
+def upload_document_template(template_type):
+    """Upload / replace a master DOCX template (Offer Letter, Experience Letter, Certificate)."""
+    valid_types = ['offer_letter', 'experience_letter', 'certificate']
+    if template_type not in valid_types:
+        flash('Invalid document template type.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    uploaded_file = request.files.get('template_file')
+    if not uploaded_file or not uploaded_file.filename:
+        flash('Please select a DOCX template file to upload.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    filename = secure_filename(uploaded_file.filename)
+    if not filename.lower().endswith('.docx'):
+        flash('Only .docx Microsoft Word template files are accepted.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    templates_dir = os.path.join(current_app.root_path, 'uploads', 'templates')
+    os.makedirs(templates_dir, exist_ok=True)
+
+    target_filename = f"{template_type}_master.docx"
+    target_path = os.path.join(templates_dir, target_filename)
+
+    uploaded_file.save(target_path)
+
+    doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type).first()
+    name_map = {
+        'offer_letter': 'Anti-Matrix Master Offer Letter',
+        'experience_letter': 'Anti-Matrix Master Experience Letter',
+        'certificate': 'Anti-Matrix Master Internship Certificate'
+    }
+
+    if not doc_tmpl:
+        doc_tmpl = DocumentTemplate(
+            template_type=template_type,
+            name=name_map.get(template_type, template_type.replace('_', ' ').title()),
+            filename=uploaded_file.filename,
+            file_path=target_path,
+            is_active=True
+        )
+        db.session.add(doc_tmpl)
+    else:
+        doc_tmpl.filename = uploaded_file.filename
+        doc_tmpl.file_path = target_path
+        doc_tmpl.is_active = True
+
+    db.session.commit()
+    flash(f"Document template for '{name_map.get(template_type)}' uploaded and activated successfully.", 'success')
+    return redirect(url_for('admin.templates'))
+
+
+@admin_bp.route('/templates/document/<string:template_type>/download', methods=['GET'])
+@admin_required
+def download_document_template(template_type):
+    """Download the active master DOCX template file."""
+    doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type).first()
+    if not doc_tmpl or not os.path.exists(doc_tmpl.file_path):
+        flash('Requested master template file is not available.', 'warning')
+        return redirect(url_for('admin.templates'))
+
+    return send_from_directory(
+        os.path.dirname(doc_tmpl.file_path),
+        os.path.basename(doc_tmpl.file_path),
+        as_attachment=True,
+        download_name=doc_tmpl.filename
+    )
+
+
+# =====================================================================
+# OFFER LETTER GENERATION, PREVIEW, VERIFICATION & SENDING
+# =====================================================================
+
+@admin_bp.route('/employees/<string:employee_id>/offer-letter/generate', methods=['GET', 'POST'])
+@admin_required
+def generate_offer_letter(employee_id):
+    """Generate personalized Offer Letter DOCX for selected Employee."""
+    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    app_record = employee.application
+    job = employee.job
+
+    if not app_record or not job:
+        flash('Employee is missing linked application or job posting data.', 'danger')
+        return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
+
+    if request.method == 'POST':
+        custom_params = {
+            'responsibilities': (request.form.get('responsibilities') or '').strip() or None,
+            'key_tasks': (request.form.get('key_tasks') or '').strip() or None,
+            'joining_date': (request.form.get('joining_date') or '').strip() or 'Immediate / As mutually agreed',
+            'work_mode': (request.form.get('work_mode') or '').strip() or (job.location if job.location else 'Remote'),
+            'conditions': (request.form.get('conditions') or '').strip() or 'satisfactory verification of academic credentials and submission of government identity documentation',
+            'acceptance_deadline': (request.form.get('acceptance_deadline') or '').strip() or None
+        }
+
+        try:
+            emp_doc, output_path = generate_offer_letter_docx(employee, custom_params)
+            flash(f"Offer Letter for {employee.candidate_name} ({employee.employee_id}) generated successfully!", 'success')
+            return redirect(url_for('admin.verify_offer_letter', employee_id=employee.employee_id))
+        except Exception as e:
+            flash(f"Error generating Offer Letter: {str(e)}", 'danger')
+            return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
+
+    # GET request - Show parameter review form before generating
+    return render_template(
+        'admin/offer_letter_generate.html',
+        employee=employee,
+        app=app_record,
+        job=job
+    )
+
+
+@admin_bp.route('/employees/<string:employee_id>/offer-letter/preview', methods=['GET'])
+@admin_required
+def preview_offer_letter(employee_id):
+    """Download / preview the generated employee-specific Offer Letter DOCX."""
+    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    emp_doc = employee.offer_letter_doc
+
+    if not emp_doc or not os.path.exists(emp_doc.file_path):
+        flash('Offer Letter has not been generated yet. Please generate it first.', 'warning')
+        return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
+
+    return send_from_directory(
+        os.path.dirname(emp_doc.file_path),
+        os.path.basename(emp_doc.file_path),
+        as_attachment=True,
+        download_name=emp_doc.file_name
+    )
+
+
+@admin_bp.route('/employees/<string:employee_id>/offer-letter/verify', methods=['GET'])
+@admin_required
+def verify_offer_letter(employee_id):
+    """Pre-send verification view with email preview, locked recipient, and confirm button."""
+    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    app_record = employee.application
+    job = employee.job
+    emp_doc = employee.offer_letter_doc
+
+    if not emp_doc or not os.path.exists(emp_doc.file_path):
+        flash('Offer Letter has not been generated yet. Please generate it first.', 'warning')
+        return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
+
+    # Load email template to preview formatted email
+    email_tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
+    
+    email_context = {
+        '{{employee_name}}': employee.candidate_name,
+        '{{employee_id}}': employee.employee_id,
+        '{{application_id}}': app_record.formatted_code,
+        '{{job_title}}': job.title if job else '',
+        '{{department}}': job.department if job else '',
+        '{{internship_duration}}': app_record.duration_display or ''
+    }
+
+    subject_preview = email_tmpl.subject if email_tmpl else f"Offer Letter — {job.title} | {employee.employee_id}"
+    body_preview = email_tmpl.body if email_tmpl else f"Dear {employee.candidate_name},\n\nPlease find your Offer Letter attached.\n\nBest Regards,\nAnti-Matrix"
+
+    for k, v in email_context.items():
+        subject_preview = subject_preview.replace(k, str(v))
+        body_preview = body_preview.replace(k, str(v))
+
+    return render_template(
+        'admin/offer_letter_verify.html',
+        employee=employee,
+        app=app_record,
+        job=job,
+        emp_doc=emp_doc,
+        subject_preview=subject_preview,
+        body_preview=body_preview
+    )
+
+
+@admin_bp.route('/employees/<string:employee_id>/offer-letter/send', methods=['POST'])
+@admin_required
+def send_offer_letter(employee_id):
+    """Explicit Verify & Send action sending the Offer Letter email with attachment."""
+    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    emp_doc = employee.offer_letter_doc
+
+    if not emp_doc:
+        flash('No Offer Letter found for this employee. Please generate it first.', 'danger')
+        return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
+
+    # ONE-TIME SEND PROTECTION
+    if emp_doc.email_status == 'sent':
+        flash('Offer Letter already sent. Duplicate sending is prevented.', 'warning')
+        return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
+
+    success, message = send_offer_letter_email(employee)
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'danger')
+
+    return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
+
 

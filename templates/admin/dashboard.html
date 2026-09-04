@@ -15,6 +15,9 @@
         <p>Manage job postings, candidate submissions, and talent acquisition pipelines.</p>
       </div>
       <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+        <a href="{{ url_for('admin.templates') }}" class="btn btn-outline" style="gap: 6px;">
+          {{ icon('file-text', size=15) }} Templates
+        </a>
         <a href="{{ url_for('admin.create_employee') }}" class="btn btn-outline" style="gap: 6px;">
           {{ icon('user-plus', size=15) }} + Create Employee ID
         </a>
@@ -40,6 +43,9 @@
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
         {{ icon('user-check', size=15) }} Employees ({{ total_employees }})
+      </a>
+      <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
+        {{ icon('file-text', size=15) }} Templates
       </a>
     </div>
 

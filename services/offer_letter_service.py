@@ -1,0 +1,317 @@
+import os
+import shutil
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+from datetime import datetime, timezone, timedelta
+import docx
+from flask import current_app
+from models import db, Employee, JobApplication, JobPosting, EmployeeDocument, DocumentTemplate, EmailTemplate
+
+
+def replace_placeholders_in_paragraph(paragraph, mapping):
+    """
+    Safely replaces placeholder keys with replacement values in a docx Paragraph.
+    Preserves exact font, size, bold, italic, color, and run-level styles.
+    Handles placeholders both inside individual runs and spanning multiple runs.
+    """
+    full_text = paragraph.text
+    if not full_text:
+        return
+
+    # Check if any placeholder exists in the paragraph text
+    needs_replacement = False
+    for key in mapping:
+        if key in full_text:
+            needs_replacement = True
+            break
+
+    if not needs_replacement:
+        return
+
+    for key, val in mapping.items():
+        if key not in paragraph.text:
+            continue
+
+        str_val = str(val) if val is not None else ''
+
+        # 1. First attempt: check if placeholder is contained entirely in a single run
+        replaced_in_single_run = False
+        for run in paragraph.runs:
+            if key in run.text:
+                run.text = run.text.replace(key, str_val)
+                replaced_in_single_run = True
+
+        # 2. Fallback: if placeholder spans multiple adjacent runs
+        if not replaced_in_single_run and key in paragraph.text:
+            combined = "".join([r.text for r in paragraph.runs])
+            new_text = combined.replace(key, str_val)
+            if paragraph.runs:
+                paragraph.runs[0].text = new_text
+                for r in paragraph.runs[1:]:
+                    r.text = ""
+
+
+def get_offer_letter_master_path():
+    """Returns the absolute file path to the active Master Offer Letter template."""
+    root = current_app.root_path
+    
+    # Check database configuration
+    active_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).first()
+    if active_template and os.path.exists(active_template.file_path):
+        return active_template.file_path
+
+    # Standard locations
+    preferred_path = os.path.join(root, 'uploads', 'templates', 'offer letter (Anti-matrix).docx')
+    if os.path.exists(preferred_path):
+        return preferred_path
+
+    fallback_path = os.path.join(root, 'uploads', 'templates', 'offer_letter_master.docx')
+    if os.path.exists(fallback_path):
+        return fallback_path
+
+    raise FileNotFoundError("Master Offer Letter DOCX template 'offer letter (Anti-matrix).docx' was not found.")
+
+
+def generate_offer_letter_docx(employee, custom_params=None):
+    """
+    Generates a personalized Offer Letter DOCX for the given Employee by cloning the master template.
+    Replaces all placeholders while strictly preserving typography, borders, logos, and layout.
+    """
+    if not employee or not employee.application:
+        raise ValueError("Invalid employee record or missing associated application.")
+
+    app = employee.application
+    job = employee.job
+
+    if not job:
+        raise ValueError(f"Application {app.formatted_code} is missing associated Job Posting.")
+
+    custom_params = custom_params or {}
+
+    now_utc = datetime.now(timezone.utc)
+    current_date_str = now_utc.strftime("%d/%m/%Y")
+    current_date_formatted = now_utc.strftime("%d %B %Y")
+    
+    # Calculate 7-day acceptance deadline
+    default_deadline_dt = now_utc + timedelta(days=7)
+    default_deadline_str = default_deadline_dt.strftime("%d %B %Y")
+
+    # Format data from DB models
+    employee_name = employee.candidate_name or app.full_name or "Candidate"
+    reference_number = app.formatted_code
+    job_title = job.title or "Intern"
+    department = job.department or "Engineering"
+    internship_duration = app.duration_display or (f"{job.duration.replace('_', ' ').title()}" if job.duration else "Internship")
+
+    # Responsibilities description
+    responsibilities = custom_params.get(
+        'responsibilities',
+        job.short_description or (f"work on designated projects and deliverables for the {job_title} role at Anti-Matrix")
+    )
+
+    # Key tasks
+    key_tasks = custom_params.get(
+        'key_tasks',
+        job.skills or (f"core technical assignments, engineering benchmarks, and team collaboration")
+    )
+
+    # Joining date
+    joining_date = custom_params.get('joining_date', "Immediate / As mutually agreed")
+
+    # Work mode
+    work_mode = custom_params.get('work_mode', job.location if job.location else "Remote")
+
+    # Conditions
+    conditions = custom_params.get(
+        'conditions',
+        "satisfactory verification of academic credentials and submission of government identity documentation"
+    )
+
+    # Acceptance deadline
+    acceptance_deadline = custom_params.get('acceptance_deadline', default_deadline_str)
+
+    # Comprehensive Placeholder Dictionary (supporting both [Placeholder] and {{placeholder}} formats)
+    mapping = {
+        '[DD/MM/YYYY]': current_date_str,
+        '{{offer_date}}': current_date_str,
+        '[Candidate Name]': employee_name,
+        '{{employee_name}}': employee_name,
+        '[Reference Number]': reference_number,
+        '{{reference_number}}': reference_number,
+        '[Job Title]': job_title,
+        '{{job_title}}': job_title,
+        '[brief description of responsibilities]': responsibilities,
+        '{{responsibilities}}': responsibilities,
+        '[key tasks / deliverables]': key_tasks,
+        '{{key_tasks}}': key_tasks,
+        '[Joining Date]': joining_date,
+        '{{joining_date}}': joining_date,
+        '[remote / hybrid / on-site]': work_mode,
+        '{{work_mode}}': work_mode,
+        '[background verification / document submission / any other condition]': conditions,
+        '{{conditions}}': conditions,
+        '[Acceptance Deadline]': acceptance_deadline,
+        '{{acceptance_deadline}}': acceptance_deadline,
+        '{{employee_id}}': employee.employee_id,
+        '{{department}}': department,
+        '{{internship_duration}}': internship_duration
+    }
+
+    # Load master template
+    master_path = get_offer_letter_master_path()
+    doc = docx.Document(master_path)
+
+    # Process all standard paragraphs
+    for p in doc.paragraphs:
+        replace_placeholders_in_paragraph(p, mapping)
+
+    # Process all tables
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    replace_placeholders_in_paragraph(p, mapping)
+
+    # Process headers and footers across sections
+    for section in doc.sections:
+        if section.header:
+            for p in section.header.paragraphs:
+                replace_placeholders_in_paragraph(p, mapping)
+        if section.footer:
+            for p in section.footer.paragraphs:
+                replace_placeholders_in_paragraph(p, mapping)
+
+    # Save generated document
+    gen_dir = os.path.join(current_app.root_path, 'uploads', 'generated_documents')
+    os.makedirs(gen_dir, exist_ok=True)
+
+    output_filename = f"{employee.employee_id}_Offer_Letter.docx"
+    output_filepath = os.path.join(gen_dir, output_filename)
+
+    doc.save(output_filepath)
+
+    # Create or update EmployeeDocument record in DB
+    emp_doc = EmployeeDocument.query.filter_by(
+        employee_id=employee.id,
+        document_type='offer_letter'
+    ).first()
+
+    if not emp_doc:
+        emp_doc = EmployeeDocument(
+            employee_id=employee.id,
+            document_type='offer_letter',
+            file_name=output_filename,
+            file_path=output_filepath,
+            status='GENERATED',
+            email_status='not_sent',
+            generated_at=now_utc
+        )
+        db.session.add(emp_doc)
+    else:
+        emp_doc.file_name = output_filename
+        emp_doc.file_path = output_filepath
+        emp_doc.status = 'GENERATED'
+        emp_doc.generated_at = now_utc
+
+    db.session.commit()
+    return emp_doc, output_filepath
+
+
+def send_offer_letter_email(employee):
+    """
+    Sends the generated Offer Letter to the employee's registered email with attachment.
+    Enforces strict ONE-TIME send protection.
+    """
+    if not employee or not employee.application:
+        return False, "Invalid employee or missing application record."
+
+    recipient_email = employee.candidate_email
+    if not recipient_email:
+        return False, "Candidate does not have a registered email address."
+
+    emp_doc = employee.offer_letter_doc
+    if not emp_doc or not os.path.exists(emp_doc.file_path):
+        return False, "Offer Letter has not been generated yet. Please generate it first."
+
+    # ONE-TIME SEND PROTECTION
+    if emp_doc.email_status == 'sent':
+        return False, f"Offer Letter already sent on {emp_doc.sent_at.strftime('%b %d, %Y') if emp_doc.sent_at else 'previous date'}."
+
+    # Load Email Template
+    email_tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
+    
+    app = employee.application
+    job = employee.job
+
+    email_context = {
+        '{{employee_name}}': employee.candidate_name,
+        '{{employee_id}}': employee.employee_id,
+        '{{application_id}}': app.formatted_code,
+        '{{job_title}}': job.title if job else '',
+        '{{department}}': job.department if job else '',
+        '{{internship_duration}}': app.duration_display or ''
+    }
+
+    subject_raw = email_tmpl.subject if email_tmpl else "Offer Letter — {{job_title}} | {{employee_id}}"
+    body_raw = email_tmpl.body if email_tmpl else "Dear {{employee_name}},\n\nPlease find your Offer Letter attached.\n\nBest Regards,\nAnti-Matrix"
+
+    for k, v in email_context.items():
+        subject_raw = subject_raw.replace(k, str(v))
+        body_raw = body_raw.replace(k, str(v))
+
+    subject = subject_raw
+    body = body_raw
+
+    # Send Email via SMTP if configured, or simulate safely in development
+    smtp_server = os.environ.get('SMTP_SERVER')
+    smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    smtp_user = os.environ.get('SMTP_USER')
+    smtp_password = os.environ.get('SMTP_PASSWORD')
+    sender_email = os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in')
+
+    try:
+        if smtp_server and smtp_user and smtp_password:
+            msg = MIMEMultipart()
+            msg['From'] = sender_email
+            msg['To'] = recipient_email
+            msg['Subject'] = subject
+
+            msg.attach(MIMEText(body, 'plain'))
+
+            # Attach DOCX file
+            with open(emp_doc.file_path, 'rb') as f:
+                part = MIMEBase('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document')
+                part.set_payload(f.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', f'attachment; filename="{emp_doc.file_name}"')
+                msg.attach(part)
+
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg)
+        else:
+            # Development / Sandbox Mode: Simulated sending
+            print(f"[EMAIL SERVICE SIMULATION] Sending Offer Letter email to {recipient_email}")
+            print(f"  Subject: {subject}")
+            print(f"  Attachment: {emp_doc.file_name} ({os.path.getsize(emp_doc.file_path)} bytes)")
+
+        # Update database document status
+        now_utc = datetime.now(timezone.utc)
+        emp_doc.email_status = 'sent'
+        emp_doc.status = 'SENT'
+        emp_doc.sent_at = now_utc
+        emp_doc.verified_at = now_utc
+        emp_doc.email_error = None
+        db.session.commit()
+
+        return True, f"Offer Letter successfully sent to {recipient_email}."
+
+    except Exception as e:
+        emp_doc.email_status = 'failed'
+        emp_doc.email_error = str(e)
+        db.session.commit()
+        return False, f"Failed to send Offer Letter email: {str(e)}"

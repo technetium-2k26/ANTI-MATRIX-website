@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Generate Offer Letter — {{ employee.employee_id }} | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container" style="max-width: 900px;">
+    
+    <!-- Breadcrumb / Header -->
+    <div style="margin-bottom: var(--space-xl);">
+      <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; margin-bottom: 0.75rem;">
+        {{ icon('arrow-left', size=14) }} Back to Employees
+      </a>
+      <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('file-text', size=11) }} Document Engine</div>
+      <h1 style="font-size: 1.85rem; margin-bottom: 0.25rem;">Generate Master Offer Letter</h1>
+      <p style="color: var(--color-text-dim);">Create a personalized, 2-page Anti-Matrix Offer Letter DOCX from the master template.</p>
+    </div>
+
+    <!-- Candidate & Employee Context Card -->
+    <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.02);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light);">Selected Candidate / Employee</span>
+          <h2 style="font-size: 1.35rem; margin: 0.2rem 0; color: #000000;">{{ employee.candidate_name }}</h2>
+          <div style="color: var(--color-text-dim); font-size: 0.875rem;">{{ employee.candidate_email }} &bull; {{ employee.candidate_phone }}</div>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-family: var(--font-mono, monospace); font-size: 1.1rem; font-weight: 800; color: var(--color-primary-light); background: rgba(16,185,129,0.12); padding: 0.3rem 0.75rem; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3); display: inline-block;">
+            {{ employee.employee_id }}
+          </span>
+          <div style="font-size: 0.775rem; color: var(--color-text-muted); margin-top: 0.35rem;">App: {{ app.formatted_code }}</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Position</span>
+          <strong style="color: var(--color-text);">{{ job.title }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Department</span>
+          <strong style="color: var(--color-text);">{{ job.department }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Duration</span>
+          <strong style="color: #60a5fa;">{{ app.duration_display or 'Standard' }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Location / Mode</span>
+          <strong style="color: var(--color-text);">{{ job.location or 'Remote / Hybrid' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generation Form -->
+    <div class="card" style="padding: var(--space-xl);">
+      <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+        {{ icon('edit', size=16, color='var(--color-primary-light)') }} Offer Letter Parameters
+      </h3>
+      <p style="color: var(--color-text-dim); font-size: 0.85rem; margin-bottom: var(--space-lg);">
+        The fields below will be precisely mapped into the master Anti-Matrix DOCX document. Existing styles, logos, headers, footers, and page layouts will be strictly preserved.
+      </p>
+
+      <form method="POST" action="{{ url_for('admin.generate_offer_letter', employee_id=employee.employee_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+              Date of Joining <span style="color: var(--color-text-dim);">(&#123;&#123;joining_date&#125;&#125;)</span>
+            </label>
+            <input
+              type="text"
+              name="joining_date"
+              class="form-input"
+              value="Immediate / As mutually agreed"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+              Work Mode / Location <span style="color: var(--color-text-dim);">(&#123;&#123;work_mode&#125;&#125;)</span>
+            </label>
+            <input
+              type="text"
+              name="work_mode"
+              class="form-input"
+              value="{{ job.location if job.location else 'Remote (Work from Home)' }}"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+            Role Responsibilities <span style="color: var(--color-text-dim);">(&#123;&#123;responsibilities&#125;&#125;)</span>
+          </label>
+          <textarea
+            name="responsibilities"
+            rows="3"
+            class="form-input"
+            style="resize: vertical;"
+          >{{ job.description or 'work on cutting-edge engineering initiatives, software architecture design, and core product modules' }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+            Key Tasks / Deliverables <span style="color: var(--color-text-dim);">(&#123;&#123;key_tasks&#125;&#125;)</span>
+          </label>
+          <textarea
+            name="key_tasks"
+            rows="2"
+            class="form-input"
+            style="resize: vertical;"
+          >{{ job.requirements or 'core module development, code reviews, architectural documentation, and milestone deliverables' }}</textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+              Offer Conditions <span style="color: var(--color-text-dim);">(&#123;&#123;conditions&#125;&#125;)</span>
+            </label>
+            <input
+              type="text"
+              name="conditions"
+              class="form-input"
+              value="satisfactory verification of academic credentials and submission of government identity documentation"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+              Acceptance Deadline <span style="color: var(--color-text-dim);">(&#123;&#123;acceptance_deadline&#125;&#125;)</span>
+            </label>
+            <input
+              type="text"
+              name="acceptance_deadline"
+              class="form-input"
+              value="7 days from date of issue"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: var(--space-lg);">
+          <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary" style="gap: 8px;">
+            {{ icon('sparkles', size=16) }} Generate Offer Letter DOCX
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

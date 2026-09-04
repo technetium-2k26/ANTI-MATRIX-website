@@ -126,6 +126,64 @@
         </div>
       </div>
 
+      <!-- Offer Letter Document Section -->
+      <div style="margin-bottom: var(--space-xl); padding-bottom: var(--space-lg); border-bottom: 1px solid var(--color-border);">
+        <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light); font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            {{ icon('file-text', size=14) }} Offer Letter Document
+          </div>
+          {% set doc = employee.offer_letter_doc %}
+          {% if not doc %}
+            <span class="badge-status inactive" style="font-size: 0.725rem;">Not Generated</span>
+          {% elif doc.status == 'SENT' or doc.email_status == 'sent' %}
+            <span class="badge-status active" style="font-size: 0.725rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Sent</span>
+          {% elif doc.status == 'VERIFIED' %}
+            <span class="badge-status" style="font-size: 0.725rem; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">Verified</span>
+          {% else %}
+            <span class="badge-status" style="font-size: 0.725rem; background: rgba(234, 179, 8, 0.15); color: #facc15; border-color: rgba(234, 179, 8, 0.3);">Generated</span>
+          {% endif %}
+        </div>
+
+        {% set doc = employee.offer_letter_doc %}
+        {% if doc %}
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-md);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <strong style="color: var(--color-text); font-size: 0.95rem; font-family: var(--font-mono, monospace);">{{ doc.file_name }}</strong>
+                <div style="font-size: 0.8rem; color: var(--color-text-dim); margin-top: 0.2rem;">
+                  Generated: {{ doc.generated_at.strftime('%b %d, %Y at %I:%M %p') }}
+                  {% if doc.sent_at %}
+                    &bull; <span style="color: var(--color-primary-light);">Delivered to candidate on {{ doc.sent_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ url_for('admin.preview_offer_letter', employee_id=employee.employee_id) }}" class="btn btn-outline btn-sm" style="gap: 5px;">
+                  {{ icon('download', size=13) }} Preview DOCX
+                </a>
+                {% if doc.email_status != 'sent' %}
+                  <a href="{{ url_for('admin.verify_offer_letter', employee_id=employee.employee_id) }}" class="btn btn-primary btn-sm" style="gap: 5px;">
+                    {{ icon('send', size=13) }} Verify &amp; Send
+                  </a>
+                {% endif %}
+                <a href="{{ url_for('admin.generate_offer_letter', employee_id=employee.employee_id) }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">
+                  {{ icon('refresh-cw', size=12) }} Regenerate
+                </a>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div style="background: rgba(255,255,255,0.02); border: 1px dashed var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center;">
+            <p style="color: var(--color-text-dim); font-size: 0.875rem; margin-bottom: var(--space-md);">
+              No Offer Letter has been generated for this employee yet.
+            </p>
+            <a href="{{ url_for('admin.generate_offer_letter', employee_id=employee.employee_id) }}" class="btn btn-primary btn-sm" style="gap: 6px;">
+              {{ icon('sparkles', size=14) }} Generate Master Offer Letter
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
       <!-- Bottom Nav Actions -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); border-top: 1px solid var(--color-border); padding-top: var(--space-lg);">
         <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">
