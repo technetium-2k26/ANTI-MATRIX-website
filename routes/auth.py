@@ -10,7 +10,7 @@ EMAIL_REGEX = re.compile(r'^\S+@\S+\.\S+$')
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    redirect_target = request.args.get('redirect') or request.form.get('redirect') or url_for('main.pricing')
+    redirect_target = request.args.get('redirect') or request.form.get('redirect') or url_for('main.home')
     
     if current_user.is_authenticated:
         return redirect(redirect_target)
@@ -82,7 +82,7 @@ def login():
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
-        return redirect(url_for('main.pricing'))
+        return redirect(url_for('main.home'))
 
     if request.method == 'POST':
         is_json = request.is_json
@@ -145,11 +145,11 @@ def signup():
             return jsonify({
                 'status': 'success',
                 'message': 'Account created successfully!',
-                'redirect': url_for('main.pricing'),
+                'redirect': url_for('main.home'),
                 'user': user.to_dict()
             })
 
-        return redirect(url_for('main.pricing'))
+        return redirect(url_for('main.home'))
 
     return render_template('auth/signup.html', errors={})
 

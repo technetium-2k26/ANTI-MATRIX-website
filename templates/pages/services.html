@@ -31,7 +31,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['React', 'Next.js', 'Node.js', 'Python', 'PostgreSQL', 'Redis'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -50,7 +50,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['React Native', 'Flutter', 'Swift', 'Kotlin', 'Firebase'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -85,7 +85,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['Python', 'TensorFlow', 'PyTorch', 'OpenAI', 'Hugging Face', 'FastAPI'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -104,7 +104,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['Google Analytics', 'HubSpot', 'Semrush', 'Mailchimp', 'Meta Ads'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -139,7 +139,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['AWS', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -158,7 +158,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['Figma', 'Adobe XD', 'Maze', 'Hotjar', 'Storybook'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -193,7 +193,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['React', 'Node.js', 'Python', 'PostgreSQL', 'Microservices'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -212,7 +212,7 @@
         <div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
             {% for t in ['Strategy', 'Agile', 'JIRA', 'Confluence', 'Miro'] %}
-              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+              <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
           <ul class="service-capabilities">
@@ -243,31 +243,31 @@
   <div class="container">
     <div class="section-header centered">
       <div class="badge">Our Process</div>
-      <h2 style="color: var(--color-white);">How we deliver excellence</h2>
+      <h2 style="color: #000000;">How we deliver excellence</h2>
       <div class="divider center"></div>
       <p>A proven, structured approach that keeps projects on time, on budget, and on target.</p>
     </div>
     <div class="grid-4">
       <div class="card" style="text-align: center;">
-        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">01</div>
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">01</div>
         <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Discovery</h3>
         <p style="font-size: 0.875rem;">We deeply understand your business goals, users, and technical requirements before writing a single line of code.</p>
       </div>
 
       <div class="card" style="text-align: center;">
-        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">02</div>
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">02</div>
         <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Design & Plan</h3>
         <p style="font-size: 0.875rem;">Architecture blueprints, UI/UX wireframes, and a detailed roadmap agreed upon before development begins.</p>
       </div>
 
       <div class="card" style="text-align: center;">
-        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">03</div>
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">03</div>
         <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Build & Iterate</h3>
         <p style="font-size: 0.875rem;">Agile sprints with weekly demos. You see real progress and can give feedback at every stage.</p>
       </div>
 
       <div class="card" style="text-align: center;">
-        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">04</div>
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">04</div>
         <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Launch & Grow</h3>
         <p style="font-size: 0.875rem;">Rigorous QA, smooth deployment, and ongoing support to continuously optimize and scale your product.</p>
       </div>

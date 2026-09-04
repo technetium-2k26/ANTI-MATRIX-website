@@ -26,27 +26,27 @@
 }
 
 .flash-alert.success {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  color: var(--color-primary-light);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #065f46;
 }
 
 .flash-alert.danger, .flash-alert.error {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #b91c1c;
 }
 
 .flash-alert.warning {
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #b45309;
 }
 
 .flash-alert.info {
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  color: #0369a1;
 }
 
 /* --- Admin Layout & Header --- */
@@ -105,7 +105,7 @@
 }
 
 .admin-nav-tab.active {
-  color: var(--color-white);
+  color: #000000;
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.35);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
@@ -176,7 +176,7 @@
   font-size: 1.85rem;
   font-weight: 800;
   font-family: var(--font-heading);
-  color: var(--color-white);
+  color: #000000;
   line-height: 1.1;
 }
 
@@ -524,7 +524,7 @@
 .form-section-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--color-white);
+  color: #000000;
   margin: var(--space-xl) 0 var(--space-md);
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);

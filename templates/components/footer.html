@@ -30,8 +30,11 @@
 
         {# Brand column #}
         <div class="footer-brand">
-          <div style="margin-bottom: var(--space-md);">
-            {{ render_logo(light=true, size='md', to=url_for('main.home')) }}
+          <div style="margin-bottom: var(--space-sm);">
+            {{ render_logo(light=false, size='md', to=url_for('main.home')) }}
+          </div>
+          <div class="brand-tagline" style="margin-bottom: var(--space-md); font-size: 0.72rem; letter-spacing: 0.12em; color: var(--color-primary-light); flex-wrap: wrap;">
+            BREAK THE MATRIX <span class="gem-diamond">◆</span> THINK DIFFERENT <span class="gem-diamond">◆</span> CREATE THE FUTURE
           </div>
           <p>
             Empowering modern enterprises through innovative software, AI models, and scalable cloud systems.

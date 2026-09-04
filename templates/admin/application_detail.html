@@ -258,8 +258,6 @@
         <div class="dossier-card" style="border-color: rgba(16, 185, 129, 0.3);">
           <div class="dossier-title">
             {{ icon('shield', size=18, color='var(--color-primary-light)') }} Employee Account
-          </div>
-          
           {% if app.employee %}
             <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: 0.85rem;">
               <div>
@@ -311,7 +309,7 @@
             </div>
             <div>
               <span style="color: var(--color-text-dim);">Fee Amount:</span>
-              <span style="color: var(--color-white); font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ app.application_fee or job.fee_inr }}</span>
+              <span style="color: #000000; font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ app.application_fee or job.fee_inr }}</span>
             </div>
             {% if app.latest_payment %}
               <div>
@@ -349,7 +347,7 @@
           <!-- Resume -->
           <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white);">Resume / CV</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: #000000;">Resume / CV</span>
               <span style="font-size: 0.75rem; color: var(--color-primary-light);">Required</span>
             </div>
             <div style="font-size: 0.75rem; color: var(--color-text-dim); word-break: break-all; margin-bottom: 0.5rem;">

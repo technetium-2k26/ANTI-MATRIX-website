@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginSuccessCard.style.display = 'block';
           }
           setTimeout(() => {
-            window.location.href = data.redirect || '/pricing';
+            window.location.href = data.redirect || '/';
           }, 900);
         } else {
           submitBtn.disabled = false;
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             signupSuccessCard.style.display = 'block';
           }
           setTimeout(() => {
-            window.location.href = data.redirect || '/pricing';
+            window.location.href = data.redirect || '/';
           }, 1200);
         } else {
           submitBtn.disabled = false;

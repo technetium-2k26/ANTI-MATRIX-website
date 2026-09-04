@@ -14,7 +14,7 @@
 
     {# Logo #}
     <div style="text-align: center; margin-bottom: var(--space-xl);">
-      {{ render_logo(light=true, size='lg', to=url_for('main.home'), stacked=true) }}
+      {{ render_logo(light=false, size='lg', to=url_for('main.home'), stacked=true) }}
     </div>
 
     {# Success Card (hidden initially, toggled by auth.js on success) #}
@@ -38,7 +38,7 @@
     </div>
 
     {# Benefits Box #}
-    <div id="signup-benefits" style="background: rgba(22,163,74,0.06); border: 1px solid rgba(22,163,74,0.2); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); display: flex; flex-direction: column; gap: 0.5rem;">
+    <div id="signup-benefits" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); display: flex; flex-direction: column; gap: 0.5rem;">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
         {{ icon('check-circle-2', size=14, color='var(--color-primary-light)') }}
         <span style="font-size: 0.875rem; color: var(--color-text-muted);">Free consultation with our experts</span>

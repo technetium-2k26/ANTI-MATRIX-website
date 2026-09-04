@@ -1,8 +1,14 @@
 {# Logo Component Macro matching Logo.jsx #}
-{% macro render_logo(light=true, size='md', to='/', stacked=false) %}
-{% set heights = {'sm': 40, 'md': 52, 'lg': 72, 'xl': 90} %}
-{% set h = heights.get(size, 52) %}
-{% set logo_src = url_for('static', filename='images/logo_dark.png') if light else url_for('static', filename='images/logo_transparent.png') %}
+{% macro render_logo(light=false, size='md', to='/', stacked=false) %}
+{% set heights = {'sm': 40, 'md': 52, 'lg': 72, 'xl': 96} %}
+{% set stacked_heights = {'sm': 64, 'md': 88, 'lg': 120, 'xl': 160} %}
+{% set h = stacked_heights.get(size, 88) if stacked else heights.get(size, 52) %}
+
+{% if stacked %}
+  {% set logo_src = url_for('static', filename='images/logo_stacked_light.png') if not light else url_for('static', filename='images/logo_stacked_dark.png') %}
+{% else %}
+  {% set logo_src = url_for('static', filename='images/logo.png') if not light else url_for('static', filename='images/logo_dark.png') %}
+{% endif %}
 
 {% if to %}
 <a href="{{ to }}" aria-label="Anti-Matrix Home" style="text-decoration: none; display: inline-flex;">

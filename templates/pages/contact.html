@@ -19,7 +19,7 @@
 
       {# Left — contact info #}
       <div>
-        <h3 style="color: var(--color-white); margin-bottom: var(--space-sm);">Get in touch</h3>
+        <h3 style="color: #000000; margin-bottom: var(--space-sm);">Get in touch</h3>
         <p style="margin-bottom: var(--space-xl);">
           Fill in the form or reach us directly through any of the channels below. Every inquiry receives a personal response.
         </p>
@@ -93,7 +93,7 @@
           <div style="width: 64px; height: 64px; background: var(--color-primary-glow); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); border: 2px solid rgba(34,197,94,0.4);">
             {{ icon('check-circle-2', size=28, color='var(--color-primary-light)') }}
           </div>
-          <h3 style="color: var(--color-white); margin-bottom: var(--space-md);">Message sent!</h3>
+          <h3 style="color: #000000; margin-bottom: var(--space-md);">Message sent!</h3>
           <p>Thank you for reaching out. Our team will review your message and reply within 24 hours.</p>
         </div>
 
@@ -101,7 +101,7 @@
         <form id="contact-form" action="{{ url_for('main.contact') }}" method="POST" noValidate aria-label="Contact form" style="display: {{ 'none' if success else 'block' }};">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           
-          <h3 style="color: var(--color-white); margin-bottom: var(--space-xl);">Send us a message</h3>
+          <h3 style="color: #000000; margin-bottom: var(--space-xl);">Send us a message</h3>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
             <div class="form-group">
