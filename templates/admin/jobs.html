@@ -14,7 +14,16 @@
         <h1>Job Postings</h1>
         <p>Create, edit, toggle visibility, and monitor openings across all departments.</p>
       </div>
-      <div>
+      <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;">
+        {% if total_unfiltered_jobs > 0 %}
+          <button type="button" class="btn btn-danger-outline" id="open-delete-all-modal-btn" style="gap: 6px;">
+            {{ icon('trash-2', size=15) }} Delete All Job Postings
+          </button>
+        {% else %}
+          <button type="button" class="btn btn-danger-outline" disabled style="opacity: 0.5; cursor: not-allowed; gap: 6px;" title="There are no job postings to delete">
+            {{ icon('trash-2', size=15) }} Delete All Job Postings
+          </button>
+        {% endif %}
         <a href="{{ url_for('admin.create_job') }}" class="btn btn-primary" style="gap: 6px;">
           {{ icon('plus', size=15) }} Create Job Posting
         </a>
@@ -165,4 +174,63 @@
 
   </div>
 </section>
+
+<!-- Delete All Confirmation Modal -->
+<div id="delete-all-modal" class="modal-overlay" style="display: none;" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal-card animate-fade-up">
+    <div class="modal-header">
+      <div class="modal-icon-danger">{{ icon('trash-2', size=22) }}</div>
+      <div>
+        <h3 id="modal-title" style="color: #f87171; font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem;">
+          Delete All Job Postings
+        </h3>
+        <p style="color: var(--color-text-dim); font-size: 0.85rem; margin-bottom: 0;">
+          Permanent destructive action
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-warning-box">
+        <strong>Are you sure you want to delete ALL job postings?</strong>
+        <p style="margin-top: 0.4rem; margin-bottom: 0.4rem; font-size: 0.875rem;">
+          You are about to delete <strong style="color: #f87171;">{{ total_unfiltered_jobs }}</strong> job posting{% if total_unfiltered_jobs != 1 %}s{% endif %}.
+        </p>
+        <p style="margin-bottom: 0; font-size: 0.825rem; color: var(--color-text-muted);">
+          This action cannot be undone. All existing job postings will be permanently removed.
+        </p>
+      </div>
+
+      <form method="POST" action="{{ url_for('admin.delete_all_jobs') }}" id="delete-all-jobs-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="form-group" style="margin-bottom: var(--space-xl);">
+          <label for="delete-confirm-input" class="form-label" style="font-size: 0.875rem; color: var(--color-text);">
+            Type <strong style="color: #f87171; letter-spacing: 0.05em; font-family: var(--font-mono, monospace);">DELETE</strong> to confirm:
+          </label>
+          <input
+            type="text"
+            id="delete-confirm-input"
+            name="confirmation"
+            class="form-input"
+            placeholder="Type DELETE"
+            autocomplete="off"
+            required
+            style="border-color: rgba(239, 68, 68, 0.4); font-family: var(--font-mono, monospace); font-weight: 700; letter-spacing: 0.05em;"
+          />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="cancel-delete-all-btn">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-danger-solid" id="confirm-delete-all-btn" disabled style="gap: 6px;">
+            {{ icon('trash-2', size=15) }} <span id="confirm-btn-text">Delete All Job Postings</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

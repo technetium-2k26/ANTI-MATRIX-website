@@ -19,6 +19,21 @@ class AdminCareersTestCase(unittest.TestCase):
         JobApplication.query.delete()
         db.session.commit()
 
+        # Ensure base jobs exist for testing
+        if JobPosting.query.filter_by(title='Senior Full-Stack Engineer').first() is None:
+            base_job = JobPosting(
+                title='Senior Full-Stack Engineer',
+                department='Engineering',
+                location='Remote (Worldwide)',
+                employment_type='Full-time',
+                skills='React, Node.js, PostgreSQL, AWS',
+                short_description='Lead the development of complex web applications.',
+                description='We are looking for a senior full-stack engineer.',
+                is_active=True
+            )
+            db.session.add(base_job)
+            db.session.commit()
+
         # Create or fetch test admin
         self.admin = User.query.filter_by(email='admin@antimatrix.ai').first()
         if not self.admin:

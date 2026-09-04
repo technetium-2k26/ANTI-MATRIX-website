@@ -44,3 +44,9 @@ logs/
 .idea/
 .DS_Store
 *.sw?
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+uploads/resumes/*
+!uploads/resumes/.gitkeep

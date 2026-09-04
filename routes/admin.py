@@ -71,17 +71,45 @@ def jobs():
         )
 
     all_jobs = query.order_by(JobPosting.created_at.desc()).all()
+    total_unfiltered_jobs = JobPosting.query.count()
     departments = db.session.query(JobPosting.department).distinct().all()
     departments = [d[0] for d in departments if d[0]]
 
     return render_template(
         'admin/jobs.html',
         jobs=all_jobs,
+        total_unfiltered_jobs=total_unfiltered_jobs,
         status_filter=status_filter,
         dept_filter=dept_filter,
         search_query=search_query,
         departments=departments
     )
+
+
+@admin_bp.route('/jobs/delete-all', methods=['POST'])
+@admin_required
+def delete_all_jobs():
+    confirmation = (request.form.get('confirmation') or '').strip()
+    if confirmation != 'DELETE':
+        flash('Deletion cancelled. You must type DELETE to confirm.', 'danger')
+        return redirect(url_for('admin.jobs'))
+
+    total_jobs = JobPosting.query.count()
+    if total_jobs == 0:
+        flash('There are no job postings to delete.', 'info')
+        return redirect(url_for('admin.jobs'))
+
+    try:
+        # Atomically delete all applications and jobs
+        JobApplication.query.delete()
+        JobPosting.query.delete()
+        db.session.commit()
+        flash('All job postings have been deleted successfully.', 'success')
+    except Exception:
+        db.session.rollback()
+        flash('Unable to delete job postings. No changes were made.', 'danger')
+
+    return redirect(url_for('admin.jobs'))
 
 
 @admin_bp.route('/jobs/create', methods=['GET', 'POST'])
