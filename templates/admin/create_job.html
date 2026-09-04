@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Create Job Posting | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container" style="max-width: 900px;">
+    
+    <!-- Admin Header -->
+    <div class="admin-header" style="margin-bottom: var(--space-xl);">
+      <div class="admin-header-title">
+        <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-xs); display: inline-flex; align-items: center; gap: 6px;">
+          {{ icon('arrow-left', size=14) }} Back to Job Postings
+        </a>
+        <h1>Create Job Posting</h1>
+        <p>Publish a new role to the public Anti-Matrix Careers portal.</p>
+      </div>
+    </div>
+
+    <!-- Create Form Card -->
+    <div class="card" style="padding: var(--space-2xl);">
+      <form method="POST" action="{{ url_for('admin.create_job') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <!-- Basic Information -->
+        <div class="form-section-title">
+          {{ icon('briefcase', size=16, color='var(--color-primary-light)') }} Basic Information
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="title" class="form-label">Job Title <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              class="form-input"
+              placeholder="e.g. Senior Full-Stack Engineer"
+              value="{{ form_data.get('title', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="department" class="form-label">Department <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="department"
+              name="department"
+              class="form-input"
+              placeholder="e.g. Engineering, AI & Data, Design"
+              value="{{ form_data.get('department', '') }}"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="location" class="form-label">Location <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              class="form-input"
+              placeholder="e.g. Remote (Worldwide) or San Francisco, CA"
+              value="{{ form_data.get('location', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="employment_type" class="form-label">Employment Type <span style="color: #f87171;">*</span></label>
+            <select id="employment_type" name="employment_type" class="form-input" style="appearance: auto;">
+              {% set types = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote', 'Hybrid'] %}
+              {% for t in types %}
+                <option value="{{ t }}" {{ 'selected' if form_data.get('employment_type', 'Full-time') == t else '' }}>{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Descriptions -->
+        <div class="form-section-title">
+          {{ icon('file-text', size=16, color='var(--color-primary-light)') }} Descriptions
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="short_description" class="form-label">Short Summary (Shown on job card) <span style="color: #f87171;">*</span></label>
+          <input
+            type="text"
+            id="short_description"
+            name="short_description"
+            class="form-input"
+            placeholder="Brief 1-2 sentence overview of the role..."
+            value="{{ form_data.get('short_description', '') }}"
+            required
+          />
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="description" class="form-label">Full Job Description <span style="color: #f87171;">*</span></label>
+          <textarea
+            id="description"
+            name="description"
+            rows="5"
+            class="form-textarea"
+            placeholder="Comprehensive description of the mission, team structure, and day-to-day impact..."
+            required
+          >{{ form_data.get('description', '') }}</textarea>
+        </div>
+
+        <!-- Detailed Requirements -->
+        <div class="form-section-title">
+          {{ icon('check-square', size=16, color='var(--color-primary-light)') }} Responsibilities & Qualifications
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="skills" class="form-label">Key Skills & Tags (Comma-separated)</label>
+          <input
+            type="text"
+            id="skills"
+            name="skills"
+            class="form-input"
+            placeholder="e.g. React, Node.js, PostgreSQL, AWS, TypeScript"
+            value="{{ form_data.get('skills', '') }}"
+          />
+          <span style="font-size: 0.775rem; color: var(--color-text-dim);">These appear as tags on the job card.</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="responsibilities" class="form-label">Core Responsibilities (One item per line)</label>
+          <textarea
+            id="responsibilities"
+            name="responsibilities"
+            rows="4"
+            class="form-textarea"
+            placeholder="Architect scalable web systems&#10;Collaborate with product and design&#10;Mentor junior developers"
+          >{{ form_data.get('responsibilities', '') }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="requirements" class="form-label">Requirements & Qualifications (One item per line)</label>
+          <textarea
+            id="requirements"
+            name="requirements"
+            rows="4"
+            class="form-textarea"
+            placeholder="5+ years of full-stack engineering experience&#10;Strong expertise in Python or TypeScript&#10;Experience deploying production cloud systems"
+          >{{ form_data.get('requirements', '') }}</textarea>
+        </div>
+
+        <!-- Logistics & Status -->
+        <div class="form-section-title">
+          {{ icon('settings', size=16, color='var(--color-primary-light)') }} Compensation & Visibility
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+          <div class="form-group">
+            <label for="salary" class="form-label">Salary / Stipend Range</label>
+            <input
+              type="text"
+              id="salary"
+              name="salary"
+              class="form-input"
+              placeholder="e.g. $120k - $160k or $40/hr"
+              value="{{ form_data.get('salary', '') }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="application_deadline" class="form-label">Application Deadline</label>
+            <input
+              type="text"
+              id="application_deadline"
+              name="application_deadline"
+              class="form-input"
+              placeholder="e.g. Rolling or Oct 31, 2026"
+              value="{{ form_data.get('application_deadline', '') }}"
+            />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-2xl);">
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--color-text); font-weight: 600;">
+            <input type="checkbox" name="is_active" value="true" checked style="width: 18px; height: 18px; accent-color: var(--color-primary);" />
+            Publish immediately (Active on public Careers page)
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md);">
+          <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary btn-lg" style="gap: 8px;">
+            {{ icon('check', size=16) }} Save Job Posting
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

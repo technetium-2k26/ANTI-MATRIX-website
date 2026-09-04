@@ -29,6 +29,11 @@ class Config:
     CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'contact@anti-matrix.com')
     CAREERS_EMAIL = os.environ.get('CAREERS_EMAIL', 'careers@anti-matrix.com')
 
+    # File Uploads (Resumes)
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads', 'resumes')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max limit
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+
 
 class DevelopmentConfig(Config):
     """Development configuration."""

@@ -41,6 +41,13 @@
           Contact
         </a>
       </li>
+      {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <li>
+          <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.path.startswith('/admin') else '' }}" style="display: inline-flex; align-items: center; gap: 5px; color: var(--color-primary-light); font-weight: 600;">
+            {{ icon('shield', size=13) }} Admin Dashboard
+          </a>
+        </li>
+      {% endif %}
     </ul>
 
     {# Desktop actions #}
@@ -48,7 +55,7 @@
       {% if current_user.is_authenticated %}
         <div style="display: flex; align-items: center; gap: var(--space-md);">
           <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-            {{ icon('user', size=14) }} {{ current_user.name }}
+            {{ icon('user', size=14) }} {{ current_user.name }}{% if current_user.role == 'admin' %} <span style="font-size:0.7rem; padding:0.1rem 0.4rem; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); border-radius:4px;">ADMIN</span>{% endif %}
           </span>
           <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
             {{ icon('log-out', size=14) }} Log Out
@@ -84,6 +91,11 @@
   </a>
   <a href="{{ url_for('main.careers') }}" class="{{ 'active' if request.path.startswith('/careers') else '' }}">Careers</a>
   <a href="{{ url_for('main.contact') }}" class="{{ 'active' if request.path.startswith('/contact') else '' }}">Contact</a>
+  {% if current_user.is_authenticated and current_user.role == 'admin' %}
+    <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.path.startswith('/admin') else '' }}" style="color: var(--color-primary-light); font-weight: 700;">
+      🛡️ Admin Dashboard
+    </a>
+  {% endif %}
   
   <div class="mobile-nav-divider"></div>
   

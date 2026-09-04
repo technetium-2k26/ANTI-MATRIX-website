@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Admin Dashboard | Anti-Matrix{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="admin-header-title">
+        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('shield', size=11) }} Administrator Portal</div>
+        <h1>Admin Dashboard</h1>
+        <p>Manage job postings, candidate submissions, and talent acquisition pipelines.</p>
+      </div>
+      <div style="display: flex; gap: var(--space-sm);">
+        <a href="{{ url_for('admin.create_job') }}" class="btn btn-primary" style="gap: 6px;">
+          {{ icon('plus', size=15) }} Create Job Posting
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab active">
+        {{ icon('layout', size=15) }} Overview
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab">
+        {{ icon('briefcase', size=15) }} Job Postings ({{ total_jobs }})
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
+        {{ icon('users', size=15) }} Candidate Applications ({{ total_applications }})
+        {% if new_applications > 0 %}
+          <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: #38bdf8; color: #070a12; font-weight: 800; border-radius: 999px;">{{ new_applications }} NEW</span>
+        {% endif %}
+      </a>
+    </div>
+
+    <!-- Summary Stat Cards -->
+    <div class="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">{{ icon('briefcase', size=22) }}</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ total_jobs }}</div>
+          <div class="stat-label">Total Jobs</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light);">
+          {{ icon('check-circle', size=22) }}
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" style="color: var(--color-primary-light);">{{ active_jobs }}</div>
+          <div class="stat-label">Active Openings</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
+          {{ icon('users', size=22) }}
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" style="color: #c084fc;">{{ total_applications }}</div>
+          <div class="stat-label">Total Applications</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+          {{ icon('sparkles', size=22) }}
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" style="color: #38bdf8;">{{ new_applications }}</div>
+          <div class="stat-label">New Submissions</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dual Widgets Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: var(--space-xl);">
+      
+      <!-- Recent Job Postings Widget -->
+      <div class="card" style="padding: var(--space-xl);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
+          <h3 style="font-size: 1.15rem; color: var(--color-white); display: flex; align-items: center; gap: 8px;">
+            {{ icon('briefcase', size=16, color='var(--color-primary-light)') }} Recent Job Postings
+          </h3>
+          <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">
+            View All {{ icon('arrow-right', size=12) }}
+          </a>
+        </div>
+
+        {% if recent_jobs %}
+          <div class="admin-table-wrapper" style="margin-bottom: 0; border: none; background: transparent;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Job Title</th>
+                  <th>Dept</th>
+                  <th>Apps</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for job in recent_jobs %}
+                  <tr>
+                    <td>
+                      <span class="admin-table-title">{{ job.title }}</span>
+                      <span class="admin-table-subtitle">{{ job.employment_type }}</span>
+                    </td>
+                    <td>{{ job.department }}</td>
+                    <td>
+                      <a href="{{ url_for('admin.applications', job_id=job.id) }}" style="color: var(--color-primary-light); font-weight: 700; text-decoration: underline;">
+                        {{ job.application_count }}
+                      </a>
+                    </td>
+                    <td>
+                      {% if job.is_active %}
+                        <span class="badge-status active">Active</span>
+                      {% else %}
+                        <span class="badge-status inactive">Inactive</span>
+                      {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                      <a href="{{ url_for('admin.edit_job', job_id=job.id) }}" class="btn-icon" title="Edit Job">
+                        {{ icon('edit', size=14) }}
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--color-text-dim); text-align: center; padding: var(--space-lg) 0;">No job postings found.</p>
+        {% endif %}
+      </div>
+
+      <!-- Recent Applications Widget -->
+      <div class="card" style="padding: var(--space-xl);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
+          <h3 style="font-size: 1.15rem; color: var(--color-white); display: flex; align-items: center; gap: 8px;">
+            {{ icon('users', size=16, color='var(--color-primary-light)') }} Recent Applications
+          </h3>
+          <a href="{{ url_for('admin.applications') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">
+            View All {{ icon('arrow-right', size=12) }}
+          </a>
+        </div>
+
+        {% if recent_applications %}
+          <div class="admin-table-wrapper" style="margin-bottom: 0; border: none; background: transparent;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Position</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Review</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for app in recent_applications %}
+                  <tr>
+                    <td>
+                      <span class="admin-table-title">{{ app.full_name }}</span>
+                      <span class="admin-table-subtitle">{{ app.email }}</span>
+                    </td>
+                    <td>
+                      <span style="font-size: 0.85rem; color: var(--color-text);">{{ app.job.title }}</span>
+                    </td>
+                    <td>
+                      <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
+                    </td>
+                    <td style="text-align: right;">
+                      <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm" style="font-size: 0.775rem; padding: 0.25rem 0.6rem;">
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--color-text-dim); text-align: center; padding: var(--space-lg) 0;">No candidate applications received yet.</p>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

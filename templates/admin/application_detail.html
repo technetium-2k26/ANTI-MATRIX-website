@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Application: {{ app.full_name }} ({{ app.application_code }}) | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header" style="margin-bottom: var(--space-xl);">
+      <div class="admin-header-title">
+        <a href="{{ url_for('admin.applications') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-xs); display: inline-flex; align-items: center; gap: 6px;">
+          {{ icon('arrow-left', size=14) }} Back to Applications
+        </a>
+        <div style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
+          <h1>{{ app.full_name }}</h1>
+          <span style="font-family: var(--font-mono, monospace); font-weight: 700; color: var(--color-primary-light); background: rgba(16,185,129,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid rgba(16,185,129,0.25);">
+            {{ app.application_code }}
+          </span>
+          <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
+        </div>
+        <p>Applied for: <strong style="color: var(--color-text);">{{ app.job.title }}</strong> &bull; {{ app.job.department }} &bull; {{ app.job.location }}</p>
+      </div>
+      <div>
+        <a href="{{ url_for('admin.download_resume', app_id=app.id, download=1) }}" class="btn btn-primary btn-sm" style="gap: 6px;">
+          {{ icon('download', size=14) }} Download Resume
+        </a>
+      </div>
+    </div>
+
+    <!-- Dossier Grid Layout -->
+    <div class="dossier-grid">
+      
+      <!-- Main Candidate Dossier (Left Column) -->
+      <div>
+        <!-- 1. Personal & Contact Information -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('user', size=18, color='var(--color-primary-light)') }} Personal & Contact Details
+          </div>
+          <div class="dossier-row">
+            <div class="dossier-item">
+              <span class="dossier-label">Full Name</span>
+              <span class="dossier-value">{{ app.full_name }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Email Address</span>
+              <span class="dossier-value"><a href="mailto:{{ app.email }}" style="color: var(--color-primary-light);">{{ app.email }}</a></span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Phone Number</span>
+              <span class="dossier-value"><a href="tel:{{ app.phone }}" style="color: var(--color-text);">{{ app.phone }}</a></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Academic Background -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('award', size=18, color='var(--color-primary-light)') }} Academic Qualifications
+          </div>
+          <div class="dossier-row">
+            <div class="dossier-item">
+              <span class="dossier-label">College / University</span>
+              <span class="dossier-value">{{ app.college }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Degree</span>
+              <span class="dossier-value">{{ app.degree }}</span>
+            </div>
+          </div>
+          <div class="dossier-row">
+            <div class="dossier-item">
+              <span class="dossier-label">Department / Major</span>
+              <span class="dossier-value">{{ app.department }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Graduation Year</span>
+              <span class="dossier-value">{{ app.graduation_year }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Professional Background & Links -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('globe', size=18, color='var(--color-primary-light)') }} Professional Background & Profiles
+          </div>
+          
+          <div class="dossier-row" style="margin-bottom: var(--space-lg);">
+            <div class="dossier-item" style="grid-column: span 2;">
+              <span class="dossier-label">Total Experience</span>
+              <span class="dossier-value">{{ app.experience or 'Not specified' }}</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: var(--space-lg);">
+            <span class="dossier-label">Technical Skills</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem;">
+              {% for s in app.get_skills_list() %}
+                <span style="font-size: 0.8rem; color: var(--color-primary-light); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); font-weight: 600;">
+                  {{ s }}
+                </span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="dossier-row">
+            {% if app.portfolio_url %}
+              <div class="dossier-item">
+                <span class="dossier-label">Portfolio URL</span>
+                <span class="dossier-value"><a href="{{ app.portfolio_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); display: inline-flex; align-items: center; gap: 4px;">{{ app.portfolio_url }} {{ icon('external-link', size=12) }}</a></span>
+              </div>
+            {% endif %}
+
+            {% if app.linkedin_url %}
+              <div class="dossier-item">
+                <span class="dossier-label">LinkedIn Profile</span>
+                <span class="dossier-value"><a href="{{ app.linkedin_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); display: inline-flex; align-items: center; gap: 4px;">LinkedIn Profile {{ icon('external-link', size=12) }}</a></span>
+              </div>
+            {% endif %}
+
+            {% if app.github_url %}
+              <div class="dossier-item">
+                <span class="dossier-label">GitHub Profile</span>
+                <span class="dossier-value"><a href="{{ app.github_url }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); display: inline-flex; align-items: center; gap: 4px;">GitHub Profile {{ icon('external-link', size=12) }}</a></span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 4. Cover Letter & Statements -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Cover Letter & Statement of Interest
+          </div>
+          <div class="dossier-text-block" style="margin-bottom: var(--space-lg);">{{ app.cover_letter }}</div>
+
+          {% if app.why_join %}
+            <div class="dossier-label" style="margin-bottom: 0.35rem;">Why do you want to join Anti-Matrix?</div>
+            <div class="dossier-text-block">{{ app.why_join }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Status Transition & Quick Actions -->
+      <div>
+        <!-- Status Management Card -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('check-circle', size=18, color='var(--color-primary-light)') }} Application Status
+          </div>
+          
+          <form method="POST" action="{{ url_for('admin.update_application_status', app_id=app.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label for="status-select" class="form-label">Recruitment Stage</label>
+              <select id="status-select" name="status" class="admin-select" style="width: 100%;">
+                {% for st in ['New', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired'] %}
+                  <option value="{{ st }}" {{ 'selected' if app.status == st else '' }}>{{ st }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; gap: 6px;">
+              {{ icon('check', size=15) }} Update Stage
+            </button>
+          </form>
+        </div>
+
+        <!-- Resume File Card -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Attached Resume
+          </div>
+          
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); word-break: break-all;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-white); margin-bottom: 0.25rem;">
+              {{ app.resume_filename }}
+            </div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim);">Uploaded via portal</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{{ url_for('admin.download_resume', app_id=app.id) }}" class="btn btn-outline" style="justify-content: center; gap: 6px;" target="_blank">
+              {{ icon('eye', size=14) }} View Resume
+            </a>
+            <a href="{{ url_for('admin.download_resume', app_id=app.id, download=1) }}" class="btn btn-ghost" style="justify-content: center; gap: 6px;">
+              {{ icon('download', size=14) }} Download File
+            </a>
+          </div>
+        </div>
+
+        <!-- Metadata Card -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('clock', size=18, color='var(--color-primary-light)') }} Submission Metadata
+          </div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--color-text-dim);">Submitted:</span>
+              <span style="color: var(--color-text); font-weight: 600;">{{ app.created_at.strftime('%B %d, %Y at %I:%M %p UTC') }}</span>
+            </div>
+            <div>
+              <span style="color: var(--color-text-dim);">Last Updated:</span>
+              <span style="color: var(--color-text); font-weight: 600;">{{ app.updated_at.strftime('%B %d, %Y at %I:%M %p UTC') }}</span>
+            </div>
+            <div>
+              <span style="color: var(--color-text-dim);">Position ID:</span>
+              <span style="color: var(--color-primary-light); font-weight: 600;">#JOB-{{ app.job.id }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

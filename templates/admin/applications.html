@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Candidate Applications | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="admin-header-title">
+        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('users', size=11) }} Talent Acquisition</div>
+        <h1>Candidate Applications</h1>
+        <p>Review candidate profiles, evaluate technical credentials, and manage recruitment pipeline statuses.</p>
+      </div>
+    </div>
+
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
+        {{ icon('layout', size=15) }} Overview
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab">
+        {{ icon('briefcase', size=15) }} Job Postings
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab active">
+        {{ icon('users', size=15) }} Candidate Applications ({{ applications|length }})
+      </a>
+    </div>
+
+    <!-- Filter & Search Controls Bar -->
+    <div class="admin-controls-bar">
+      <form method="GET" action="{{ url_for('admin.applications') }}" class="admin-search-form">
+        {% if selected_job_id %}
+          <input type="hidden" name="job_id" value="{{ selected_job_id }}" />
+        {% endif %}
+        {% if selected_status and selected_status != 'all' %}
+          <input type="hidden" name="status" value="{{ selected_status }}" />
+        {% endif %}
+
+        <input
+          type="text"
+          name="q"
+          placeholder="Search candidate, email, university, skill..."
+          class="form-input"
+          value="{{ search_query }}"
+          style="padding: 0.55rem 0.875rem; font-size: 0.875rem;"
+        />
+        <button type="submit" class="btn btn-outline btn-sm">
+          {{ icon('search', size=14) }}
+        </button>
+      </form>
+
+      <div class="admin-filter-group">
+        <form method="GET" action="{{ url_for('admin.applications') }}" style="display: flex; gap: 0.5rem; align-items: center;">
+          {% if search_query %}
+            <input type="hidden" name="q" value="{{ search_query }}" />
+          {% endif %}
+
+          <select name="status" class="admin-select" onchange="this.form.submit();">
+            <option value="all" {{ 'selected' if selected_status == 'all' else '' }}>All Statuses</option>
+            <option value="New" {{ 'selected' if selected_status == 'New' else '' }}>New</option>
+            <option value="Reviewed" {{ 'selected' if selected_status == 'Reviewed' else '' }}>Reviewed</option>
+            <option value="Shortlisted" {{ 'selected' if selected_status == 'Shortlisted' else '' }}>Shortlisted</option>
+            <option value="Rejected" {{ 'selected' if selected_status == 'Rejected' else '' }}>Rejected</option>
+            <option value="Hired" {{ 'selected' if selected_status == 'Hired' else '' }}>Hired</option>
+          </select>
+
+          <select name="job_id" class="admin-select" onchange="this.form.submit();">
+            <option value="">All Job Positions</option>
+            {% for j in all_jobs %}
+              <option value="{{ j.id }}" {{ 'selected' if selected_job_id == j.id else '' }}>{{ j.title }}</option>
+            {% endfor %}
+          </select>
+
+          {% if selected_status != 'all' or selected_job_id or search_query %}
+            <a href="{{ url_for('admin.applications') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">Reset</a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <!-- Candidate Applications Table -->
+    <div class="admin-table-wrapper">
+      {% if applications %}
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Candidate</th>
+              <th>Applied Position</th>
+              <th>Education</th>
+              <th>Applied On</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for app in applications %}
+              <tr>
+                <td>
+                  <span class="admin-table-title">{{ app.full_name }}</span>
+                  <span class="admin-table-subtitle">{{ app.email }} &bull; {{ app.phone }}</span>
+                </td>
+                <td>
+                  <span style="font-weight: 600; color: var(--color-text);">{{ app.job.title }}</span>
+                  <span class="admin-table-subtitle">{{ app.job.department }}</span>
+                </td>
+                <td>
+                  <span style="font-size: 0.85rem; color: var(--color-text);">{{ app.college }}</span>
+                  <span class="admin-table-subtitle">{{ app.degree }} ({{ app.graduation_year }})</span>
+                </td>
+                <td style="font-size: 0.825rem; color: var(--color-text-dim);">
+                  {{ app.created_at.strftime('%b %d, %Y') }}
+                </td>
+                <td>
+                  <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
+                </td>
+                <td>
+                  <div class="action-buttons" style="justify-content: flex-end;">
+                    <a href="{{ url_for('admin.download_resume', app_id=app.id) }}" class="btn-icon" title="Download Resume ({{ app.resume_filename }})" target="_blank">
+                      {{ icon('file-text', size=14) }}
+                    </a>
+                    <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">
+                      Review Details
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="text-align: center; padding: var(--space-3xl) var(--space-lg);">
+          <div class="icon-box" style="margin: 0 auto var(--space-md);">{{ icon('users', size=24) }}</div>
+          <h3 style="color: var(--color-text); margin-bottom: 0.5rem;">No Applications Found</h3>
+          <p style="color: var(--color-text-dim); margin-bottom: 0;">No candidate applications match the selected filter criteria.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Manage Job Postings | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="admin-header-title">
+        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('briefcase', size=11) }} Job Management</div>
+        <h1>Job Postings</h1>
+        <p>Create, edit, toggle visibility, and monitor openings across all departments.</p>
+      </div>
+      <div>
+        <a href="{{ url_for('admin.create_job') }}" class="btn btn-primary" style="gap: 6px;">
+          {{ icon('plus', size=15) }} Create Job Posting
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
+        {{ icon('layout', size=15) }} Overview
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab active">
+        {{ icon('briefcase', size=15) }} Job Postings ({{ jobs|length }})
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
+        {{ icon('users', size=15) }} Candidate Applications
+      </a>
+    </div>
+
+    <!-- Filter & Search Controls Bar -->
+    <div class="admin-controls-bar">
+      <form method="GET" action="{{ url_for('admin.jobs') }}" class="admin-search-form">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search by title, location, skill..."
+          class="form-input"
+          value="{{ search_query }}"
+          style="padding: 0.55rem 0.875rem; font-size: 0.875rem;"
+        />
+        <button type="submit" class="btn btn-outline btn-sm">
+          {{ icon('search', size=14) }}
+        </button>
+      </form>
+
+      <div class="admin-filter-group">
+        <form method="GET" action="{{ url_for('admin.jobs') }}" id="filter-form" style="display: flex; gap: 0.5rem; align-items: center;">
+          {% if search_query %}
+            <input type="hidden" name="q" value="{{ search_query }}" />
+          {% endif %}
+          
+          <select name="status" class="admin-select" onchange="this.form.submit();">
+            <option value="all" {{ 'selected' if status_filter == 'all' else '' }}>All Statuses</option>
+            <option value="active" {{ 'selected' if status_filter == 'active' else '' }}>Active Only</option>
+            <option value="inactive" {{ 'selected' if status_filter == 'inactive' else '' }}>Inactive Only</option>
+          </select>
+
+          {% if departments %}
+            <select name="dept" class="admin-select" onchange="this.form.submit();">
+              <option value="">All Departments</option>
+              {% for dept in departments %}
+                <option value="{{ dept }}" {{ 'selected' if dept_filter == dept else '' }}>{{ dept }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+
+          {% if status_filter != 'all' or dept_filter or search_query %}
+            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">Reset</a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <!-- Job Postings Table -->
+    <div class="admin-table-wrapper">
+      {% if jobs %}
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Job Title & Location</th>
+              <th>Department</th>
+              <th>Type</th>
+              <th>Applications</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+              <tr>
+                <td>
+                  <span class="admin-table-title">{{ job.title }}</span>
+                  <span class="admin-table-subtitle">{{ icon('map-pin', size=10) }} {{ job.location }}</span>
+                </td>
+                <td>
+                  <span style="font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">
+                    {{ job.department }}
+                  </span>
+                </td>
+                <td>{{ job.employment_type }}</td>
+                <td>
+                  <a href="{{ url_for('admin.applications', job_id=job.id) }}" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.6rem; font-size: 0.775rem;">
+                    {{ icon('users', size=12) }} {{ job.application_count }} Apps
+                  </a>
+                </td>
+                <td>
+                  {% if job.is_active %}
+                    <span class="badge-status active">Active</span>
+                  {% else %}
+                    <span class="badge-status inactive">Inactive</span>
+                  {% endif %}
+                </td>
+                <td style="font-size: 0.825rem; color: var(--color-text-dim);">
+                  {{ job.created_at.strftime('%b %d, %Y') }}
+                </td>
+                <td>
+                  <div class="action-buttons" style="justify-content: flex-end;">
+                    <!-- Edit -->
+                    <a href="{{ url_for('admin.edit_job', job_id=job.id) }}" class="btn-icon" title="Edit Job Details">
+                      {{ icon('edit', size=14) }}
+                    </a>
+
+                    <!-- Toggle Active/Inactive -->
+                    <form method="POST" action="{{ url_for('admin.toggle_job', job_id=job.id) }}" style="display: inline;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <button type="submit" class="btn-icon" title="{{ 'Deactivate Job' if job.is_active else 'Activate Job' }}">
+                        {% if job.is_active %}
+                          {{ icon('eye-off', size=14) }}
+                        {% else %}
+                          {{ icon('eye', size=14) }}
+                        {% endif %}
+                      </button>
+                    </form>
+
+                    <!-- Safe Delete with confirmation -->
+                    <form method="POST" action="{{ url_for('admin.delete_job', job_id=job.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this job posting ({{ job.title }})? All associated candidate applications will also be deleted.');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                      <button type="submit" class="btn-icon btn-danger" title="Delete Job">
+                        {{ icon('trash-2', size=14) }}
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div style="text-align: center; padding: var(--space-3xl) var(--space-lg);">
+          <div class="icon-box" style="margin: 0 auto var(--space-md);">{{ icon('briefcase', size=24) }}</div>
+          <h3 style="color: var(--color-text); margin-bottom: 0.5rem;">No Job Postings Match Criteria</h3>
+          <p style="color: var(--color-text-dim); margin-bottom: var(--space-lg);">Try adjusting your search terms or filters.</p>
+          <a href="{{ url_for('admin.create_job') }}" class="btn btn-primary btn-sm">+ Create New Job</a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

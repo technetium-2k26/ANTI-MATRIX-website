@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Apply for {{ job.title }} | Anti-Matrix Careers{% endblock %}
+
+{% block content %}
+<!-- Apply Page Hero -->
+<section class="apply-hero">
+  <div class="container" style="max-width: 900px;">
+    <a href="{{ url_for('main.careers') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-md); display: inline-flex; align-items: center; gap: 6px;">
+      {{ icon('arrow-left', size=14) }} Back to Careers
+    </a>
+    
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: var(--space-sm);">
+      <span class="badge">{{ icon('briefcase', size=11) }} {{ job.department }}</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('map-pin', size=11) }} {{ job.location }}</span>
+      <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('clock', size=11) }} {{ job.employment_type }}</span>
+      {% if job.salary %}
+        <span style="font-size: 0.8rem; color: var(--color-primary-light); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">{{ icon('credit-card', size=11) }} {{ job.salary }}</span>
+      {% endif %}
+    </div>
+
+    <h1 style="font-size: clamp(1.85rem, 3.5vw, 2.5rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-sm);">
+      Apply for {{ job.title }}
+    </h1>
+    <p style="color: var(--color-text-dim); font-size: 1rem; max-width: 750px;">
+      {{ job.short_description }}
+    </p>
+  </div>
+</section>
+
+<!-- Application Form Section -->
+<section class="section" style="padding-top: 0; background: var(--color-bg);">
+  <div class="container" style="max-width: 900px;">
+    <div class="apply-card">
+      <form method="POST" action="{{ url_for('main.apply_job', job_id=job.id) }}" enctype="multipart/form-data" id="job-application-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <!-- 1. Personal Information -->
+        <div class="form-section-title">
+          {{ icon('user', size=16, color='var(--color-primary-light)') }} 1. Personal Information
+        </div>
+        
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="full_name" class="form-label">Full Name <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="full_name"
+              name="full_name"
+              class="form-input"
+              placeholder="e.g. Alex Morgan"
+              value="{{ form_data.get('full_name', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address <span style="color: #f87171;">*</span></label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="e.g. alex.morgan@example.com"
+              value="{{ form_data.get('email', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number <span style="color: #f87171;">*</span></label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="form-input"
+              placeholder="e.g. +1 (555) 234-5678"
+              value="{{ form_data.get('phone', '') }}"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- 2. Academic Information -->
+        <div class="form-section-title">
+          {{ icon('award', size=16, color='var(--color-primary-light)') }} 2. Academic Information
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="college" class="form-label">College / University <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="college"
+              name="college"
+              class="form-input"
+              placeholder="e.g. Stanford University"
+              value="{{ form_data.get('college', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="degree" class="form-label">Degree <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="degree"
+              name="degree"
+              class="form-input"
+              placeholder="e.g. Bachelor of Science"
+              value="{{ form_data.get('degree', '') }}"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="department" class="form-label">Major / Department <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="department"
+              name="department"
+              class="form-input"
+              placeholder="e.g. Computer Science & Engineering"
+              value="{{ form_data.get('department', '') }}"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="graduation_year" class="form-label">Graduation Year <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="graduation_year"
+              name="graduation_year"
+              class="form-input"
+              placeholder="e.g. 2025"
+              value="{{ form_data.get('graduation_year', '') }}"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- 3. Professional & Portfolio Links -->
+        <div class="form-section-title">
+          {{ icon('globe', size=16, color='var(--color-primary-light)') }} 3. Professional Background & Links
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="experience" class="form-label">Total Experience</label>
+            <input
+              type="text"
+              id="experience"
+              name="experience"
+              class="form-input"
+              placeholder="e.g. Fresher / 2 years"
+              value="{{ form_data.get('experience', '') }}"
+            />
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="skills" class="form-label">Technical Skills & Tools <span style="color: #f87171;">*</span></label>
+            <input
+              type="text"
+              id="skills"
+              name="skills"
+              class="form-input"
+              placeholder="e.g. Python, PyTorch, React, PostgreSQL, Docker"
+              value="{{ form_data.get('skills', '') }}"
+              required
+            />
+            <span style="font-size: 0.775rem; color: var(--color-text-dim);">Separate skills with commas.</span>
+          </div>
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label for="portfolio_url" class="form-label">Portfolio / Personal Website</label>
+            <input
+              type="url"
+              id="portfolio_url"
+              name="portfolio_url"
+              class="form-input"
+              placeholder="https://yourportfolio.com"
+              value="{{ form_data.get('portfolio_url', '') }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="linkedin_url" class="form-label">LinkedIn Profile URL</label>
+            <input
+              type="url"
+              id="linkedin_url"
+              name="linkedin_url"
+              class="form-input"
+              placeholder="https://linkedin.com/in/username"
+              value="{{ form_data.get('linkedin_url', '') }}"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="github_url" class="form-label">GitHub Profile URL</label>
+            <input
+              type="url"
+              id="github_url"
+              name="github_url"
+              class="form-input"
+              placeholder="https://github.com/username"
+              value="{{ form_data.get('github_url', '') }}"
+            />
+          </div>
+        </div>
+
+        <!-- 4. Statement of Interest -->
+        <div class="form-section-title">
+          {{ icon('file-text', size=16, color='var(--color-primary-light)') }} 4. Application Statement
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="cover_letter" class="form-label">Cover Letter / Why You Are a Great Fit <span style="color: #f87171;">*</span></label>
+          <textarea
+            id="cover_letter"
+            name="cover_letter"
+            rows="5"
+            class="form-textarea"
+            placeholder="Tell us about your background, relevant projects, and what you would bring to the Anti-Matrix engineering team..."
+            required
+          >{{ form_data.get('cover_letter', '') }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="why_join" class="form-label">Why do you want to join Anti-Matrix?</label>
+          <textarea
+            id="why_join"
+            name="why_join"
+            rows="3"
+            class="form-textarea"
+            placeholder="What excites you about our mission, technology, or client impact?"
+          >{{ form_data.get('why_join', '') }}</textarea>
+        </div>
+
+        <!-- 5. Resume Upload -->
+        <div class="form-section-title">
+          {{ icon('upload-cloud', size=16, color='var(--color-primary-light)') }} 5. Resume / CV <span style="color: #f87171;">*</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-2xl);">
+          <div class="file-upload-box" onclick="document.getElementById('resume-input').click();">
+            <div class="icon-box" style="margin: 0 auto var(--space-md);">{{ icon('upload-cloud', size=24) }}</div>
+            <div style="font-weight: 700; color: var(--color-white); margin-bottom: 0.25rem;">
+              Click to browse or upload your resume
+            </div>
+            <p style="font-size: 0.8125rem; color: var(--color-text-dim); margin-bottom: 0;">
+              Accepted formats: <strong style="color: var(--color-primary-light);">PDF, DOC, DOCX</strong> (Max 16 MB)
+            </p>
+            <div id="file-name-display" style="margin-top: 0.75rem; font-size: 0.9rem; font-weight: 600; color: var(--color-primary-light); display: none;"></div>
+          </div>
+          <input
+            type="file"
+            id="resume-input"
+            name="resume"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            style="display: none;"
+            required
+            onchange="const f = this.files[0]; const d = document.getElementById('file-name-display'); if(f) { d.textContent = 'Selected file: ' + f.name + ' (' + (f.size/1024/1024).toFixed(2) + ' MB)'; d.style.display='block'; } else { d.style.display='none'; }"
+          />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md);">
+          <a href="{{ url_for('main.careers') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary btn-lg" style="gap: 8px;">
+            Submit Application {{ icon('send', size=16) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
