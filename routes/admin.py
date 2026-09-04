@@ -2,7 +2,7 @@ import os
 from functools import wraps
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash,
-    abort, current_app, send_from_directory
+    abort, current_app, send_from_directory, jsonify
 )
 from flask_login import current_user
 from werkzeug.utils import secure_filename
@@ -567,6 +567,43 @@ def update_email_template(template_type):
     return redirect(url_for('admin.templates'))
 
 
+@admin_bp.route('/templates/email/<string:template_type>/preview', methods=['GET'])
+@admin_required
+def preview_email_template(template_type):
+    """Preview rendered HTML email with sample preview values."""
+    valid_types = ['application_successful', 'offer_letter']
+    if template_type not in valid_types:
+        return jsonify({'error': 'Invalid template type'}), 400
+
+    from services.email_service import render_sample_email_preview
+    preview_data = render_sample_email_preview(template_type)
+    return jsonify(preview_data)
+
+
+@admin_bp.route('/templates/email/<string:template_type>/test', methods=['POST'])
+@admin_required
+def send_test_email_route(template_type):
+    """Send a sample test email to an admin-specified recipient without modifying live records."""
+    valid_types = ['application_successful', 'offer_letter']
+    if template_type not in valid_types:
+        flash('Invalid template type.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    recipient_email = (request.form.get('test_recipient') or '').strip()
+    if not recipient_email:
+        flash('Please specify a recipient email address for testing.', 'danger')
+        return redirect(url_for('admin.templates'))
+
+    from services.email_service import send_test_email
+    success, msg = send_test_email(template_type, recipient_email)
+    if success:
+        flash(f"Test email sent to {recipient_email}: {msg}", 'success')
+    else:
+        flash(f"Failed to send test email: {msg}", 'danger')
+
+    return redirect(url_for('admin.templates'))
+
+
 @admin_bp.route('/templates/document/<string:template_type>/upload', methods=['POST'])
 @admin_required
 def upload_document_template(template_type):
@@ -713,23 +750,39 @@ def verify_offer_letter(employee_id):
         return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
 
     # Load email template to preview formatted email
+    from services.email_service import replace_variables, markdown_to_html_email, DEFAULT_OFFER_LETTER_SUBJECT, DEFAULT_OFFER_LETTER_BODY
     email_tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
     
-    email_context = {
-        '{{employee_name}}': employee.candidate_name,
-        '{{employee_id}}': employee.employee_id,
-        '{{application_id}}': app_record.formatted_code,
-        '{{job_title}}': job.title if job else '',
-        '{{department}}': job.department if job else '',
-        '{{internship_duration}}': app_record.duration_display or ''
+    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in')
+    website = 'www.antimatrix.co.in'
+    duration = app_record.duration_display or (f"{job.duration.replace('_', ' ').title()}" if job and job.duration else "3 Months")
+    joining_date = 'Immediate / As mutually agreed'
+
+    variables = {
+        'Student Name': employee.candidate_name,
+        'Internship Role': job.title if job else 'Internship Position',
+        'Application ID': app_record.formatted_code,
+        'Internship Duration': duration,
+        'Start Date': joining_date,
+        'Company Email': company_email,
+        'Website': website,
+        'employee_name': employee.candidate_name,
+        'employee_id': employee.employee_id,
+        'job_title': job.title if job else '',
+        'department': job.department if job else '',
+        'application_id': app_record.formatted_code,
+        'internship_duration': duration,
+        'start_date': joining_date,
+        'company_email': company_email,
+        'website': website
     }
 
-    subject_preview = email_tmpl.subject if email_tmpl else f"Offer Letter — {job.title} | {employee.employee_id}"
-    body_preview = email_tmpl.body if email_tmpl else f"Dear {employee.candidate_name},\n\nPlease find your Offer Letter attached.\n\nBest Regards,\nAnti-Matrix"
+    raw_subject = email_tmpl.subject if email_tmpl else DEFAULT_OFFER_LETTER_SUBJECT
+    raw_body = email_tmpl.body if email_tmpl else DEFAULT_OFFER_LETTER_BODY
 
-    for k, v in email_context.items():
-        subject_preview = subject_preview.replace(k, str(v))
-        body_preview = body_preview.replace(k, str(v))
+    subject_preview = replace_variables(raw_subject, variables)
+    body_preview = replace_variables(raw_body, variables)
+    body_html_preview = markdown_to_html_email(body_preview, title=subject_preview)
 
     return render_template(
         'admin/offer_letter_verify.html',
@@ -738,7 +791,8 @@ def verify_offer_letter(employee_id):
         job=job,
         emp_doc=emp_doc,
         subject_preview=subject_preview,
-        body_preview=body_preview
+        body_preview=body_preview,
+        body_html_preview=body_html_preview
     )
 
 

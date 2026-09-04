@@ -220,98 +220,10 @@ def generate_offer_letter_docx(employee, custom_params=None):
     return emp_doc, output_filepath
 
 
-def send_offer_letter_email(employee):
+def send_offer_letter_email(employee, start_date=None):
     """
     Sends the generated Offer Letter to the employee's registered email with attachment.
-    Enforces strict ONE-TIME send protection.
+    Enforces strict ONE-TIME send protection, Markdown-to-HTML rendering, and audit logging.
     """
-    if not employee or not employee.application:
-        return False, "Invalid employee or missing application record."
-
-    recipient_email = employee.candidate_email
-    if not recipient_email:
-        return False, "Candidate does not have a registered email address."
-
-    emp_doc = employee.offer_letter_doc
-    if not emp_doc or not os.path.exists(emp_doc.file_path):
-        return False, "Offer Letter has not been generated yet. Please generate it first."
-
-    # ONE-TIME SEND PROTECTION
-    if emp_doc.email_status == 'sent':
-        return False, f"Offer Letter already sent on {emp_doc.sent_at.strftime('%b %d, %Y') if emp_doc.sent_at else 'previous date'}."
-
-    # Load Email Template
-    email_tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
-    
-    app = employee.application
-    job = employee.job
-
-    email_context = {
-        '{{employee_name}}': employee.candidate_name,
-        '{{employee_id}}': employee.employee_id,
-        '{{application_id}}': app.formatted_code,
-        '{{job_title}}': job.title if job else '',
-        '{{department}}': job.department if job else '',
-        '{{internship_duration}}': app.duration_display or ''
-    }
-
-    subject_raw = email_tmpl.subject if email_tmpl else "Offer Letter — {{job_title}} | {{employee_id}}"
-    body_raw = email_tmpl.body if email_tmpl else "Dear {{employee_name}},\n\nPlease find your Offer Letter attached.\n\nBest Regards,\nAnti-Matrix"
-
-    for k, v in email_context.items():
-        subject_raw = subject_raw.replace(k, str(v))
-        body_raw = body_raw.replace(k, str(v))
-
-    subject = subject_raw
-    body = body_raw
-
-    # Send Email via SMTP if configured, or simulate safely in development
-    smtp_server = os.environ.get('SMTP_SERVER')
-    smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    smtp_user = os.environ.get('SMTP_USER')
-    smtp_password = os.environ.get('SMTP_PASSWORD')
-    sender_email = os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in')
-
-    try:
-        if smtp_server and smtp_user and smtp_password:
-            msg = MIMEMultipart()
-            msg['From'] = sender_email
-            msg['To'] = recipient_email
-            msg['Subject'] = subject
-
-            msg.attach(MIMEText(body, 'plain'))
-
-            # Attach DOCX file
-            with open(emp_doc.file_path, 'rb') as f:
-                part = MIMEBase('application', 'vnd.openxmlformats-officedocument.wordprocessingml.document')
-                part.set_payload(f.read())
-                encoders.encode_base64(part)
-                part.add_header('Content-Disposition', f'attachment; filename="{emp_doc.file_name}"')
-                msg.attach(part)
-
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.send_message(msg)
-        else:
-            # Development / Sandbox Mode: Simulated sending
-            print(f"[EMAIL SERVICE SIMULATION] Sending Offer Letter email to {recipient_email}")
-            print(f"  Subject: {subject}")
-            print(f"  Attachment: {emp_doc.file_name} ({os.path.getsize(emp_doc.file_path)} bytes)")
-
-        # Update database document status
-        now_utc = datetime.now(timezone.utc)
-        emp_doc.email_status = 'sent'
-        emp_doc.status = 'SENT'
-        emp_doc.sent_at = now_utc
-        emp_doc.verified_at = now_utc
-        emp_doc.email_error = None
-        db.session.commit()
-
-        return True, f"Offer Letter successfully sent to {recipient_email}."
-
-    except Exception as e:
-        emp_doc.email_status = 'failed'
-        emp_doc.email_error = str(e)
-        db.session.commit()
-        return False, f"Failed to send Offer Letter email: {str(e)}"
+    from services.email_service import send_offer_letter_shortlisted_email
+    return send_offer_letter_shortlisted_email(employee, start_date=start_date)

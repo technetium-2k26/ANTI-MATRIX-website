@@ -140,6 +140,10 @@ class JobApplication(db.Model):
     application_status = db.Column(db.String(30), default='pending_payment', nullable=False)  # pending_payment, submitted, reviewed, shortlisted, rejected, hired
     status = db.Column(db.String(30), default='New', nullable=False)  # Recruitment Pipeline Stage: New, Reviewed, Shortlisted, Rejected, Hired
     
+    # Application Success Email Tracking
+    application_success_email_status = db.Column(db.String(30), default='PENDING', nullable=False)  # PENDING, SENT, FAILED
+    application_success_email_sent_at = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 

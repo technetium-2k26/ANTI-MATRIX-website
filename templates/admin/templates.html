@@ -5,7 +5,7 @@
 
 {% block content %}
 <section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
-  <div class="container" style="max-width: 1120px;">
+  <div class="container" style="max-width: 1140px;">
     
     <!-- Admin Header -->
     <div class="admin-header" style="margin-bottom: var(--space-xl);">
@@ -60,22 +60,29 @@
         <h2 style="font-size: 1.35rem; color: #000000; font-weight: 800; display: flex; align-items: center; gap: 8px;">
           {{ icon('mail', size=18, color='var(--color-primary-light)') }} EMAIL TEMPLATES
         </h2>
-        <span style="font-size: 0.8rem; color: var(--color-text-dim);">Automated Email Subjects & Body Content</span>
+        <span style="font-size: 0.8rem; color: var(--color-text-dim);">Automated HTML Email Subjects & Markdown Body</span>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: var(--space-xl);">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: var(--space-xl);">
         
         <!-- 1. Application Successful Email Template -->
         <div class="card" style="padding: var(--space-xl); border-color: var(--color-border);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: #000000;">
-              1. Application Successful
-            </h3>
-            <span class="badge-status" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">Stored</span>
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: #000000; margin: 0 0 0.2rem 0;">
+                1. Application Successful
+              </h3>
+              <span class="badge-status" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8;">Automated on Paid Submission</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="openEmailPreview('application_successful')" style="gap: 5px; font-size: 0.775rem;">
+                {{ icon('eye', size=13) }} Preview
+              </button>
+            </div>
           </div>
           
           <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Template configured for candidate application confirmation acknowledgment.
+            Sent automatically after candidate completes Cashfree payment and application ID is generated.
           </p>
 
           <form method="POST" action="{{ url_for('admin.update_email_template', template_type='application_successful') }}">
@@ -83,31 +90,60 @@
 
             <div class="form-group" style="margin-bottom: var(--space-md);">
               <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Subject *</label>
-              <input type="text" name="subject" class="form-input" value="{{ app_success_email.subject if app_success_email else 'Application Received — {{job_title}} | {{application_id}}' }}" required style="font-size: 0.9rem;" />
+              <input type="text" name="subject" class="form-input" value="{{ app_success_email.subject if app_success_email else 'Application Successfully Submitted — {{Internship Role}} | {{Application ID}}' }}" required style="font-size: 0.9rem;" />
             </div>
 
             <div class="form-group" style="margin-bottom: var(--space-md);">
-              <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Body *</label>
-              <textarea name="body" class="form-textarea" rows="8" required style="font-family: var(--font-mono, monospace); font-size: 0.85rem; line-height: 1.5;">{{ app_success_email.body if app_success_email else '' }}</textarea>
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Body (Markdown) *</label>
+              <textarea name="body" class="form-textarea" rows="12" required style="font-family: var(--font-mono, monospace); font-size: 0.825rem; line-height: 1.55;">{{ app_success_email.body if app_success_email else '' }}</textarea>
             </div>
 
-            <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(0,0,0,0.25); padding: var(--space-sm); border-radius: var(--radius-sm);">
-              <strong>Variables:</strong> <code>{{ '{{employee_name}}' }}</code>, <code>{{ '{{application_id}}' }}</code>, <code>{{ '{{job_title}}' }}</code>, <code>{{ '{{internship_duration}}' }}</code>
+            <!-- Variables Pill Box -->
+            <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(0,0,0,0.25); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: var(--color-text); margin-bottom: 4px;">Supported Variables:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Student Name&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Internship Role&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Application ID&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Application Date&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Company Email&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Website&#125;&#125;</span>
+              </div>
             </div>
 
-            <button type="submit" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center; gap: 6px;">
-              {{ icon('check', size=14) }} Save Application Successful Template
-            </button>
+            <div style="display: flex; gap: var(--space-sm); justify-content: space-between; align-items: center;">
+              <button type="submit" class="btn btn-outline btn-sm" style="flex: 1; justify-content: center; gap: 6px;">
+                {{ icon('check', size=14) }} Save Template
+              </button>
+            </div>
           </form>
+
+          <!-- Send Test Email Inline Form -->
+          <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px dashed var(--color-border);">
+            <form method="POST" action="{{ url_for('admin.send_test_email_route', template_type='application_successful') }}" style="display: flex; gap: var(--space-xs); align-items: center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="email" name="test_recipient" placeholder="Enter email to test dispatch..." class="form-input" required style="font-size: 0.8rem; padding: 0.35rem 0.65rem;" />
+              <button type="submit" class="btn btn-ghost btn-sm" style="white-space: nowrap; font-size: 0.775rem; gap: 4px;">
+                {{ icon('send', size=12) }} Send Test
+              </button>
+            </form>
+          </div>
         </div>
 
-        <!-- 2. Offer Letter Email Template -->
+        <!-- 2. Offer Letter / Shortlisted Email Template -->
         <div class="card" style="padding: var(--space-xl); border-color: rgba(16, 185, 129, 0.35);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: #000000;">
-              2. Offer Letter
-            </h3>
-            <span class="badge-status active">Active</span>
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; color: #000000; margin: 0 0 0.2rem 0;">
+                2. Offer Letter / Shortlisted
+              </h3>
+              <span class="badge-status active">Sent on Admin Verify &amp; Send</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="openEmailPreview('offer_letter')" style="gap: 5px; font-size: 0.775rem;">
+                {{ icon('eye', size=13) }} Preview
+              </button>
+            </div>
           </div>
           
           <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
@@ -119,22 +155,45 @@
 
             <div class="form-group" style="margin-bottom: var(--space-md);">
               <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Subject *</label>
-              <input type="text" name="subject" class="form-input" value="{{ offer_letter_email.subject if offer_letter_email else 'Offer Letter — {{job_title}} | {{employee_id}}' }}" required style="font-size: 0.9rem;" />
+              <input type="text" name="subject" class="form-input" value="{{ offer_letter_email.subject if offer_letter_email else 'Congratulations! You Have Been Shortlisted — {{Internship Role}} | Anti Matrix' }}" required style="font-size: 0.9rem;" />
             </div>
 
             <div class="form-group" style="margin-bottom: var(--space-md);">
-              <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Body *</label>
-              <textarea name="body" class="form-textarea" rows="8" required style="font-family: var(--font-mono, monospace); font-size: 0.85rem; line-height: 1.5;">{{ offer_letter_email.body if offer_letter_email else '' }}</textarea>
+              <label class="form-label" style="font-size: 0.85rem; font-weight: 700;">Email Body (Markdown) *</label>
+              <textarea name="body" class="form-textarea" rows="12" required style="font-family: var(--font-mono, monospace); font-size: 0.825rem; line-height: 1.55;">{{ offer_letter_email.body if offer_letter_email else '' }}</textarea>
             </div>
 
-            <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(0,0,0,0.25); padding: var(--space-sm); border-radius: var(--radius-sm);">
-              <strong>Variables:</strong> <code>{{ '{{employee_name}}' }}</code>, <code>{{ '{{employee_id}}' }}</code>, <code>{{ '{{application_id}}' }}</code>, <code>{{ '{{job_title}}' }}</code>, <code>{{ '{{department}}' }}</code>, <code>{{ '{{internship_duration}}' }}</code>
+            <!-- Variables Pill Box -->
+            <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(0,0,0,0.25); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: var(--color-text); margin-bottom: 4px;">Supported Variables:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Student Name&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Internship Role&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Application ID&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Internship Duration&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Start Date&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Company Email&#125;&#125;</span>
+                <span class="badge" style="font-family: monospace; cursor: pointer;" onclick="copyVar(this)">&#123;&#123;Website&#125;&#125;</span>
+              </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center; gap: 6px;">
-              {{ icon('check', size=14) }} Save Offer Letter Email Template
-            </button>
+            <div style="display: flex; gap: var(--space-sm); justify-content: space-between; align-items: center;">
+              <button type="submit" class="btn btn-primary btn-sm" style="flex: 1; justify-content: center; gap: 6px;">
+                {{ icon('check', size=14) }} Save Template
+              </button>
+            </div>
           </form>
+
+          <!-- Send Test Email Inline Form -->
+          <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px dashed var(--color-border);">
+            <form method="POST" action="{{ url_for('admin.send_test_email_route', template_type='offer_letter') }}" style="display: flex; gap: var(--space-xs); align-items: center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="email" name="test_recipient" placeholder="Enter email to test dispatch..." class="form-input" required style="font-size: 0.8rem; padding: 0.35rem 0.65rem;" />
+              <button type="submit" class="btn btn-ghost btn-sm" style="white-space: nowrap; font-size: 0.775rem; gap: 4px;">
+                {{ icon('send', size=12) }} Send Test
+              </button>
+            </form>
+          </div>
         </div>
 
       </div>
@@ -186,16 +245,16 @@
 
           <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(16, 185, 129, 0.05); padding: var(--space-sm); border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.15);">
             <strong style="color: var(--color-primary-light);">Available Fields:</strong><br />
-            <code style="color: var(--color-primary-light);">{{ '{{offer_date}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{employee_name}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{reference_number}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{job_title}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{responsibilities}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{key_tasks}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{joining_date}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{work_mode}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{conditions}}' }}</code>, 
-            <code style="color: var(--color-primary-light);">{{ '{{acceptance_deadline}}' }}</code>
+            <code style="color: var(--color-primary-light);">&#123;&#123;offer_date&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;employee_name&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;reference_number&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;job_title&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;responsibilities&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;key_tasks&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;joining_date&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;work_mode&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;conditions&#125;&#125;</code>, 
+            <code style="color: var(--color-primary-light);">&#123;&#123;acceptance_deadline&#125;&#125;</code>
           </div>
 
           <!-- Replace Template Form -->
@@ -229,7 +288,7 @@
           </div>
 
           <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Upload and store master Experience Letter templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for next phase).</em>
+            Upload and store master Experience Letter templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for future phase).</em>
           </p>
 
           <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
@@ -268,7 +327,7 @@
           </div>
 
           <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Upload and store master Internship Certificate templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for next phase).</em>
+            Upload and store master Internship Certificate templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for future phase).</em>
           </p>
 
           <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
@@ -297,4 +356,84 @@
 
   </div>
 </section>
+
+<!-- Email Preview Modal -->
+<div id="emailPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; width: 100%; max-width: 680px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+    
+    <!-- Modal Header -->
+    <div style="background: #070a12; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #10b981;">
+      <div>
+        <h3 id="previewModalTitle" style="color: #ffffff; margin: 0; font-size: 1.1rem; font-weight: 800;">Email Preview</h3>
+        <span style="font-size: 0.75rem; color: #94a3b8;">Rendered with sample candidate data</span>
+      </div>
+      <button type="button" onclick="closeEmailPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding: 16px 24px; overflow-y: auto; flex: 1; background: #f8fafc;">
+      <div style="margin-bottom: 12px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700;">Subject:</span>
+        <strong id="previewModalSubject" style="display: block; color: #0f172a; font-size: 0.95rem; margin-top: 2px;"></strong>
+      </div>
+      <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <iframe id="previewModalIframe" style="width: 100%; height: 420px; border: none; display: block; background: #ffffff;"></iframe>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="padding: 12px 24px; background: #ffffff; border-top: 1px solid #e2e8f0; text-align: right;">
+      <button type="button" class="btn btn-primary btn-sm" onclick="closeEmailPreview()">Close Preview</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function copyVar(el) {
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = el.innerText;
+    el.innerText = 'Copied!';
+    el.style.background = 'rgba(16, 185, 129, 0.3)';
+    setTimeout(() => {
+      el.innerText = originalText;
+      el.style.background = '';
+    }, 1200);
+  });
+}
+
+function openEmailPreview(templateType) {
+  const modal = document.getElementById('emailPreviewModal');
+  const title = document.getElementById('previewModalTitle');
+  const subject = document.getElementById('previewModalSubject');
+  const iframe = document.getElementById('previewModalIframe');
+
+  title.innerText = templateType === 'application_successful' ? 'Application Successful — Live Email Preview' : 'Offer Letter / Shortlisted — Live Email Preview';
+  subject.innerText = 'Loading preview...';
+  
+  modal.style.display = 'flex';
+
+  fetch(`/admin/templates/email/${templateType}/preview`)
+    .then(res => res.json())
+    .then(data => {
+      subject.innerText = data.subject || 'No Subject';
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(data.body_html || '<p>No content</p>');
+      doc.close();
+    })
+    .catch(err => {
+      subject.innerText = 'Error loading preview';
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(`<p style="color: red; padding: 20px;">Failed to render preview: ${err.message}</p>`);
+      doc.close();
+    });
+}
+
+function closeEmailPreview() {
+  document.getElementById('emailPreviewModal').style.display = 'none';
+}
+</script>
 {% endblock %}

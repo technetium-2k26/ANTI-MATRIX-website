@@ -84,3 +84,24 @@ class EmployeeDocument(db.Model):
 
     def __repr__(self):
         return f"<EmployeeDocument id={self.id} emp_id={self.employee_id} type='{self.document_type}' status='{self.status}' email='{self.email_status}'>"
+
+
+class EmailLog(db.Model):
+    __tablename__ = 'email_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_email = db.Column(db.String(120), nullable=False, index=True)
+    template_type = db.Column(db.String(50), nullable=False, index=True)  # 'application_successful', 'offer_letter', 'test'
+    reference_id = db.Column(db.String(100), nullable=True, index=True)  # e.g. 'AM-APP-000123' or 'AM4827'
+    subject = db.Column(db.String(255), nullable=False)
+    body_preview = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), nullable=False)  # 'SENT', 'FAILED'
+    provider_message_id = db.Column(db.String(255), nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+    has_attachment = db.Column(db.Boolean, default=False, nullable=False)
+    attachment_name = db.Column(db.String(255), nullable=True)
+    sent_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    def __repr__(self):
+        return f"<EmailLog id={self.id} to='{self.recipient_email}' type='{self.template_type}' status='{self.status}'>"

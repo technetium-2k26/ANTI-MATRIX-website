@@ -385,6 +385,13 @@ def apply_job(job_id):
             # Redirect candidate to Review & Payment step
             return redirect(url_for('main.job_apply_review', app_id=application.id))
         else:
+            # Exempt/Free application submission
+            try:
+                from services.email_service import send_application_successful_email
+                send_application_successful_email(application)
+            except Exception as email_err:
+                current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
+
             flash(f"Application submitted successfully! Application reference: {application.formatted_code}.", 'success')
             return redirect(url_for('main.job_apply_success', app_id=application.id))
 
@@ -544,6 +551,13 @@ def cashfree_return():
         application.status = 'New'
         db.session.commit()
 
+        # Trigger Application Successful Email (Duplicate protected)
+        try:
+            from services.email_service import send_application_successful_email
+            send_application_successful_email(application)
+        except Exception as email_err:
+            current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
+
         flash("Payment verified successfully! Your application has been submitted.", "success")
         return redirect(url_for('main.job_apply_success', app_id=application.id))
     
@@ -604,6 +618,14 @@ def cashfree_webhook():
             application.application_status = 'submitted'
             application.status = 'New'
             db.session.commit()
+
+            # Trigger Application Successful Email (Duplicate protected)
+            try:
+                from services.email_service import send_application_successful_email
+                send_application_successful_email(application)
+            except Exception as email_err:
+                current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
+
         elif payment_status in ['FAILED', 'CANCELLED', 'USER_DROPPED']:
             payment.payment_status = 'failed'
             application.payment_status = 'failed'
