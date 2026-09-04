@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% from 'components/icons.html' import icon %}
 
-{% block title %}Application: {{ app.full_name }} ({{ app.application_code }}) | Anti-Matrix Admin{% endblock %}
+{% block title %}Application: {{ app.full_name }} ({{ app.formatted_code }}) | Anti-Matrix Admin{% endblock %}
 
 {% block content %}
 <section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
@@ -16,14 +16,23 @@
         <div style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
           <h1>{{ app.full_name }}</h1>
           <span style="font-family: var(--font-mono, monospace); font-weight: 700; color: var(--color-primary-light); background: rgba(16,185,129,0.1); padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid rgba(16,185,129,0.25);">
-            {{ app.application_code }}
+            {{ app.formatted_code }}
           </span>
+          {% if app.payment_status == 'paid' %}
+            <span class="badge-status active">Payment: Paid</span>
+          {% elif app.payment_status == 'pending' %}
+            <span class="badge-status" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3);">Payment: Pending</span>
+          {% elif app.payment_status == 'failed' %}
+            <span class="badge-status" style="background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.3);">Payment: Failed</span>
+          {% else %}
+            <span class="badge-status" style="background: rgba(255, 255, 255, 0.05); color: var(--color-text-dim); border-color: var(--color-border);">Payment: Exempt</span>
+          {% endif %}
           <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
         </div>
-        <p>Applied for: <strong style="color: var(--color-text);">{{ app.job.title }}</strong> &bull; {{ app.job.department }} &bull; {{ app.job.location }}</p>
+        <p>Applied for: <strong style="color: var(--color-text);">{{ job.title }}</strong> &bull; {{ job.department }} &bull; {{ job.location }}</p>
       </div>
       <div>
-        <a href="{{ url_for('admin.download_resume', app_id=app.id, download=1) }}" class="btn btn-primary btn-sm" style="gap: 6px;">
+        <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='resume', download=1) }}" class="btn btn-primary btn-sm" style="gap: 6px;">
           {{ icon('download', size=14) }} Download Resume
         </a>
       </div>
@@ -41,8 +50,12 @@
           </div>
           <div class="dossier-row">
             <div class="dossier-item">
-              <span class="dossier-label">Full Name</span>
-              <span class="dossier-value">{{ app.full_name }}</span>
+              <span class="dossier-label">First Name</span>
+              <span class="dossier-value">{{ app.first_name or (app.full_name.split()[0] if app.full_name else '') }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Last Name</span>
+              <span class="dossier-value">{{ app.last_name or (app.full_name.split()[1:]|join(' ') if app.full_name else '') }}</span>
             </div>
             <div class="dossier-item">
               <span class="dossier-label">Email Address</span>
@@ -53,58 +66,126 @@
               <span class="dossier-value"><a href="tel:{{ app.phone }}" style="color: var(--color-text);">{{ app.phone }}</a></span>
             </div>
           </div>
+
+          <div class="dossier-row" style="margin-top: var(--space-md);">
+            <div class="dossier-item" style="grid-column: 1 / -1;">
+              <span class="dossier-label">Address</span>
+              <span class="dossier-value">{{ app.address or 'Not provided' }}</span>
+            </div>
+          </div>
+
+          <div class="dossier-row" style="margin-top: var(--space-md);">
+            <div class="dossier-item">
+              <span class="dossier-label">State</span>
+              <span class="dossier-value">{{ app.state or 'Not specified' }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">City</span>
+              <span class="dossier-value">{{ app.city or 'Not specified' }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Pincode</span>
+              <span class="dossier-value">{{ app.pincode or 'Not specified' }}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- 2. Academic Background -->
+        <!-- 2. Academic & Education Details -->
         <div class="dossier-card">
           <div class="dossier-title">
-            {{ icon('award', size=18, color='var(--color-primary-light)') }} Academic Qualifications
+            {{ icon('award', size=18, color='var(--color-primary-light)') }} Academic & Education Details
           </div>
           <div class="dossier-row">
             <div class="dossier-item">
-              <span class="dossier-label">College / University</span>
-              <span class="dossier-value">{{ app.college }}</span>
+              <span class="dossier-label">Education Level</span>
+              <span class="dossier-value">{{ app.education_level or 'Bachelor\'s Degree' }}</span>
             </div>
             <div class="dossier-item">
               <span class="dossier-label">Degree</span>
-              <span class="dossier-value">{{ app.degree }}</span>
+              <span class="dossier-value">{{ app.degree or 'Not specified' }}</span>
             </div>
-          </div>
-          <div class="dossier-row">
             <div class="dossier-item">
-              <span class="dossier-label">Department / Major</span>
-              <span class="dossier-value">{{ app.department }}</span>
+              <span class="dossier-label">Major / Specialization</span>
+              <span class="dossier-value">{{ app.major or app.department }}</span>
             </div>
             <div class="dossier-item">
               <span class="dossier-label">Graduation Year</span>
-              <span class="dossier-value">{{ app.graduation_year }}</span>
+              <span class="dossier-value">{{ app.graduation_year or 'Not specified' }}</span>
+            </div>
+          </div>
+
+          {% if app.college or app.current_cgpa is not none %}
+            <div class="dossier-row" style="margin-top: var(--space-md);">
+              {% if app.college %}
+                <div class="dossier-item">
+                  <span class="dossier-label">College / University</span>
+                  <span class="dossier-value">{{ app.college }}</span>
+                </div>
+              {% endif %}
+              {% if app.current_cgpa is not none %}
+                <div class="dossier-item">
+                  <span class="dossier-label">Current CGPA</span>
+                  <span class="dossier-value" style="color: var(--color-primary-light); font-weight: 800; font-size: 1.05rem;">
+                    {{ app.current_cgpa }} / 10.0
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- 3. Internship & Duration Details -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('briefcase', size=18, color='var(--color-primary-light)') }} Internship Program Details
+          </div>
+          <div class="dossier-row">
+            <div class="dossier-item">
+              <span class="dossier-label">Position Title</span>
+              <span class="dossier-value">{{ job.title }}</span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Internship Duration</span>
+              <span class="dossier-value" style="color: #60a5fa; font-weight: 700;">
+                {{ app.duration_display or job.duration_display or 'Standard / Full-time' }}
+              </span>
+            </div>
+            <div class="dossier-item">
+              <span class="dossier-label">Application Fee</span>
+              <span class="dossier-value" style="color: var(--color-primary-light); font-weight: 800;">
+                ₹{{ app.application_fee if app.application_fee else job.fee_inr }}
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- 3. Professional Background & Links -->
+        <!-- 4. Professional Background & Profiles -->
         <div class="dossier-card">
           <div class="dossier-title">
             {{ icon('globe', size=18, color='var(--color-primary-light)') }} Professional Background & Profiles
           </div>
           
-          <div class="dossier-row" style="margin-bottom: var(--space-lg);">
-            <div class="dossier-item" style="grid-column: span 2;">
-              <span class="dossier-label">Total Experience</span>
-              <span class="dossier-value">{{ app.experience or 'Not specified' }}</span>
+          {% if app.experience %}
+            <div class="dossier-row" style="margin-bottom: var(--space-md);">
+              <div class="dossier-item" style="grid-column: span 2;">
+                <span class="dossier-label">Experience</span>
+                <span class="dossier-value">{{ app.experience }}</span>
+              </div>
             </div>
-          </div>
+          {% endif %}
 
-          <div style="margin-bottom: var(--space-lg);">
-            <span class="dossier-label">Technical Skills</span>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem;">
-              {% for s in app.get_skills_list() %}
-                <span style="font-size: 0.8rem; color: var(--color-primary-light); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); font-weight: 600;">
-                  {{ s }}
-                </span>
-              {% endfor %}
+          {% if app.skills %}
+            <div style="margin-bottom: var(--space-lg);">
+              <span class="dossier-label">Technical Skills</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem;">
+                {% for s in app.get_skills_list() %}
+                  <span style="font-size: 0.8rem; color: var(--color-primary-light); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm); font-weight: 600;">
+                    {{ s }}
+                  </span>
+                {% endfor %}
+              </div>
             </div>
-          </div>
+          {% endif %}
 
           <div class="dossier-row">
             {% if app.portfolio_url %}
@@ -130,33 +211,36 @@
           </div>
         </div>
 
-        <!-- 4. Cover Letter & Statements -->
-        <div class="dossier-card">
-          <div class="dossier-title">
-            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Cover Letter & Statement of Interest
+        <!-- 5. Cover Letter & Statements -->
+        {% if app.cover_letter or app.why_join %}
+          <div class="dossier-card">
+            <div class="dossier-title">
+              {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Statement of Interest
+            </div>
+            {% if app.cover_letter %}
+              <div class="dossier-text-block" style="margin-bottom: var(--space-lg);">{{ app.cover_letter }}</div>
+            {% endif %}
+            {% if app.why_join %}
+              <div class="dossier-label" style="margin-bottom: 0.35rem;">Why do you want to join Anti-Matrix?</div>
+              <div class="dossier-text-block">{{ app.why_join }}</div>
+            {% endif %}
           </div>
-          <div class="dossier-text-block" style="margin-bottom: var(--space-lg);">{{ app.cover_letter }}</div>
-
-          {% if app.why_join %}
-            <div class="dossier-label" style="margin-bottom: 0.35rem;">Why do you want to join Anti-Matrix?</div>
-            <div class="dossier-text-block">{{ app.why_join }}</div>
-          {% endif %}
-        </div>
+        {% endif %}
       </div>
 
-      <!-- Right Column: Status Transition & Quick Actions -->
+      <!-- Right Column: Status Transition & Documents & Payment -->
       <div>
         <!-- Status Management Card -->
         <div class="dossier-card">
           <div class="dossier-title">
-            {{ icon('check-circle', size=18, color='var(--color-primary-light)') }} Application Status
+            {{ icon('check-circle', size=18, color='var(--color-primary-light)') }} Recruitment Stage
           </div>
           
           <form method="POST" action="{{ url_for('admin.update_application_status', app_id=app.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             
             <div class="form-group" style="margin-bottom: var(--space-md);">
-              <label for="status-select" class="form-label">Recruitment Stage</label>
+              <label for="status-select" class="form-label">Update Stage</label>
               <select id="status-select" name="status" class="admin-select" style="width: 100%;">
                 {% for st in ['New', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired'] %}
                   <option value="{{ st }}" {{ 'selected' if app.status == st else '' }}>{{ st }}</option>
@@ -170,27 +254,179 @@
           </form>
         </div>
 
-        <!-- Resume File Card -->
-        <div class="dossier-card">
+        <!-- Employee Account & Credentials Card -->
+        <div class="dossier-card" style="border-color: rgba(16, 185, 129, 0.3);">
           <div class="dossier-title">
-            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Attached Resume
+            {{ icon('shield', size=18, color='var(--color-primary-light)') }} Employee Account
           </div>
           
-          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); word-break: break-all;">
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-white); margin-bottom: 0.25rem;">
+          {% if app.employee %}
+            <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: 0.85rem;">
+              <div>
+                <span style="color: var(--color-text-dim);">Employee ID:</span>
+                <span style="font-size: 1.1rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace); display: block; margin-top: 2px;">
+                  {{ app.employee.employee_id }}
+                </span>
+              </div>
+              <div>
+                <span style="color: var(--color-text-dim);">Account Status:</span>
+                <span class="badge-status active" style="margin-left: 4px;">{{ app.employee.account_status|capitalize }}</span>
+              </div>
+              <div>
+                <span style="color: var(--color-text-dim);">Created On:</span>
+                <span style="color: var(--color-text); font-weight: 600;">{{ app.employee.created_at.strftime('%b %d, %Y') }}</span>
+              </div>
+              <div style="margin-top: var(--space-xs);">
+                <a href="{{ url_for('admin.view_employee', employee_id=app.employee.employee_id) }}" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center; font-size: 0.8rem; gap: 6px;">
+                  {{ icon('user', size=13) }} View Employee Profile
+                </a>
+              </div>
+            </div>
+          {% elif app.payment_status == 'paid' %}
+            <div style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-sm);">
+              Payment is completed. Employee ID can now be generated for this candidate.
+            </div>
+            <a href="{{ url_for('admin.create_employee', application_id=app.id) }}" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center; font-size: 0.825rem; gap: 6px;">
+              {{ icon('plus', size=13) }} Create Employee ID
+            </a>
+          {% else %}
+            <div style="font-size: 0.825rem; color: var(--color-text-muted);">
+              Employee ID can only be created once the candidate completes payment (Payment Status: Paid).
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Payment Verification & Record Card -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('credit-card', size=18, color='var(--color-primary-light)') }} Cashfree Payment Record
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--color-text-dim);">Payment Status:</span>
+              <span style="font-weight: 700; color: {{ '#10b981' if app.payment_status == 'paid' else ('#eab308' if app.payment_status == 'pending' else '#f87171') }}; text-transform: uppercase;">
+                {{ app.payment_status }}
+              </span>
+            </div>
+            <div>
+              <span style="color: var(--color-text-dim);">Fee Amount:</span>
+              <span style="color: var(--color-white); font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ app.application_fee or job.fee_inr }}</span>
+            </div>
+            {% if app.latest_payment %}
+              <div>
+                <span style="color: var(--color-text-dim);">Cashfree Order ID:</span>
+                <div style="font-family: var(--font-mono, monospace); font-size: 0.775rem; color: var(--color-primary-light); word-break: break-all; margin-top: 2px;">
+                  {{ app.latest_payment.cashfree_order_id }}
+                </div>
+              </div>
+              {% if app.latest_payment.cf_payment_id %}
+                <div>
+                  <span style="color: var(--color-text-dim);">Gateway Reference:</span>
+                  <div style="font-family: var(--font-mono, monospace); font-size: 0.775rem; color: var(--color-text-muted);">
+                    {{ app.latest_payment.cf_payment_id }}
+                  </div>
+                </div>
+              {% endif %}
+              <div>
+                <span style="color: var(--color-text-dim);">Payment Date:</span>
+                <span style="color: var(--color-text); font-weight: 600;">{{ app.latest_payment.created_at.strftime('%b %d, %Y %I:%M %p UTC') }}</span>
+              </div>
+            {% else %}
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">
+                No external gateway transaction initialized.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Attached Documents Card (Resume, Aadhaar, PAN, College ID) -->
+        <div class="dossier-card">
+          <div class="dossier-title">
+            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Candidate Documents
+          </div>
+          
+          <!-- Resume -->
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white);">Resume / CV</span>
+              <span style="font-size: 0.75rem; color: var(--color-primary-light);">Required</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); word-break: break-all; margin-bottom: 0.5rem;">
               {{ app.resume_filename }}
             </div>
-            <span style="font-size: 0.75rem; color: var(--color-text-dim);">Uploaded via portal</span>
+            <div style="display: flex; gap: var(--space-xs);">
+              <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='resume') }}" class="btn btn-outline btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;" target="_blank">
+                {{ icon('eye', size=12) }} View
+              </a>
+              <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='resume', download=1) }}" class="btn btn-ghost btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;">
+                {{ icon('download', size=12) }} Download
+              </a>
+            </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <a href="{{ url_for('admin.download_resume', app_id=app.id) }}" class="btn btn-outline" style="justify-content: center; gap: 6px;" target="_blank">
-              {{ icon('eye', size=14) }} View Resume
-            </a>
-            <a href="{{ url_for('admin.download_resume', app_id=app.id, download=1) }}" class="btn btn-ghost" style="justify-content: center; gap: 6px;">
-              {{ icon('download', size=14) }} Download File
-            </a>
-          </div>
+          <!-- Aadhaar Card (For 3 Months) -->
+          {% if app.aadhaar_filename %}
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white);">Aadhaar Card</span>
+                <span style="font-size: 0.75rem; color: #60a5fa;">Identity</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); word-break: break-all; margin-bottom: 0.5rem;">
+                {{ app.aadhaar_filename }}
+              </div>
+              <div style="display: flex; gap: var(--space-xs);">
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='aadhaar') }}" class="btn btn-outline btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;" target="_blank">
+                  {{ icon('eye', size=12) }} View
+                </a>
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='aadhaar', download=1) }}" class="btn btn-ghost btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;">
+                  {{ icon('download', size=12) }} Download
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- PAN Card (Optional for 3 Months) -->
+          {% if app.pan_filename %}
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white);">PAN Card</span>
+                <span style="font-size: 0.75rem; color: #a78bfa;">Tax Proof</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); word-break: break-all; margin-bottom: 0.5rem;">
+                {{ app.pan_filename }}
+              </div>
+              <div style="display: flex; gap: var(--space-xs);">
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='pan') }}" class="btn btn-outline btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;" target="_blank">
+                  {{ icon('eye', size=12) }} View
+                </a>
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='pan', download=1) }}" class="btn btn-ghost btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;">
+                  {{ icon('download', size=12) }} Download
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- College ID Card -->
+          {% if app.college_id_filename %}
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white);">College ID Card</span>
+                <span style="font-size: 0.75rem; color: #60a5fa;">Student ID</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); word-break: break-all; margin-bottom: 0.5rem;">
+                {{ app.college_id_filename }}
+              </div>
+              <div style="display: flex; gap: var(--space-xs);">
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='college_id') }}" class="btn btn-outline btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;" target="_blank">
+                  {{ icon('eye', size=12) }} View
+                </a>
+                <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='college_id', download=1) }}" class="btn btn-ghost btn-sm" style="flex: 1; justify-content: center; font-size: 0.75rem;">
+                  {{ icon('download', size=12) }} Download
+                </a>
+              </div>
+            </div>
+          {% endif %}
         </div>
 
         <!-- Metadata Card -->
@@ -200,16 +436,16 @@
           </div>
           <div style="display: flex; flex-direction: column; gap: var(--space-sm); font-size: 0.85rem;">
             <div>
-              <span style="color: var(--color-text-dim);">Submitted:</span>
+              <span style="color: var(--color-text-dim);">Application Code:</span>
+              <span style="color: var(--color-primary-light); font-weight: 700; font-family: var(--font-mono, monospace);">{{ app.formatted_code }}</span>
+            </div>
+            <div>
+              <span style="color: var(--color-text-dim);">Submitted On:</span>
               <span style="color: var(--color-text); font-weight: 600;">{{ app.created_at.strftime('%B %d, %Y at %I:%M %p UTC') }}</span>
             </div>
             <div>
-              <span style="color: var(--color-text-dim);">Last Updated:</span>
-              <span style="color: var(--color-text); font-weight: 600;">{{ app.updated_at.strftime('%B %d, %Y at %I:%M %p UTC') }}</span>
-            </div>
-            <div>
-              <span style="color: var(--color-text-dim);">Position ID:</span>
-              <span style="color: var(--color-primary-light); font-weight: 600;">#JOB-{{ app.job.id }}</span>
+              <span style="color: var(--color-text-dim);">Application State:</span>
+              <span style="color: var(--color-white); font-weight: 600;">{{ app.application_status }}</span>
             </div>
           </div>
         </div>

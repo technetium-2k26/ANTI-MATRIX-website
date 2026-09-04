@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from config import config
-from models import db, User, JobPosting, JobApplication
+from config import config, INTERNSHIP_FEES, INTERNSHIP_PRICING
+from models import db, User, JobPosting, JobApplication, Payment
 from routes import main_bp, auth_bp, contact_bp, admin_bp
 
 csrf = CSRFProtect()
@@ -18,17 +18,26 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
-    # Ensure upload directory exists
-    os.makedirs(app.config.get('UPLOAD_FOLDER', os.path.join(app.root_path, 'uploads', 'resumes')), exist_ok=True)
+    # Ensure upload directories exist
+    upload_resumes = app.config.get('UPLOAD_FOLDER_RESUMES', os.path.join(app.root_path, 'uploads', 'resumes'))
+    upload_documents = app.config.get('UPLOAD_FOLDER_DOCUMENTS', os.path.join(app.root_path, 'uploads', 'documents'))
+    os.makedirs(upload_resumes, exist_ok=True)
+    os.makedirs(upload_documents, exist_ok=True)
+
 
     # Initialize extensions
     db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
 
+    # Exempt Cashfree webhook endpoint from CSRF
+    from routes.main import cashfree_webhook
+    csrf.exempt(cashfree_webhook)
+
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
+
 
     @login_manager.user_loader
     def load_user(user_id):

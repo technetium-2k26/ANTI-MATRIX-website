@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from . import db
+from config import INTERNSHIP_FEES, INTERNSHIP_PRICING
 
 
 class JobPosting(db.Model):
@@ -10,6 +11,7 @@ class JobPosting(db.Model):
     department = db.Column(db.String(100), nullable=False)
     location = db.Column(db.String(100), nullable=False)
     employment_type = db.Column(db.String(50), nullable=False, default='Full-time')
+    duration = db.Column(db.String(50), nullable=True)  # '1_month', '3_months', or None
     short_description = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text, nullable=False)
     requirements = db.Column(db.Text, nullable=True)
@@ -24,6 +26,34 @@ class JobPosting(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     applications = db.relationship('JobApplication', backref='job', lazy=True, cascade='all, delete-orphan')
+
+    @property
+    def is_internship(self):
+        return (self.employment_type and self.employment_type.lower() == 'internship') or bool(self.duration)
+
+    @property
+    def duration_display(self):
+        if not self.duration:
+            return ''
+        pricing = INTERNSHIP_PRICING.get(self.duration)
+        if pricing:
+            return pricing['label']
+        if self.duration == '1_month':
+            return '1 Month'
+        elif self.duration == '3_months':
+            return '3 Months'
+        return self.duration
+
+    @property
+    def fee_inr(self):
+        if not self.is_internship or not self.duration:
+            return 0
+        return INTERNSHIP_FEES.get(self.duration, 0)
+
+    @property
+    def fee_display(self):
+        fee = self.fee_inr
+        return f"₹{fee}" if fee > 0 else None
 
     def get_skills_list(self):
         if not self.skills:
@@ -51,7 +81,7 @@ class JobPosting(db.Model):
         return sum(1 for app in self.applications if app.status == 'New')
 
     def __repr__(self):
-        return f"<JobPosting id={self.id} title='{self.title}' dept='{self.department}' active={self.is_active}>"
+        return f"<JobPosting id={self.id} title='{self.title}' dept='{self.department}' duration='{self.duration}' active={self.is_active}>"
 
 
 class JobApplication(db.Model):
@@ -59,29 +89,86 @@ class JobApplication(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer, db.ForeignKey('job_postings.id'), nullable=False)
-    full_name = db.Column(db.String(120), nullable=False)
+    application_code = db.Column(db.String(50), unique=True, nullable=True, index=True)
+    
+    # Personal Details
+    first_name = db.Column(db.String(80), nullable=True)
+    last_name = db.Column(db.String(80), nullable=True)
+    full_name = db.Column(db.String(160), nullable=False)
     email = db.Column(db.String(120), nullable=False, index=True)
     phone = db.Column(db.String(50), nullable=False)
-    college = db.Column(db.String(150), nullable=False)
-    degree = db.Column(db.String(100), nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    graduation_year = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.Text, nullable=True)
+    state = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    pincode = db.Column(db.String(20), nullable=True)
+    
+    # College & Academic Details
+    education_level = db.Column(db.String(100), nullable=True)
+    college = db.Column(db.String(150), nullable=True, default='')
+    department = db.Column(db.String(100), nullable=True, default='')
+    degree = db.Column(db.String(100), nullable=True, default='')
+    major = db.Column(db.String(100), nullable=True, default='')
+    year_of_study = db.Column(db.String(50), nullable=True)
+    graduation_year = db.Column(db.String(20), nullable=True, default='')
+    current_cgpa = db.Column(db.Float, nullable=True)
+    
+    # Professional & Statement Information
     experience = db.Column(db.String(100), nullable=True)
-    skills = db.Column(db.Text, nullable=False)
+    skills = db.Column(db.Text, nullable=True, default='')
     portfolio_url = db.Column(db.String(255), nullable=True)
     linkedin_url = db.Column(db.String(255), nullable=True)
     github_url = db.Column(db.String(255), nullable=True)
-    cover_letter = db.Column(db.Text, nullable=False)
+    cover_letter = db.Column(db.Text, nullable=True, default='')
     why_join = db.Column(db.Text, nullable=True)
+    
+    # Identity Documents & Resume
+    aadhaar_filename = db.Column(db.String(255), nullable=True)
+    aadhaar_path = db.Column(db.String(255), nullable=True)
+    pan_filename = db.Column(db.String(255), nullable=True)
+    pan_path = db.Column(db.String(255), nullable=True)
+    college_id_filename = db.Column(db.String(255), nullable=True)
+    college_id_path = db.Column(db.String(255), nullable=True)
     resume_filename = db.Column(db.String(255), nullable=False)
     resume_path = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(30), default='New', nullable=False)
+    
+    # Internship & Payment Info
+    duration = db.Column(db.String(50), nullable=True)  # '1_month', '3_months', or None
+    application_fee = db.Column(db.Integer, nullable=True, default=0)  # Amount in INR
+    
+    # Distinct Payment & Application States
+    payment_status = db.Column(db.String(30), default='pending', nullable=False)  # pending, processing, paid, failed, cancelled, exempt
+    application_status = db.Column(db.String(30), default='pending_payment', nullable=False)  # pending_payment, submitted, reviewed, shortlisted, rejected, hired
+    status = db.Column(db.String(30), default='New', nullable=False)  # Recruitment Pipeline Stage: New, Reviewed, Shortlisted, Rejected, Hired
+    
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
+    payments = db.relationship('Payment', backref='application', lazy=True, cascade='all, delete-orphan', order_by='Payment.created_at.desc()')
+
     @property
-    def application_code(self):
-        return f"#AM-{self.id:06d}"
+    def formatted_code(self):
+        if self.application_code:
+            return self.application_code
+        return f"AM-APP-{self.id:06d}"
+
+    @property
+    def duration_display(self):
+        if not self.duration:
+            return ''
+        pricing = INTERNSHIP_PRICING.get(self.duration)
+        if pricing:
+            return pricing['label']
+        if self.duration == '1_month':
+            return '1 Month'
+        elif self.duration == '3_months':
+            return '3 Months'
+        return self.duration
+
+    @property
+    def latest_payment(self):
+        if self.payments:
+            return self.payments[0]
+        return None
 
     def get_skills_list(self):
         if not self.skills:
@@ -89,4 +176,25 @@ class JobApplication(db.Model):
         return [s.strip() for s in self.skills.split(',') if s.strip()]
 
     def __repr__(self):
-        return f"<JobApplication id={self.id} code='{self.application_code}' name='{self.full_name}' status='{self.status}'>"
+        return f"<JobApplication id={self.id} code='{self.formatted_code}' name='{self.full_name}' payment='{self.payment_status}' app_status='{self.application_status}'>"
+
+
+class Payment(db.Model):
+    __tablename__ = 'payments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey('job_applications.id'), nullable=False)
+    cashfree_order_id = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    cashfree_payment_session_id = db.Column(db.String(255), nullable=True)
+    amount = db.Column(db.Float, nullable=False)  # Amount in INR (e.g. 199.00 or 399.00)
+    currency = db.Column(db.String(10), default='INR', nullable=False)
+    payment_status = db.Column(db.String(30), default='pending', nullable=False)  # pending, processing, paid, failed, cancelled
+    gateway = db.Column(db.String(50), default='cashfree', nullable=False)
+    cf_payment_id = db.Column(db.String(150), nullable=True)
+    gateway_response = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    def __repr__(self):
+        return f"<Payment id={self.id} order='{self.cashfree_order_id}' amount={self.amount} status='{self.payment_status}'>"
+

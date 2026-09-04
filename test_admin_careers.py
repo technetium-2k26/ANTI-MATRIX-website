@@ -67,6 +67,7 @@ class AdminCareersTestCase(unittest.TestCase):
                 department='AI & Data',
                 location='Remote (Worldwide)',
                 employment_type='Internship',
+                duration='3_months',
                 short_description='Research and fine-tune next-gen LLMs and multi-modal architectures.',
                 description='We are seeking an ambitious AI research intern with deep knowledge in deep learning.',
                 skills='PyTorch, Transformers, LLMs, Python',
@@ -76,6 +77,9 @@ class AdminCareersTestCase(unittest.TestCase):
                 is_active=True
             )
             db.session.add(job)
+            db.session.commit()
+        elif not job.duration:
+            job.duration = '3_months'
             db.session.commit()
         return job
 
@@ -176,49 +180,76 @@ class AdminCareersTestCase(unittest.TestCase):
         # GET apply page
         res = self.client.get(f'/careers/apply/{job.id}')
         self.assertEqual(res.status_code, 200)
-        self.assertIn(b'Apply for AI Research Scientist Intern', res.data)
+        self.assertIn(b'AI Research Scientist Intern', res.data)
 
-        # Mock PDF file
+        # Mock PDF files
         resume_content = b"%PDF-1.4 Mock resume content for candidate Priya Sharma..."
         resume_file = (io.BytesIO(resume_content), 'priya_sharma_resume.pdf')
+        aadhaar_file = (io.BytesIO(b"%PDF-1.4 Mock aadhaar"), 'priya_aadhaar.pdf')
+        college_id_file = (io.BytesIO(b"%PDF-1.4 Mock college id"), 'priya_college_id.pdf')
 
         app_data = {
+            'first_name': 'Priya',
+            'last_name': 'Sharma',
             'full_name': 'Priya Sharma',
             'email': 'priya.sharma@example.com',
-            'phone': '+1 (555) 789-0123',
+            'phone': '9876543210',
+            'address': '123 Innovation Drive',
+            'state': 'Maharashtra',
+            'city': 'Mumbai',
+            'pincode': '400001',
+            'education_level': "Master's Degree",
             'college': 'Carnegie Mellon University',
             'degree': 'Master of Science',
+            'major': 'Computer Science & AI',
             'department': 'Computer Science & AI',
+            'year_of_study': 'Recent Graduate',
+            'current_cgpa': '3.9',
             'graduation_year': '2025',
             'experience': '1 year research intern',
             'skills': 'PyTorch, Python, NLP, CUDA',
             'portfolio_url': 'https://priyasharma.dev',
             'linkedin_url': 'https://linkedin.com/in/priyasharma',
             'github_url': 'https://github.com/priyasharma',
-            'cover_letter': 'I am thrilled to apply for the AI Research Scientist Intern position at Anti-Matrix. My thesis focuses on LLM quantization and efficient fine-tuning.',
-            'why_join': 'Anti-Matrix has world-class engineering standards and challenging AI problems.',
-            'resume': resume_file
+            'cover_letter': 'I am thrilled to apply for the position at Anti-Matrix.',
+            'why_join': 'Anti-Matrix has world-class engineering standards.',
+            'resume': resume_file,
+            'aadhaar': aadhaar_file,
+            'college_id': college_id_file
         }
 
-        res = self.client.post(f'/careers/apply/{job.id}', data=app_data, content_type='multipart/form-data', follow_redirects=True)
-        self.assertEqual(res.status_code, 200)
-        self.assertIn(b'Application Submitted Successfully', res.data)
-        self.assertIn(b'#AM-', res.data)
+        res = self.client.post(f'/careers/apply/{job.id}', data=app_data, content_type='multipart/form-data', follow_redirects=False)
+        self.assertEqual(res.status_code, 302)
+        self.assertIn('/careers/apply/review/', res.headers.get('Location', ''))
 
         # Verify application in DB
         app_record = JobApplication.query.filter_by(email='priya.sharma@example.com').first()
         self.assertIsNotNone(app_record)
         self.assertEqual(app_record.full_name, 'Priya Sharma')
-        self.assertEqual(app_record.status, 'New')
         self.assertEqual(app_record.job_id, job.id)
         self.assertTrue(os.path.exists(app_record.resume_path))
 
-        # Test duplicate prevention (same email applying to same job)
+        # Test Payment Checkout & Verification Flow
+        res_checkout = self.client.post(f'/careers/apply/checkout/{app_record.id}', follow_redirects=False)
+        self.assertEqual(res_checkout.status_code, 302)
+        
+        # Simulate Cashfree Return
+        payment = app_record.payments[0]
+        res_return = self.client.get(f'/payment/cashfree/return?order_id={payment.cashfree_order_id}&sim_status=SUCCESS', follow_redirects=True)
+        self.assertEqual(res_return.status_code, 200)
+        self.assertIn(b'Application Submitted Successfully', res_return.data)
+        self.assertIn(b'AM-APP-', res_return.data)
+
+        # Test duplicate prevention (same email applying to same job when already submitted/paid)
         resume_file2 = (io.BytesIO(resume_content), 'priya_sharma_resume.pdf')
+        aadhaar_file2 = (io.BytesIO(b"%PDF-1.4 Mock aadhaar"), 'priya_aadhaar.pdf')
+        college_id_file2 = (io.BytesIO(b"%PDF-1.4 Mock college id"), 'priya_college_id.pdf')
         app_data['resume'] = resume_file2
-        res2 = self.client.post(f'/careers/apply/{job.id}', data=app_data, content_type='multipart/form-data')
+        app_data['aadhaar'] = aadhaar_file2
+        app_data['college_id'] = college_id_file2
+        res2 = self.client.post(f'/careers/apply/{job.id}', data=app_data, content_type='multipart/form-data', follow_redirects=True)
         self.assertEqual(res2.status_code, 200)
-        self.assertIn(b'already been submitted', res2.data)
+        self.assertIn(b'already applied', res2.data)
 
     def test_05_admin_application_management(self):
         """Test admin reviewing applications, updating status, and downloading resumes."""

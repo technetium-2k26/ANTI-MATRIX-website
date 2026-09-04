@@ -14,7 +14,10 @@
         <h1>Admin Dashboard</h1>
         <p>Manage job postings, candidate submissions, and talent acquisition pipelines.</p>
       </div>
-      <div style="display: flex; gap: var(--space-sm);">
+      <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+        <a href="{{ url_for('admin.create_employee') }}" class="btn btn-outline" style="gap: 6px;">
+          {{ icon('user-plus', size=15) }} + Create Employee ID
+        </a>
         <a href="{{ url_for('admin.create_job') }}" class="btn btn-primary" style="gap: 6px;">
           {{ icon('plus', size=15) }} Create Job Posting
         </a>
@@ -34,6 +37,9 @@
         {% if new_applications > 0 %}
           <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: #38bdf8; color: #070a12; font-weight: 800; border-radius: 999px;">{{ new_applications }} NEW</span>
         {% endif %}
+      </a>
+      <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
+        {{ icon('user-check', size=15) }} Employees ({{ total_employees }})
       </a>
     </div>
 

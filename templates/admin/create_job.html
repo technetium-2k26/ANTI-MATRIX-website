@@ -56,7 +56,7 @@
           </div>
         </div>
 
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
           <div class="form-group">
             <label for="location" class="form-label">Location <span style="color: #f87171;">*</span></label>
             <input
@@ -64,7 +64,7 @@
               id="location"
               name="location"
               class="form-input"
-              placeholder="e.g. Remote (Worldwide) or San Francisco, CA"
+              placeholder="e.g. Remote (Worldwide) or Chennai, India"
               value="{{ form_data.get('location', '') }}"
               required
             />
@@ -77,6 +77,15 @@
               {% for t in types %}
                 <option value="{{ t }}" {{ 'selected' if form_data.get('employment_type', 'Full-time') == t else '' }}>{{ t }}</option>
               {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="duration" class="form-label">Internship Duration</label>
+            <select id="duration" name="duration" class="form-input" style="appearance: auto;">
+              <option value="" {{ 'selected' if not form_data.get('duration') else '' }}>-- Optional (For Internships) --</option>
+              <option value="1_month" {{ 'selected' if form_data.get('duration') == '1_month' else '' }}>1 Month (₹199 Fee)</option>
+              <option value="3_months" {{ 'selected' if form_data.get('duration') == '3_months' else '' }}>3 Months (₹399 Fee)</option>
             </select>
           </div>
         </div>

@@ -88,7 +88,14 @@
                   <span style="font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">{{ job.department }}</span>
                   <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('map-pin', size=11) }} {{ job.location }}</span>
                   <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('clock', size=11) }} {{ job.employment_type }}</span>
-                  {% if job.salary %}
+                  {% if job.duration_display %}
+                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                      {{ icon('clock', size=11) }} {{ job.duration_display }}
+                    </span>
+                  {% endif %}
+                  {% if job.fee_display %}
+                    <span style="font-size: 0.8rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">{{ icon('credit-card', size=11) }} Fee: {{ job.fee_display }}</span>
+                  {% elif job.salary %}
                     <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('credit-card', size=11) }} {{ job.salary }}</span>
                   {% endif %}
                 </div>
@@ -144,7 +151,18 @@
                     <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Employment Type</div>
                     <div style="color: var(--color-text);">{{ job.employment_type }}</div>
                   </div>
-                  {% if job.salary %}
+                  {% if job.duration_display %}
+                    <div>
+                      <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Internship Duration</div>
+                      <div style="color: #60a5fa; font-weight: 700;">{{ job.duration_display }}</div>
+                    </div>
+                  {% endif %}
+                  {% if job.fee_display %}
+                    <div>
+                      <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Internship Fee</div>
+                      <div style="color: var(--color-primary-light); font-weight: 700; font-size: 1.1rem;">{{ job.fee_display }}</div>
+                    </div>
+                  {% elif job.salary %}
                     <div>
                       <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Compensation</div>
                       <div style="color: var(--color-primary-light); font-weight: 600;">{{ job.salary }}</div>

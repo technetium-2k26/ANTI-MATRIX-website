@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Employee {{ employee.employee_id }} | Anti-Matrix Admin{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+  <div class="container" style="max-width: 840px;">
+    
+    <!-- Admin Header -->
+    <div class="admin-header" style="margin-bottom: var(--space-xl);">
+      <div class="admin-header-title">
+        <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-xs); display: inline-flex; align-items: center; gap: 6px;">
+          {{ icon('arrow-left', size=14) }} Back to Employees
+        </a>
+        <div style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
+          <h1>{{ employee.candidate_name }}</h1>
+          <span style="font-family: var(--font-mono, monospace); font-weight: 800; font-size: 1.15rem; color: var(--color-primary-light); background: rgba(16,185,129,0.12); padding: 0.25rem 0.75rem; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3);">
+            {{ employee.employee_id }}
+          </span>
+          <span class="badge-status active">{{ employee.account_status|capitalize }}</span>
+        </div>
+        <p>Position: <strong style="color: var(--color-text);">{{ job.title }}</strong> &bull; {{ job.department }} &bull; Linked Application: <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" style="color: var(--color-primary-light); font-family: var(--font-mono, monospace);">{{ app.formatted_code }}</a></p>
+      </div>
+      <div>
+        <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm">
+          {{ icon('file-text', size=14) }} Full Application Dossier
+        </a>
+      </div>
+    </div>
+
+    <!-- Employee Information Card -->
+    <div class="card" style="padding: var(--space-2xl); border-color: rgba(16, 185, 129, 0.25); box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
+      
+      <!-- Account Overview Section -->
+      <div style="margin-bottom: var(--space-xl); padding-bottom: var(--space-lg); border-bottom: 1px solid var(--color-border);">
+        <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light); font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 6px;">
+          {{ icon('shield', size=14) }} Account Identification
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Employee ID</span>
+            <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">
+              {{ employee.employee_id }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Account Status</span>
+            <div style="margin-top: 0.25rem;"><span class="badge-status active">{{ employee.account_status|capitalize }}</span></div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Account Created On</span>
+            <div style="font-size: 0.95rem; color: var(--color-text); font-weight: 600;">
+              {{ employee.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Candidate & Contact Information -->
+      <div style="margin-bottom: var(--space-xl); padding-bottom: var(--space-lg); border-bottom: 1px solid var(--color-border);">
+        <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light); font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 6px;">
+          {{ icon('user', size=14) }} Candidate Contact Details
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Full Name</span>
+            <div style="font-size: 0.95rem; color: var(--color-white); font-weight: 600;">
+              {{ employee.candidate_name }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Email Address</span>
+            <div style="font-size: 0.95rem;">
+              <a href="mailto:{{ employee.candidate_email }}" style="color: var(--color-primary-light);">{{ employee.candidate_email }}</a>
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Phone Number</span>
+            <div style="font-size: 0.95rem; color: var(--color-text);">
+              {{ employee.candidate_phone }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Location</span>
+            <div style="font-size: 0.95rem; color: var(--color-text);">
+              {{ app.city or '' }}{% if app.city and app.state %}, {% endif %}{{ app.state or '' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Internship & Role Details -->
+      <div style="margin-bottom: var(--space-xl);">
+        <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light); font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 6px;">
+          {{ icon('briefcase', size=14) }} Internship Assignment
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Position</span>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-white);">
+              {{ job.title }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Department</span>
+            <div style="font-size: 0.95rem; color: var(--color-text);">
+              {{ job.department }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Duration</span>
+            <div style="font-size: 0.95rem; color: #60a5fa; font-weight: 600;">
+              {{ app.duration_display or 'General' }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase;">Application Code</span>
+            <div style="font-size: 0.95rem; font-family: var(--font-mono, monospace); color: var(--color-primary-light);">
+              {{ app.formatted_code }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Nav Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); border-top: 1px solid var(--color-border); padding-top: var(--space-lg);">
+        <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">
+          {{ icon('arrow-left', size=14) }} All Employees
+        </a>
+        <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" class="btn btn-primary btn-sm">
+          {{ icon('file-text', size=14) }} View Application Details
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -27,10 +27,10 @@
 
       <!-- Application Details Dossier Card -->
       <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-md);">
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Application Reference ID</div>
-            <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">{{ app.application_code }}</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">{{ app.formatted_code }}</div>
           </div>
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Candidate Email</div>
@@ -38,10 +38,26 @@
           </div>
           <div>
             <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Position</div>
-            <div style="font-size: 0.95rem; color: var(--color-text); font-weight: 600;">{{ job.title }} ({{ job.department }})</div>
+            <div style="font-size: 0.95rem; color: var(--color-text); font-weight: 600;">{{ job.title }}</div>
           </div>
+          {% if app.duration_display %}
+            <div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Internship Duration</div>
+              <div style="font-size: 0.95rem; color: #60a5fa; font-weight: 700;">{{ app.duration_display }}</div>
+            </div>
+          {% endif %}
+          {% if app.application_fee and app.application_fee > 0 %}
+            <div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Payment Amount</div>
+              <div style="font-size: 0.95rem; color: var(--color-primary-light); font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ app.application_fee }}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Payment Status</div>
+              <div><span class="badge-status active">Paid</span></div>
+            </div>
+          {% endif %}
           <div>
-            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Initial Status</div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Application Status</div>
             <div><span class="badge-status new">{{ app.status }}</span></div>
           </div>
         </div>

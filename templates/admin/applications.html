@@ -12,7 +12,7 @@
       <div class="admin-header-title">
         <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('users', size=11) }} Talent Acquisition</div>
         <h1>Candidate Applications</h1>
-        <p>Review candidate profiles, evaluate technical credentials, and manage recruitment pipeline statuses.</p>
+        <p>Review candidate profiles, evaluate credentials, check Cashfree payment states, and manage recruitment pipeline stages.</p>
       </div>
     </div>
 
@@ -27,6 +27,9 @@
       <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab active">
         {{ icon('users', size=15) }} Candidate Applications ({{ applications|length }})
       </a>
+      <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
+        {{ icon('user-check', size=15) }} Employees
+      </a>
     </div>
 
     <!-- Filter & Search Controls Bar -->
@@ -35,6 +38,12 @@
         {% if selected_job_id %}
           <input type="hidden" name="job_id" value="{{ selected_job_id }}" />
         {% endif %}
+        {% if selected_duration %}
+          <input type="hidden" name="duration" value="{{ selected_duration }}" />
+        {% endif %}
+        {% if selected_payment_status and selected_payment_status != 'all' %}
+          <input type="hidden" name="payment_status" value="{{ selected_payment_status }}" />
+        {% endif %}
         {% if selected_status and selected_status != 'all' %}
           <input type="hidden" name="status" value="{{ selected_status }}" />
         {% endif %}
@@ -42,7 +51,7 @@
         <input
           type="text"
           name="q"
-          placeholder="Search candidate, email, university, skill..."
+          placeholder="Search name, email, ref ID, skills..."
           class="form-input"
           value="{{ search_query }}"
           style="padding: 0.55rem 0.875rem; font-size: 0.875rem;"
@@ -53,19 +62,10 @@
       </form>
 
       <div class="admin-filter-group">
-        <form method="GET" action="{{ url_for('admin.applications') }}" style="display: flex; gap: 0.5rem; align-items: center;">
+        <form method="GET" action="{{ url_for('admin.applications') }}" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
           {% if search_query %}
             <input type="hidden" name="q" value="{{ search_query }}" />
           {% endif %}
-
-          <select name="status" class="admin-select" onchange="this.form.submit();">
-            <option value="all" {{ 'selected' if selected_status == 'all' else '' }}>All Statuses</option>
-            <option value="New" {{ 'selected' if selected_status == 'New' else '' }}>New</option>
-            <option value="Reviewed" {{ 'selected' if selected_status == 'Reviewed' else '' }}>Reviewed</option>
-            <option value="Shortlisted" {{ 'selected' if selected_status == 'Shortlisted' else '' }}>Shortlisted</option>
-            <option value="Rejected" {{ 'selected' if selected_status == 'Rejected' else '' }}>Rejected</option>
-            <option value="Hired" {{ 'selected' if selected_status == 'Hired' else '' }}>Hired</option>
-          </select>
 
           <select name="job_id" class="admin-select" onchange="this.form.submit();">
             <option value="">All Job Positions</option>
@@ -74,7 +74,30 @@
             {% endfor %}
           </select>
 
-          {% if selected_status != 'all' or selected_job_id or search_query %}
+          <select name="duration" class="admin-select" onchange="this.form.submit();">
+            <option value="">All Durations</option>
+            <option value="1_month" {{ 'selected' if selected_duration == '1_month' else '' }}>1 Month</option>
+            <option value="3_months" {{ 'selected' if selected_duration == '3_months' else '' }}>3 Months</option>
+          </select>
+
+          <select name="payment_status" class="admin-select" onchange="this.form.submit();">
+            <option value="all" {{ 'selected' if selected_payment_status == 'all' else '' }}>All Payment States</option>
+            <option value="paid" {{ 'selected' if selected_payment_status == 'paid' else '' }}>Paid</option>
+            <option value="pending" {{ 'selected' if selected_payment_status == 'pending' else '' }}>Pending</option>
+            <option value="failed" {{ 'selected' if selected_payment_status == 'failed' else '' }}>Failed</option>
+            <option value="exempt" {{ 'selected' if selected_payment_status == 'exempt' else '' }}>Exempt / Free</option>
+          </select>
+
+          <select name="status" class="admin-select" onchange="this.form.submit();">
+            <option value="all" {{ 'selected' if selected_status == 'all' else '' }}>All Stages</option>
+            <option value="New" {{ 'selected' if selected_status == 'New' else '' }}>New</option>
+            <option value="Reviewed" {{ 'selected' if selected_status == 'Reviewed' else '' }}>Reviewed</option>
+            <option value="Shortlisted" {{ 'selected' if selected_status == 'Shortlisted' else '' }}>Shortlisted</option>
+            <option value="Rejected" {{ 'selected' if selected_status == 'Rejected' else '' }}>Rejected</option>
+            <option value="Hired" {{ 'selected' if selected_status == 'Hired' else '' }}>Hired</option>
+          </select>
+
+          {% if selected_status != 'all' or selected_job_id or selected_duration or selected_payment_status != 'all' or search_query %}
             <a href="{{ url_for('admin.applications') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">Reset</a>
           {% endif %}
         </form>
@@ -87,11 +110,14 @@
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Candidate</th>
+              <th>App ID & Candidate</th>
               <th>Applied Position</th>
-              <th>Education</th>
+              <th>Duration</th>
+              <th>Employee ID</th>
+              <th>Fee</th>
+              <th>Payment</th>
+              <th>Stage</th>
               <th>Applied On</th>
-              <th>Status</th>
               <th style="text-align: right;">Actions</th>
             </tr>
           </thead>
@@ -99,26 +125,70 @@
             {% for app in applications %}
               <tr>
                 <td>
+                  <span style="font-size: 0.775rem; font-weight: 700; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">
+                    {{ app.formatted_code }}
+                  </span>
                   <span class="admin-table-title">{{ app.full_name }}</span>
                   <span class="admin-table-subtitle">{{ app.email }} &bull; {{ app.phone }}</span>
                 </td>
                 <td>
                   <span style="font-weight: 600; color: var(--color-text);">{{ app.job.title }}</span>
-                  <span class="admin-table-subtitle">{{ app.job.department }}</span>
+                  <span class="admin-table-subtitle">{{ app.job.department }} &bull; CGPA: {{ app.current_cgpa or 'N/A' }}</span>
                 </td>
                 <td>
-                  <span style="font-size: 0.85rem; color: var(--color-text);">{{ app.college }}</span>
-                  <span class="admin-table-subtitle">{{ app.degree }} ({{ app.graduation_year }})</span>
+                  {% if app.duration_display %}
+                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
+                      {{ app.duration_display }}
+                    </span>
+                  {% else %}
+                    <span style="color: var(--color-text-muted); font-size: 0.8rem;">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if app.employee %}
+                    <a href="{{ url_for('admin.view_employee', employee_id=app.employee.employee_id) }}" style="font-size: 0.825rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace); background: rgba(16,185,129,0.12); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.25); text-decoration: none; display: inline-block;">
+                      {{ app.employee.employee_id }}
+                    </a>
+                  {% elif app.payment_status == 'paid' %}
+                    <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start;">
+                      <span style="color: var(--color-text-muted); font-size: 0.75rem;">Not Created</span>
+                      <a href="{{ url_for('admin.create_employee', application_id=app.id) }}" class="btn btn-outline btn-sm" style="font-size: 0.7rem; padding: 0.15rem 0.45rem; gap: 4px;">
+                        {{ icon('plus', size=10) }} Create ID
+                      </a>
+                    </div>
+                  {% else %}
+                    <span style="color: var(--color-text-muted); font-size: 0.75rem;">Not Created</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if app.application_fee and app.application_fee > 0 %}
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-white); font-family: var(--font-mono, monospace);">
+                      ₹{{ app.application_fee }}
+                    </span>
+                  {% else %}
+                    <span style="color: var(--color-text-muted); font-size: 0.8rem;">Free</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if app.payment_status == 'paid' %}
+                    <span class="badge-status active">Paid</span>
+                  {% elif app.payment_status == 'pending' or app.payment_status == 'processing' %}
+                    <span class="badge-status" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3);">Pending</span>
+                  {% elif app.payment_status == 'failed' or app.payment_status == 'cancelled' %}
+                    <span class="badge-status" style="background: rgba(239, 68, 68, 0.12); color: #f87171; border-color: rgba(239, 68, 68, 0.3);">Failed</span>
+                  {% else %}
+                    <span class="badge-status" style="background: rgba(255, 255, 255, 0.05); color: var(--color-text-dim); border-color: var(--color-border);">Exempt</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
                 </td>
                 <td style="font-size: 0.825rem; color: var(--color-text-dim);">
                   {{ app.created_at.strftime('%b %d, %Y') }}
                 </td>
                 <td>
-                  <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
-                </td>
-                <td>
                   <div class="action-buttons" style="justify-content: flex-end;">
-                    <a href="{{ url_for('admin.download_resume', app_id=app.id) }}" class="btn-icon" title="Download Resume ({{ app.resume_filename }})" target="_blank">
+                    <a href="{{ url_for('admin.download_document', app_id=app.id, doc_type='resume') }}" class="btn-icon" title="View Resume" target="_blank">
                       {{ icon('file-text', size=14) }}
                     </a>
                     <a href="{{ url_for('admin.application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.775rem;">

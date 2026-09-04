@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Payment Failed | Anti-Matrix Careers{% endblock %}
+
+{% block content %}
+<section class="section" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 30%, rgba(239, 68, 68, 0.08) 0%, var(--color-bg) 70%);">
+  <div class="container" style="max-width: 620px; text-align: center;">
+    
+    <div class="card" style="padding: var(--space-3xl) var(--space-2xl); border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      
+      <!-- Red Alert Icon -->
+      <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid #f87171; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-xl); color: #f87171;">
+        {{ icon('x', size=36) }}
+      </div>
+
+      <div class="badge" style="margin: 0 auto var(--space-md); border-color: rgba(239,68,68,0.3); color: #f87171; background: rgba(239,68,68,0.1);">
+        {{ icon('credit-card', size=11) }} Payment Incomplete
+      </div>
+
+      <h1 style="font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-sm);">
+        Payment Failed
+      </h1>
+      
+      <p style="color: var(--color-text-dim); font-size: 1rem; margin-bottom: var(--space-xl); line-height: 1.6;">
+        Your payment was not completed or was cancelled. Your candidate details and uploaded documents have been saved as a draft.
+      </p>
+
+      <!-- Transaction Details -->
+      <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Candidate</div>
+            <div style="font-size: 0.95rem; color: var(--color-white); font-weight: 600;">{{ app.full_name }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Position</div>
+            <div style="font-size: 0.95rem; color: var(--color-text); font-weight: 600;">{{ job.title }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Order Reference</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted); font-family: var(--font-mono, monospace);">{{ payment.cashfree_order_id }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Payment Amount</div>
+            <div style="font-size: 1.1rem; color: #f87171; font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ payment.amount|int }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
+        <a href="{{ url_for('main.retry_payment', app_id=app.id) }}" class="btn btn-primary btn-lg" style="gap: 8px;">
+          {{ icon('refresh-cw', size=16) }} Try Payment Again
+        </a>
+        <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-lg">
+          Back to Careers
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -59,7 +59,7 @@
           </div>
         </div>
 
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
           <div class="form-group">
             <label for="location" class="form-label">Location <span style="color: #f87171;">*</span></label>
             <input
@@ -79,6 +79,15 @@
               {% for t in types %}
                 <option value="{{ t }}" {{ 'selected' if job.employment_type == t else '' }}>{{ t }}</option>
               {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="duration" class="form-label">Internship Duration</label>
+            <select id="duration" name="duration" class="form-input" style="appearance: auto;">
+              <option value="" {{ 'selected' if not job.duration else '' }}>-- Optional (For Internships) --</option>
+              <option value="1_month" {{ 'selected' if job.duration == '1_month' else '' }}>1 Month (₹199 Fee)</option>
+              <option value="3_months" {{ 'selected' if job.duration == '3_months' else '' }}>3 Months (₹399 Fee)</option>
             </select>
           </div>
         </div>
