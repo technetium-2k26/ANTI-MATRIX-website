@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Pricing | Anti-Matrix{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <div class="badge">{{ icon('zap', size=11) }} Transparent Pricing</div>
+    <h1>Simple, honest pricing for every stage of growth</h1>
+    <p>No hidden fees. No surprises. Just clear investment in technology that delivers results.</p>
+  </div>
+</section>
+
+<!-- Project Packages -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container">
+    <div class="section-header centered">
+      <h2 style="color: var(--color-white);">Project Packages</h2>
+      <div class="divider center"></div>
+      <p>One-time investment packages for new digital products. All prices in USD.</p>
+    </div>
+
+    <div class="pricing-grid">
+      {# Plan 1: Starter #}
+      <div class="pricing-card">
+        <div class="pricing-header">
+          <div class="pricing-tier">Starter</div>
+          <div class="pricing-name">Starter Package</div>
+          <div class="pricing-price">
+            <span class="pricing-currency">$</span>
+            <span class="pricing-amount">2,499</span>
+            <span style="font-size: 0.875rem; color: var(--color-text-dim); margin-left: 4px;">/project</span>
+          </div>
+          <p class="pricing-desc">Perfect for small businesses and startups needing a professional digital presence.</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Up to 5-page website or mobile app MVP</li>
+          <li>{{ icon('check-circle-2', size=15) }} Custom UI/UX design</li>
+          <li>{{ icon('check-circle-2', size=15) }} Responsive across all devices</li>
+          <li>{{ icon('check-circle-2', size=15) }} Basic SEO setup</li>
+          <li>{{ icon('check-circle-2', size=15) }} Contact form & integrations</li>
+          <li>{{ icon('check-circle-2', size=15) }} Google Analytics setup</li>
+          <li>{{ icon('check-circle-2', size=15) }} 30-day post-launch support</li>
+          <li>{{ icon('check-circle-2', size=15) }} 2 revision rounds</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-outline">
+            Get Started {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+
+      {# Plan 2: Growth (Featured) #}
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-header">
+          <div class="pricing-tier">Growth</div>
+          <div class="pricing-name">Growth Package</div>
+          <div class="pricing-price">
+            <span class="pricing-currency">$</span>
+            <span class="pricing-amount">7,999</span>
+            <span style="font-size: 0.875rem; color: var(--color-text-dim); margin-left: 4px;">/project</span>
+          </div>
+          <p class="pricing-desc">For growing businesses that need a robust digital platform with advanced functionality.</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Full web application or mobile app</li>
+          <li>{{ icon('check-circle-2', size=15) }} Custom backend API & database</li>
+          <li>{{ icon('check-circle-2', size=15) }} User authentication & roles</li>
+          <li>{{ icon('check-circle-2', size=15) }} Third-party integrations (CRM, payments)</li>
+          <li>{{ icon('check-circle-2', size=15) }} Admin dashboard</li>
+          <li>{{ icon('check-circle-2', size=15) }} SEO & performance optimization</li>
+          <li>{{ icon('check-circle-2', size=15) }} CI/CD deployment pipeline</li>
+          <li>{{ icon('check-circle-2', size=15) }} 90-day post-launch support</li>
+          <li>{{ icon('check-circle-2', size=15) }} Dedicated project manager</li>
+          <li>{{ icon('check-circle-2', size=15) }} 5 revision rounds</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Start Your Project {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+
+      {# Plan 3: Enterprise #}
+      <div class="pricing-card">
+        <div class="pricing-header">
+          <div class="pricing-tier">Enterprise</div>
+          <div class="pricing-name">Enterprise Package</div>
+          <div class="pricing-price">
+            <span class="pricing-amount">Custom</span>
+          </div>
+          <p class="pricing-desc">Full-scale digital transformation with AI, cloud infrastructure, and ongoing partnership.</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Everything in Growth, plus:</li>
+          <li>{{ icon('check-circle-2', size=15) }} AI/ML system design & deployment</li>
+          <li>{{ icon('check-circle-2', size=15) }} Cloud infrastructure (AWS/GCP/Azure)</li>
+          <li>{{ icon('check-circle-2', size=15) }} Microservices architecture</li>
+          <li>{{ icon('check-circle-2', size=15) }} Custom enterprise integrations</li>
+          <li>{{ icon('check-circle-2', size=15) }} Security audit & penetration testing</li>
+          <li>{{ icon('check-circle-2', size=15) }} Dedicated engineering team</li>
+          <li>{{ icon('check-circle-2', size=15) }} 12-month support & maintenance</li>
+          <li>{{ icon('check-circle-2', size=15) }} Quarterly business reviews</li>
+          <li>{{ icon('check-circle-2', size=15) }} SLA with uptime guarantees</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-outline">
+            Contact Sales {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <p style="text-align: center; margin-top: var(--space-2xl); color: var(--color-text-dim); font-size: 0.875rem;">
+      All projects include NDA, IP ownership transfer, and source code delivery.
+    </p>
+  </div>
+</section>
+
+<!-- Monthly Retainer -->
+<section class="section reveal" style="background: var(--color-bg-alt);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">Ongoing Support</div>
+      <h2 style="color: var(--color-white);">Monthly Retainer Plans</h2>
+      <div class="divider center"></div>
+      <p>Keep your product growing with dedicated ongoing engineering and support. Per month, minimum 3 months.</p>
+    </div>
+
+    <div class="pricing-grid">
+      {# Retainer 1 #}
+      <div class="pricing-card">
+        <div class="pricing-header">
+          <div class="pricing-name">Essential</div>
+          <div class="pricing-price">
+            <span class="pricing-currency">$</span>
+            <span class="pricing-amount">1,499</span>
+            <span style="font-size: 0.875rem; color: var(--color-text-dim); margin-left: 4px;">/mo</span>
+          </div>
+          <p class="pricing-desc">Up to 20 hours/month</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Bug fixes & updates</li>
+          <li>{{ icon('check-circle-2', size=15) }} Minor feature additions</li>
+          <li>{{ icon('check-circle-2', size=15) }} Performance monitoring</li>
+          <li>{{ icon('check-circle-2', size=15) }} Monthly report</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-outline">
+            Get Started {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+
+      {# Retainer 2 (Featured) #}
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Best Value</div>
+        <div class="pricing-header">
+          <div class="pricing-name">Professional</div>
+          <div class="pricing-price">
+            <span class="pricing-currency">$</span>
+            <span class="pricing-amount">3,499</span>
+            <span style="font-size: 0.875rem; color: var(--color-text-dim); margin-left: 4px;">/mo</span>
+          </div>
+          <p class="pricing-desc">Up to 50 hours/month</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Everything in Essential</li>
+          <li>{{ icon('check-circle-2', size=15) }} New feature development</li>
+          <li>{{ icon('check-circle-2', size=15) }} SEO & content updates</li>
+          <li>{{ icon('check-circle-2', size=15) }} Priority support (24h SLA)</li>
+          <li>{{ icon('check-circle-2', size=15) }} Bi-weekly check-ins</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+
+      {# Retainer 3 #}
+      <div class="pricing-card">
+        <div class="pricing-header">
+          <div class="pricing-name">Dedicated</div>
+          <div class="pricing-price">
+            <span class="pricing-currency">$</span>
+            <span class="pricing-amount">6,999</span>
+            <span style="font-size: 0.875rem; color: var(--color-text-dim); margin-left: 4px;">/mo</span>
+          </div>
+          <p class="pricing-desc">Full-time dedicated engineer</p>
+        </div>
+        <ul class="pricing-features">
+          <li>{{ icon('check-circle-2', size=15) }} Everything in Professional</li>
+          <li>{{ icon('check-circle-2', size=15) }} Unlimited hours</li>
+          <li>{{ icon('check-circle-2', size=15) }} 4h SLA response</li>
+          <li>{{ icon('check-circle-2', size=15) }} Weekly strategy calls</li>
+          <li>{{ icon('check-circle-2', size=15) }} Architecture reviews</li>
+          <li>{{ icon('check-circle-2', size=15) }} Direct Slack access</li>
+        </ul>
+        <div class="pricing-footer">
+          <a href="{{ url_for('main.contact') }}" class="btn btn-outline">
+            Get Started {{ icon('arrow-right', size=15) }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Accordion -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container" style="maxWidth: 760px; margin: 0 auto;">
+    <div class="section-header centered">
+      <h2 style="color: var(--color-white);">Frequently Asked Questions</h2>
+      <div class="divider center"></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+      {% set faqs = [
+        {'q': 'Do you offer a free consultation?', 'a': 'Yes. Every project starts with a free 30-minute discovery call where we understand your goals and provide tailored recommendations.'},
+        {'q': 'How long does a typical project take?', 'a': 'A Starter project typically takes 4–6 weeks. Growth packages are 8–16 weeks. Enterprise engagements are scoped individually based on complexity.'},
+        {'q': 'Can I upgrade my plan mid-project?', 'a': 'Absolutely. We structure our projects to be flexible. You can upgrade or expand scope at any point with a simple change order.'},
+        {'q': 'Do you offer payment plans?', 'a': 'We offer milestone-based billing: typically 30% upfront, 40% at mid-point, and 30% on delivery. Enterprise clients can negotiate custom payment schedules.'},
+        {'q': 'What technologies do you specialize in?', 'a': 'React, Next.js, Node.js, Python, React Native, Flutter, AWS, GCP, TensorFlow, and more. We choose the best technology for each specific problem.'}
+      ] %}
+
+      {% for faq in faqs %}
+        <div class="faq-item-container" style="border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: rgba(255,255,255,0.02); transition: all 0.25s;">
+          <button
+            type="button"
+            class="faq-toggle-btn"
+            style="width: 100%; text-align: left; padding: var(--space-lg) var(--space-xl); background: none; border: none; color: var(--color-text); cursor: pointer; font-family: var(--font-heading); font-weight: 600; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; gap: var(--space-md);"
+            aria-expanded="false"
+          >
+            {{ faq.q }}
+            <span class="faq-icon" style="color: var(--color-primary-light); font-size: 1.25rem; flex-shrink: 0; transition: transform 0.25s;">+</span>
+          </button>
+          <div class="faq-answer-pane" style="display: none; padding: 0 var(--space-xl) var(--space-lg);">
+            <p>{{ faq.a }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="container">
+    <h2>Can't find what you need?</h2>
+    <p>Every project is unique. Let's discuss your specific requirements and build a custom proposal.</p>
+    <div class="cta-actions">
+      <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">Request Custom Quote {{ icon('arrow-right', size=17) }}</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

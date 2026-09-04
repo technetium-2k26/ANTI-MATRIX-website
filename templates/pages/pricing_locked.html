@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Protected Pricing & Plans | Anti-Matrix{% endblock %}
+
+{% block content %}
+<div class="section" style="min-height: 80vh; display: flex; align-items: center; background: var(--color-bg);">
+  <div class="container" style="max-width: 580px; margin: 0 auto;">
+    <div class="card text-center animate-fade-up" style="padding: var(--space-3xl) var(--space-2xl); border: 1px solid rgba(16, 185, 129, 0.3); text-align: center;">
+      {# Lock Icon Header #}
+      <div style="width: 68px; height: 68px; background: var(--color-primary-glow); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); color: var(--color-primary-light);">
+        {{ icon('lock', size=30, color='var(--color-primary-light)') }}
+      </div>
+
+      <div class="badge" style="margin: 0 auto var(--space-md);">
+        {{ icon('shield-check', size=13) }} Member Access Only
+      </div>
+
+      <h2 style="color: var(--color-white); margin-bottom: var(--space-md);">
+        Protected Pricing & Plans
+      </h2>
+
+      <p style="margin-bottom: var(--space-2xl); line-height: 1.8;">
+        Our pricing and custom package details are exclusive to registered Anti-Matrix members. Please sign in to unlock access.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+        <a
+          href="{{ url_for('auth.login', redirect='/pricing') }}"
+          class="btn btn-primary btn-lg"
+          style="justify-content: center;"
+        >
+          Sign In to View Pricing {{ icon('arrow-right', size=17) }}
+        </a>
+
+        <a
+          href="{{ url_for('auth.signup') }}"
+          class="btn btn-outline"
+          style="justify-content: center;"
+        >
+          Create a Free Account
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

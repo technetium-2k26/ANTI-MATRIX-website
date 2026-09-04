@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Page Not Found | Anti-Matrix{% endblock %}
+
+{% block content %}
+<div class="not-found">
+  <div class="container" style="text-align: center;">
+    <h1>404</h1>
+    <h2 style="color: var(--color-text); margin-bottom: var(--space-md);">Page not found</h2>
+    <p style="margin-bottom: var(--space-2xl); max-width: 480px; margin: 0 auto var(--space-2xl);">
+      The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+    </p>
+    <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
+      <a href="{{ url_for('main.home') }}" class="btn btn-primary btn-lg">
+        Go Home {{ icon('arrow-right', size=17) }}
+      </a>
+      <a href="{{ url_for('main.contact') }}" class="btn btn-outline btn-lg">
+        Contact Support
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

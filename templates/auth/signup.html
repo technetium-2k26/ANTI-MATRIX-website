@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% from 'components/logo.html' import render_logo %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Create Account | Anti-Matrix{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="align-items: flex-start; padding-top: calc(var(--nav-height) + 2rem);">
+  <div class="auth-card animate-fade-up" style="max-width: 520px;">
+    {# Back link #}
+    <a href="{{ url_for('main.home') }}" class="back-link">
+      {{ icon('arrow-left', size=15) }} Back to Anti-Matrix
+    </a>
+
+    {# Logo #}
+    <div style="text-align: center; margin-bottom: var(--space-xl);">
+      {{ render_logo(light=true, size='lg', to=url_for('main.home'), stacked=true) }}
+    </div>
+
+    {# Success Card (hidden initially, toggled by auth.js on success) #}
+    <div id="signup-success-card" style="display: none; text-align: center; padding: var(--space-xl) 0;">
+      <div style="width: 64px; height: 64px; background: var(--color-primary-glow); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-lg); border: 2px solid rgba(34,197,94,0.4);">
+        {{ icon('check-circle-2', size=28, color='var(--color-primary-light)') }}
+      </div>
+      <h2 style="margin-bottom: var(--space-sm);">Account created!</h2>
+      <p style="margin-bottom: var(--space-xl);">
+        Welcome to Anti-Matrix! We've sent a confirmation email to your address. Check your inbox to get started.
+      </p>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="justify-content: center; width: 100%;">
+        Go to Login
+      </a>
+    </div>
+
+    {# Header #}
+    <div id="signup-header">
+      <h2>Create your account</h2>
+      <p class="auth-subtitle">Join Anti-Matrix and start building something great</p>
+    </div>
+
+    {# Benefits Box #}
+    <div id="signup-benefits" style="background: rgba(22,163,74,0.06); border: 1px solid rgba(22,163,74,0.2); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); display: flex; flex-direction: column; gap: 0.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {{ icon('check-circle-2', size=14, color='var(--color-primary-light)') }}
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">Free consultation with our experts</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {{ icon('check-circle-2', size=14, color='var(--color-primary-light)') }}
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">Access to project dashboard & pricing</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {{ icon('check-circle-2', size=14, color='var(--color-primary-light)') }}
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">Priority support & updates</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {{ icon('check-circle-2', size=14, color='var(--color-primary-light)') }}
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">Dedicated account manager</span>
+      </div>
+    </div>
+
+    {# Signup Form #}
+    <form id="signup-form" class="auth-form" action="{{ url_for('auth.signup') }}" method="POST" noValidate aria-label="Sign up form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div class="form-group">
+        <label for="signup-name">Full Name</label>
+        <input
+          id="signup-name"
+          name="name"
+          type="text"
+          class="form-control {{ 'error' if errors.get('name') else '' }}"
+          placeholder="John Smith"
+          value="{{ name if name else '' }}"
+          autoComplete="name"
+          aria-required="true"
+        />
+        <span id="signup-name-err" class="form-error" style="display: {{ 'block' if errors.get('name') else 'none' }};">
+          {{ errors.get('name', '') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-email">Email Address</label>
+        <input
+          id="signup-email"
+          name="email"
+          type="email"
+          class="form-control {{ 'error' if errors.get('email') else '' }}"
+          placeholder="you@company.com"
+          value="{{ email if email else '' }}"
+          autoComplete="email"
+          aria-required="true"
+        />
+        <span id="signup-email-err" class="form-error" style="display: {{ 'block' if errors.get('email') else 'none' }};">
+          {{ errors.get('email', '') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-password">Password</label>
+        <div class="password-field" style="position: relative;">
+          <input
+            id="signup-password"
+            name="password"
+            type="password"
+            class="form-control {{ 'error' if errors.get('password') else '' }}"
+            placeholder="Minimum 8 characters"
+            autoComplete="new-password"
+            aria-required="true"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            data-target="signup-password"
+            aria-label="Show password"
+          >
+            <span class="icon-eye">{{ icon('eye', size=17) }}</span>
+            <span class="icon-eye-off" style="display: none;">{{ icon('eye-off', size=17) }}</span>
+          </button>
+        </div>
+        <span id="signup-password-err" class="form-error" style="display: {{ 'block' if errors.get('password') else 'none' }};">
+          {{ errors.get('password', '') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-confirm">Confirm Password</label>
+        <div class="password-field" style="position: relative;">
+          <input
+            id="signup-confirm"
+            name="confirm"
+            type="password"
+            class="form-control {{ 'error' if errors.get('confirm') else '' }}"
+            placeholder="Repeat your password"
+            autoComplete="new-password"
+            aria-required="true"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            data-target="signup-confirm"
+            aria-label="Show password"
+          >
+            <span class="icon-eye">{{ icon('eye', size=17) }}</span>
+            <span class="icon-eye-off" style="display: none;">{{ icon('eye-off', size=17) }}</span>
+          </button>
+        </div>
+        <span id="signup-confirm-err" class="form-error" style="display: {{ 'block' if errors.get('confirm') else 'none' }};">
+          {{ errors.get('confirm', '') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label" style="align-items: flex-start; gap: 0.625rem;">
+          <input
+            id="signup-terms"
+            name="terms"
+            type="checkbox"
+            style="margin-top: 2px;"
+            aria-required="true"
+          />
+          <span>
+            I agree to Anti-Matrix's{' '}
+            <a href="{{ url_for('main.terms') }}" class="auth-link">Terms of Service</a>
+            {' '}and{' '}
+            <a href="{{ url_for('main.privacy') }}" class="auth-link">Privacy Policy</a>
+          </span>
+        </label>
+        <span id="signup-terms-err" class="form-error" style="display: {{ 'block' if errors.get('terms') else 'none' }}; margin-top: 0.25rem;">
+          {{ errors.get('terms', '') }}
+        </span>
+      </div>
+
+      <button id="signup-submit-btn" type="submit" class="btn btn-primary w-full" style="justify-content: center; width: 100%;">
+        Create Account
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Already have an account?
+      <a href="{{ url_for('auth.login') }}" class="auth-link"> Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

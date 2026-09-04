@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Careers | Anti-Matrix{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <div class="badge">{{ icon('briefcase', size=11) }} Join the Team</div>
+    <h1>Build remarkable technology.<br />Do the best work of your life.</h1>
+    <p>Anti-Matrix is a team of engineers, designers, and strategists solving real problems for real businesses. We're growing fast — come grow with us.</p>
+  </div>
+</section>
+
+<!-- Why Work Here -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">{{ icon('heart', size=11) }} Life at Anti-Matrix</div>
+      <h2 style="color: var(--color-white);">Why people love working here</h2>
+      <div class="divider center"></div>
+      <p>We've built a culture where great people can do their best work — with autonomy, support, and real impact.</p>
+    </div>
+    
+    <div class="grid-3">
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('zap', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Remote-First</h3>
+        <p style="font-size: 0.9rem;">Work from anywhere in the world. Our team spans 12+ countries — collaboration is in our DNA.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('heart', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Health & Wellness</h3>
+        <p style="font-size: 0.9rem;">Comprehensive health, dental, and vision coverage plus a $500 annual wellness budget.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('award', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Growth Budget</h3>
+        <p style="font-size: 0.9rem;">$1,500/year for courses, conferences, books, and certifications to keep you at the frontier.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('users', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Equity Options</h3>
+        <p style="font-size: 0.9rem;">Meaningful equity for every full-time team member. When Anti-Matrix wins, you win too.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('clock', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Flexible Hours</h3>
+        <p style="font-size: 0.9rem;">Async-first culture with flexible scheduling. Outcomes matter more than hours at a desk.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('brain', size=20) }}</div>
+        <h3 style="font-size: 1.05rem; color: var(--color-text); margin-bottom: var(--space-sm);">Cutting-Edge Work</h3>
+        <p style="font-size: 0.9rem;">Work on AI, cloud infrastructure, and modern web products — always on the leading edge.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Open Roles -->
+<section class="section reveal" style="background: var(--color-bg-alt);">
+  <div class="container">
+    <div class="section-header">
+      <div class="badge">{{ icon('briefcase', size=11) }} Open Positions</div>
+      <h2 style="color: var(--color-white);">Current openings</h2>
+      <div class="divider"></div>
+      <p>All roles are fully remote. We welcome applications from anywhere in the world.</p>
+    </div>
+
+    {% set roles = [
+      {
+        'id': 'role-1',
+        'title': 'Senior Full-Stack Engineer',
+        'dept': 'Engineering',
+        'location': 'Remote (Worldwide)',
+        'type': 'Full-time',
+        'skills': ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+        'desc': 'We are looking for a senior full-stack engineer to lead the development of complex web applications for our enterprise clients. You will work closely with product, design, and client teams.',
+        'reqs': ['5+ years of full-stack experience', 'Strong React and Node.js expertise', 'Experience with cloud services (AWS/GCP)', 'Excellent communication skills']
+      },
+      {
+        'id': 'role-2',
+        'title': 'Machine Learning Engineer',
+        'dept': 'AI & Data',
+        'location': 'Remote (US/EU)',
+        'type': 'Full-time',
+        'skills': ['Python', 'PyTorch', 'MLOps', 'FastAPI'],
+        'desc': 'Join our AI team to design and deploy production machine learning systems. You will work on NLP, computer vision, and predictive analytics projects for our clients.',
+        'reqs': ['3+ years ML engineering experience', 'Proficiency in Python and PyTorch/TensorFlow', 'Experience with model deployment & MLOps', 'Background in NLP or computer vision preferred']
+      },
+      {
+        'id': 'role-3',
+        'title': 'UI/UX Designer',
+        'dept': 'Design',
+        'location': 'Remote (Worldwide)',
+        'type': 'Full-time',
+        'skills': ['Figma', 'User Research', 'Prototyping', 'Design Systems'],
+        'desc': 'We need a talented UI/UX designer to craft intuitive, beautiful experiences for our web and mobile products. You will own design from research and wireframing through to high-fidelity delivery.',
+        'reqs': ['3+ years UI/UX design experience', 'Expert-level Figma skills', 'Strong portfolio of shipped products', 'Experience with design systems']
+      },
+      {
+        'id': 'role-4',
+        'title': 'React Native Developer',
+        'dept': 'Mobile',
+        'location': 'Remote (Worldwide)',
+        'type': 'Full-time',
+        'skills': ['React Native', 'TypeScript', 'iOS', 'Android'],
+        'desc': 'Build high-performance, cross-platform mobile applications for iOS and Android. You will work on projects ranging from consumer apps to enterprise mobile solutions.',
+        'reqs': ['3+ years React Native experience', 'Published apps on App Store / Google Play', 'Strong TypeScript skills', 'Familiarity with native iOS or Android development']
+      },
+      {
+        'id': 'role-5',
+        'title': 'DevOps / Cloud Engineer',
+        'dept': 'Infrastructure',
+        'location': 'Remote (US/EU)',
+        'type': 'Full-time',
+        'skills': ['AWS', 'Kubernetes', 'Terraform', 'CI/CD'],
+        'desc': 'Design and manage the cloud infrastructure that powers our clients\' digital products. You will build automated pipelines, ensure security and reliability, and reduce operational overhead.',
+        'reqs': ['4+ years DevOps/SRE experience', 'AWS or GCP certification preferred', 'Kubernetes and Terraform experience', 'Strong security mindset']
+      },
+      {
+        'id': 'role-6',
+        'title': 'Digital Marketing Specialist',
+        'dept': 'Marketing',
+        'location': 'Remote (Worldwide)',
+        'type': 'Full-time',
+        'skills': ['SEO', 'Google Ads', 'Analytics', 'Content Strategy'],
+        'desc': 'Drive measurable growth for Anti-Matrix clients through data-backed digital marketing strategies. You will manage campaigns, optimize performance, and report on ROI.',
+        'reqs': ['3+ years digital marketing experience', 'Google Ads and Meta Ads certified', 'Strong analytical skills (GA4, Looker)', 'Excellent English writing skills']
+      }
+    ] %}
+
+    <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+      {% for role in roles %}
+        <div>
+          <div
+            class="card job-card job-card-interactive"
+            data-target="{{ role.id }}"
+            style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: var(--space-lg); transition: all 0.25s;"
+          >
+            <div class="job-info" style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <div class="job-title" style="font-size: 1.15rem; font-weight: 700; color: var(--color-text);">{{ role.title }}</div>
+              <div class="job-meta" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">{{ role.dept }}</span>
+                <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('map-pin', size=11) }} {{ role.location }}</span>
+                <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('clock', size=11) }} {{ role.type }}</span>
+              </div>
+              <div class="job-skills" style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem;">
+                {% for s in role.skills %}
+                  <span style="font-size: 0.75rem; color: var(--color-text-muted); background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);">{{ s }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="job-actions" style="flex-shrink: 0;">
+              <span class="btn btn-outline btn-sm">
+                <span class="job-btn-text">View Role</span>
+                <span class="job-chevron" style="display: inline-flex; transition: transform 0.2s;">{{ icon('chevron-right', size=15) }}</span>
+              </span>
+            </div>
+          </div>
+
+          {# Expanded job details pane #}
+          <div id="{{ role.id }}" class="job-details-pane card animate-fade-up" style="display: none; margin-top: var(--space-sm); border-color: rgba(22,163,74,0.2); background: rgba(22,163,74,0.03);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl);">
+              <div>
+                <h4 style="color: var(--color-text); margin-bottom: var(--space-md); font-family: var(--font-heading);">About the Role</h4>
+                <p style="margin-bottom: var(--space-lg);">{{ role.desc }}</p>
+                <h4 style="color: var(--color-text); margin-bottom: var(--space-md); font-family: var(--font-heading);">Requirements</h4>
+                <ul class="service-capabilities">
+                  {% for req in role.reqs %}
+                    <li>{{ req }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-md);">
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Department</div>
+                  <div style="color: var(--color-text);">{{ role.dept }}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Location</div>
+                  <div style="color: var(--color-text);">{{ role.location }}</div>
+                </div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-family: var(--font-heading); margin-bottom: 0.375rem;">Type</div>
+                  <div style="color: var(--color-text);">{{ role.type }}</div>
+                </div>
+                <a
+                  href="mailto:careers@anti-matrix.com?subject=Application: {{ role.title }}"
+                  class="btn btn-primary"
+                  style="margin-top: var(--space-md);"
+                >
+                  Apply Now {{ icon('arrow-right', size=16) }}
+                </a>
+                <p style="font-size: 0.8125rem; color: var(--color-text-dim);">
+                  Send your CV and portfolio to <span style="color: var(--color-primary-light);">careers@anti-matrix.com</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- General Application -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container" style="max-width: 640px; margin: 0 auto; text-align: center;">
+    <div class="badge" style="margin: 0 auto var(--space-lg);">{{ icon('users', size=11) }} Don't see your role?</div>
+    <h2 style="color: var(--color-white); margin-bottom: var(--space-md);">Send us a general application</h2>
+    <p style="margin-bottom: var(--space-2xl);">
+      We're always on the lookout for exceptional talent. If you're passionate about building great technology and don't see your ideal role listed, introduce yourself anyway.
+    </p>
+    <a
+      href="mailto:careers@anti-matrix.com?subject=General Application"
+      class="btn btn-primary btn-lg"
+    >
+      Send Your Application {{ icon('arrow-right', size=17) }}
+    </a>
+  </div>
+</section>
+{% endblock %}

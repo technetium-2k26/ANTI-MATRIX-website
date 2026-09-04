@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Anti-Matrix | Enterprise Digital Transformation{% endblock %}
+
+{% block content %}
+<!-- ── HERO ────────────────────────────────────── -->
+<section class="hero" aria-label="Hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+  </div>
+  <div class="container">
+    <div class="hero-content animate-fade-up">
+      <div class="badge">
+        {{ icon('zap', size=11) }} Enterprise Technology Partner
+      </div>
+      <h1>
+        Build. Scale.<br />
+        <span>Transform Your Digital Future</span>
+      </h1>
+      <p class="hero-subtitle">
+        Anti-Matrix is a full-service technology company delivering world-class web, mobile, AI, and cloud solutions. We turn ambitious ideas into scalable digital products.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('main.services') }}" class="btn btn-primary btn-lg">
+          Explore Services {{ icon('arrow-right', size=17) }}
+        </a>
+        <a href="{{ url_for('main.contact') }}" class="btn btn-outline btn-lg">
+          Get a Free Consultation
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-stats animate-fade-up delay-3">
+      <div>
+        <div class="hero-stat-value"><span>200+</span></div>
+        <div class="hero-stat-label">Projects Delivered</div>
+      </div>
+      <div>
+        <div class="hero-stat-value"><span>98%</span></div>
+        <div class="hero-stat-label">Client Satisfaction</div>
+      </div>
+      <div>
+        <div class="hero-stat-value"><span>50+</span></div>
+        <div class="hero-stat-label">Team Members</div>
+      </div>
+      <div>
+        <div class="hero-stat-value"><span>6+</span></div>
+        <div class="hero-stat-label">Years of Excellence</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHO WE ARE ──────────────────────────────── -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container">
+    <div class="about-cols" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-3xl); align-items: center;">
+      <div>
+        <div class="badge">{{ icon('award', size=11) }} About Anti-Matrix</div>
+        <h2 style="color: var(--color-white); margin-bottom: var(--space-lg);">
+          We are your long-term technology growth partner
+        </h2>
+        <div class="divider"></div>
+        <p style="margin-bottom: var(--space-xl);">
+          Anti-Matrix is a forward-thinking technology company built by engineers, designers, and strategists who are passionate about solving real business problems with elegant digital solutions.
+        </p>
+        <p style="margin-bottom: var(--space-2xl);">
+          From early-stage startups to global enterprises, we deliver tailor-made software, AI systems, and digital growth strategies that create measurable impact. Our team of 50+ experts combines deep technical expertise with sharp business thinking.
+        </p>
+        <a href="{{ url_for('main.about') }}" class="btn btn-outline">
+          Learn Our Story {{ icon('chevron-right', size=16) }}
+        </a>
+      </div>
+
+      <div>
+        <div class="about-pillars" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-lg);">
+          <div class="pillar-card card">
+            <h4 style="color: var(--color-text); margin-bottom: 0.5rem;">Our Mission</h4>
+            <p style="font-size: 0.9rem;">To accelerate digital transformation through technology that is powerful, elegant, and accessible.</p>
+          </div>
+          <div class="pillar-card card">
+            <h4 style="color: var(--color-text); margin-bottom: 0.5rem;">Our Vision</h4>
+            <p style="font-size: 0.9rem;">A world where every business — large or small — has access to enterprise-grade technology.</p>
+          </div>
+          <div class="pillar-card card">
+            <h4 style="color: var(--color-text); margin-bottom: 0.5rem;">Innovation</h4>
+            <p style="font-size: 0.9rem;">We stay at the cutting edge of AI, cloud, and software engineering to future-proof your investment.</p>
+          </div>
+          <div class="pillar-card card">
+            <h4 style="color: var(--color-text); margin-bottom: 0.5rem;">Partnership</h4>
+            <p style="font-size: 0.9rem;">We don't just build and leave. We become long-term partners invested in your success.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVICES ────────────────────────────────── -->
+<section class="section reveal" style="background: var(--color-bg-alt);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">{{ icon('code-2', size=11) }} What We Build</div>
+      <h2 style="color: var(--color-white);">End-to-end technology services</h2>
+      <div class="divider center"></div>
+      <p>From concept to launch and beyond, we cover every layer of your digital stack.</p>
+    </div>
+    
+    <div class="services-grid">
+      {# Service 1 #}
+      <div class="card service-card animate-fade-up delay-1">
+        <div class="icon-box">{{ icon('code-2', size=24) }}</div>
+        <h3>Web Development</h3>
+        <p>Custom, high-performance websites and web applications built for scale and reliability.</p>
+        <ul class="service-capabilities">
+          <li>React / Next.js SPAs</li>
+          <li>Full-stack Node & Python APIs</li>
+          <li>E-commerce platforms</li>
+          <li>Progressive Web Apps</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+
+      {# Service 2 #}
+      <div class="card service-card animate-fade-up delay-2">
+        <div class="icon-box">{{ icon('smartphone', size=24) }}</div>
+        <h3>Mobile Applications</h3>
+        <p>Native and cross-platform mobile apps delivering seamless experiences on iOS and Android.</p>
+        <ul class="service-capabilities">
+          <li>React Native & Flutter</li>
+          <li>iOS & Android native</li>
+          <li>App Store optimization</li>
+          <li>Push & offline support</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+
+      {# Service 3 #}
+      <div class="card service-card animate-fade-up delay-3">
+        <div class="icon-box">{{ icon('brain', size=24) }}</div>
+        <h3>AI & Machine Learning</h3>
+        <p>Intelligent automation and data-driven insights that give your business a competitive edge.</p>
+        <ul class="service-capabilities">
+          <li>Predictive analytics</li>
+          <li>NLP & chatbot solutions</li>
+          <li>Computer vision systems</li>
+          <li>ML model deployment</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+
+      {# Service 4 #}
+      <div class="card service-card animate-fade-up delay-1">
+        <div class="icon-box">{{ icon('trending-up', size=24) }}</div>
+        <h3>Digital Marketing & Growth</h3>
+        <p>Data-backed strategies that drive targeted traffic, qualified leads, and measurable ROI.</p>
+        <ul class="service-capabilities">
+          <li>SEO & content strategy</li>
+          <li>Paid media campaigns</li>
+          <li>Conversion optimization</li>
+          <li>Analytics & reporting</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+
+      {# Service 5 #}
+      <div class="card service-card animate-fade-up delay-2">
+        <div class="icon-box">{{ icon('shield', size=24) }}</div>
+        <h3>Cloud & DevOps</h3>
+        <p>Secure, scalable cloud infrastructure with automated CI/CD pipelines and monitoring.</p>
+        <ul class="service-capabilities">
+          <li>AWS / GCP / Azure</li>
+          <li>Docker & Kubernetes</li>
+          <li>CI/CD automation</li>
+          <li>Security & compliance</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+
+      {# Service 6 #}
+      <div class="card service-card animate-fade-up delay-3">
+        <div class="icon-box">{{ icon('globe', size=24) }}</div>
+        <h3>UI/UX Design</h3>
+        <p>Human-centered design that converts visitors into loyal customers through elegant experiences.</p>
+        <ul class="service-capabilities">
+          <li>User research & personas</li>
+          <li>Wireframing & prototyping</li>
+          <li>Design systems</li>
+          <li>Accessibility-first</li>
+        </ul>
+        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+          Learn more {{ icon('arrow-right', size=14) }}
+        </a>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: var(--space-2xl);">
+      <a href="{{ url_for('main.services') }}" class="btn btn-primary btn-lg">
+        View All Services {{ icon('arrow-right', size=17) }}
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY ANTI-MATRIX ─────────────────────────── -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">{{ icon('star', size=11) }} Why Choose Us</div>
+      <h2 style="color: var(--color-white);">Built differently. Built better.</h2>
+      <div class="divider center"></div>
+      <p>We combine the speed of an agency with the depth of an in-house product team.</p>
+    </div>
+    
+    <div class="grid-4">
+      <div class="card animate-fade-up delay-1" style="text-align: center; padding: var(--space-2xl) var(--space-xl);">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('zap', size=20) }}</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Rapid Delivery</h3>
+        <p style="font-size: 0.9rem;">Agile sprints with weekly demos so you always see progress and can pivot fast.</p>
+      </div>
+
+      <div class="card animate-fade-up delay-2" style="text-align: center; padding: var(--space-2xl) var(--space-xl);">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('shield', size=20) }}</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Enterprise Security</h3>
+        <p style="font-size: 0.9rem;">Security-first architecture with SOC 2 practices baked into every project.</p>
+      </div>
+
+      <div class="card animate-fade-up delay-3" style="text-align: center; padding: var(--space-2xl) var(--space-xl);">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('users', size=20) }}</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Dedicated Teams</h3>
+        <p style="font-size: 0.9rem;">Senior engineers, designers, and PMs assigned exclusively to your project.</p>
+      </div>
+
+      <div class="card animate-fade-up delay-4" style="text-align: center; padding: var(--space-2xl) var(--space-xl);">
+        <div class="icon-box" style="margin: 0 auto var(--space-lg);">{{ icon('award', size=20) }}</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Proven Quality</h3>
+        <p style="font-size: 0.9rem;">200+ delivered projects with a 98% client satisfaction rate across 6+ years.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TECHNOLOGIES ────────────────────────────── -->
+<section class="section-sm reveal" style="background: var(--color-bg-alt); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div class="section-header centered" style="margin-bottom: var(--space-2xl);">
+      <p style="font-size: 0.8125rem; fontWeight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-dim);">
+        Technologies We Work With
+      </p>
+    </div>
+    
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-sm);">
+      {% for tech in ['React', 'Node.js', 'Python', 'AWS', 'GCP', 'Docker', 'Kubernetes', 'TensorFlow', 'PostgreSQL', 'MongoDB', 'Flutter', 'TypeScript'] %}
+        <span style="padding: 0.5rem 1.125rem; border: 1px solid var(--color-border-light); border-radius: 999px; font-size: 0.875rem; font-family: var(--font-heading); font-weight: 600; color: var(--color-text-muted); background: rgba(255,255,255,0.03); transition: all 0.25s; cursor: default;"
+              onmouseenter="this.style.borderColor='var(--color-primary)'; this.style.color='var(--color-primary-light)';"
+              onmouseleave="this.style.borderColor='var(--color-border-light)'; this.style.color='var(--color-text-muted)';">
+          {{ tech }}
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ────────────────────────────── -->
+<section class="section reveal" style="background: var(--color-bg);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">{{ icon('star', size=11) }} Client Stories</div>
+      <h2 style="color: var(--color-white);">Trusted by innovative companies</h2>
+      <div class="divider center"></div>
+      <p>Real results, real testimonials from the teams we've had the privilege to work with.</p>
+    </div>
+    
+    <div class="grid-3">
+      {# Testimonial 1 #}
+      <div class="testimonial-card animate-fade-up delay-1">
+        <div class="testimonial-stars">
+          {% for _ in range(5) %}
+            {{ icon('star', size=14, color='#f59e0b', fill='#f59e0b') }}
+          {% endfor %}
+        </div>
+        <p class="testimonial-text">
+          "Anti-Matrix transformed our legacy banking platform into a modern, cloud-native system. The team delivered exceptional quality under a tight deadline — completely exceeded our expectations."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">SM</div>
+          <div>
+            <div class="testimonial-company">ScaleUp Finance</div>
+            <div class="testimonial-industry">FinTech</div>
+          </div>
+        </div>
+      </div>
+
+      {# Testimonial 2 #}
+      <div class="testimonial-card animate-fade-up delay-2">
+        <div class="testimonial-stars">
+          {% for _ in range(5) %}
+            {{ icon('star', size=14, color='#f59e0b', fill='#f59e0b') }}
+          {% endfor %}
+        </div>
+        <p class="testimonial-text">
+          "Working with Anti-Matrix was a game-changer. Their AI solution reduced our patient intake time by 60% and their support has been outstanding every step of the way."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">LK</div>
+          <div>
+            <div class="testimonial-company">MedCore Health</div>
+            <div class="testimonial-industry">HealthTech</div>
+          </div>
+        </div>
+      </div>
+
+      {# Testimonial 3 #}
+      <div class="testimonial-card animate-fade-up delay-3">
+        <div class="testimonial-stars">
+          {% for _ in range(5) %}
+            {{ icon('star', size=14, color='#f59e0b', fill='#f59e0b') }}
+          {% endfor %}
+        </div>
+        <p class="testimonial-text">
+          "From strategy to launch, Anti-Matrix delivered a full e-commerce ecosystem that scaled Black Friday traffic flawlessly. Revenue up 40% in the first quarter."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">RJ</div>
+          <div>
+            <div class="testimonial-company">RetailNova</div>
+            <div class="testimonial-industry">E-Commerce</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

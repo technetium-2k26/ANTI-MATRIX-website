@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Services | Anti-Matrix{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <div class="badge">{{ icon('code-2', size=11) }} Services</div>
+    <h1>Everything your digital product needs, under one roof</h1>
+    <p>From strategy to execution, we deliver complete technology solutions that help you build, scale, and grow faster.</p>
+  </div>
+</section>
+
+<!-- All Services -->
+<section class="section" style="background: var(--color-bg);">
+  <div class="container">
+    <div style="display: flex; flex-direction: column; gap: var(--space-2xl);">
+      
+      {# Service 1: Web Development #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div class="icon-box">{{ icon('code-2', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Web Development</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">We design and engineer high-performance, scalable web applications that drive business growth and deliver exceptional user experiences across all devices.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['React', 'Next.js', 'Node.js', 'Python', 'PostgreSQL', 'Redis'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>Custom React / Next.js applications</li>
+            <li>Full-stack Node.js and Python APIs</li>
+            <li>E-commerce and marketplace platforms</li>
+            <li>Progressive Web Apps (PWA)</li>
+            <li>CMS integrations (Contentful, Sanity)</li>
+            <li>Performance optimization & Core Web Vitals</li>
+          </ul>
+        </div>
+      </div>
+
+      {# Service 2: Mobile App Development #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['React Native', 'Flutter', 'Swift', 'Kotlin', 'Firebase'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>React Native & Flutter cross-platform apps</li>
+            <li>Native iOS (Swift) & Android (Kotlin)</li>
+            <li>App Store & Google Play submission</li>
+            <li>Offline-first & real-time sync</li>
+            <li>Push notifications & deep linking</li>
+            <li>Mobile analytics & crash reporting</li>
+          </ul>
+        </div>
+        <div>
+          <div class="icon-box">{{ icon('smartphone', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Mobile App Development</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">From concept to App Store, we build elegant, high-performing mobile applications for iOS and Android using modern cross-platform and native technologies.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+      </div>
+
+      {# Service 3: AI & Machine Learning #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div class="icon-box">{{ icon('brain', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">AI & Machine Learning</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">We build intelligent systems that automate processes, extract insights, and create competitive advantages using state-of-the-art AI and machine learning.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['Python', 'TensorFlow', 'PyTorch', 'OpenAI', 'Hugging Face', 'FastAPI'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>Predictive analytics & forecasting</li>
+            <li>Natural Language Processing (NLP)</li>
+            <li>Computer vision & image recognition</li>
+            <li>Recommendation engines</li>
+            <li>LLM integration & fine-tuning</li>
+            <li>MLOps & model deployment pipelines</li>
+          </ul>
+        </div>
+      </div>
+
+      {# Service 4: Digital Marketing & Growth #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['Google Analytics', 'HubSpot', 'Semrush', 'Mailchimp', 'Meta Ads'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>Search Engine Optimization (SEO)</li>
+            <li>Pay-per-click advertising (Google, Meta)</li>
+            <li>Social media management & ads</li>
+            <li>Content strategy & creation</li>
+            <li>Email marketing automation</li>
+            <li>Conversion rate optimization (CRO)</li>
+          </ul>
+        </div>
+        <div>
+          <div class="icon-box">{{ icon('trending-up', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Digital Marketing & Growth</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Data-driven marketing strategies that build your brand, attract qualified leads, and convert visitors into loyal, long-term customers.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+      </div>
+
+      {# Service 5: Cloud & DevOps #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div class="icon-box">{{ icon('shield', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Cloud & DevOps</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Secure, scalable cloud infrastructure with automated pipelines, monitoring, and zero-downtime deployments so your product is always up and fast.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['AWS', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>AWS, GCP & Azure architecture</li>
+            <li>Docker & Kubernetes orchestration</li>
+            <li>CI/CD pipeline automation</li>
+            <li>Infrastructure as Code (Terraform)</li>
+            <li>Security audits & penetration testing</li>
+            <li>24/7 monitoring & incident response</li>
+          </ul>
+        </div>
+      </div>
+
+      {# Service 6: UI/UX Design #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['Figma', 'Adobe XD', 'Maze', 'Hotjar', 'Storybook'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>User research & persona development</li>
+            <li>Information architecture & wireframing</li>
+            <li>High-fidelity Figma prototypes</li>
+            <li>Design system creation</li>
+            <li>Usability testing & iteration</li>
+            <li>WCAG 2.1 accessibility compliance</li>
+          </ul>
+        </div>
+        <div>
+          <div class="icon-box">{{ icon('palette', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">UI/UX Design</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Human-centered design that transforms complex problems into intuitive, beautiful digital experiences that users love and keep coming back to.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+      </div>
+
+      {# Service 7: Enterprise Software #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div class="icon-box">{{ icon('server', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Enterprise Software</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Custom enterprise solutions — ERPs, CRMs, internal tools — built to replace legacy systems with modern, scalable, and integrated platforms.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['React', 'Node.js', 'Python', 'PostgreSQL', 'Microservices'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>Custom ERP & CRM systems</li>
+            <li>Legacy system modernization</li>
+            <li>Third-party API integrations</li>
+            <li>Real-time dashboards & reporting</li>
+            <li>Role-based access control (RBAC)</li>
+            <li>Multi-tenant SaaS architecture</li>
+          </ul>
+        </div>
+      </div>
+
+      {# Service 8: Digital Transformation #}
+      <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+            {% for t in ['Strategy', 'Agile', 'JIRA', 'Confluence', 'Miro'] %}
+              <span style="padding: 0.3rem 0.7rem; border-radius: 999px; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2); font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light); font-family: var(--font-heading);">{{ t }}</span>
+            {% endfor %}
+          </div>
+          <ul class="service-capabilities">
+            <li>Digital maturity assessment</li>
+            <li>Technology roadmap planning</li>
+            <li>Process automation & digitization</li>
+            <li>Team upskilling & training</li>
+            <li>Agile transformation coaching</li>
+            <li>KPI tracking & continuous improvement</li>
+          </ul>
+        </div>
+        <div>
+          <div class="icon-box">{{ icon('globe', size=28) }}</div>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Digital Transformation</h3>
+          <p style="margin-bottom: var(--space-xl); line-height: 1.8;">End-to-end digital transformation strategy and execution — helping established businesses evolve their processes, culture, and technology for the digital age.</p>
+          <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+            Get Started {{ icon('arrow-right', size=16) }}
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Process -->
+<section class="section reveal" style="background: var(--color-bg-alt);">
+  <div class="container">
+    <div class="section-header centered">
+      <div class="badge">Our Process</div>
+      <h2 style="color: var(--color-white);">How we deliver excellence</h2>
+      <div class="divider center"></div>
+      <p>A proven, structured approach that keeps projects on time, on budget, and on target.</p>
+    </div>
+    <div class="grid-4">
+      <div class="card" style="text-align: center;">
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">01</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Discovery</h3>
+        <p style="font-size: 0.875rem;">We deeply understand your business goals, users, and technical requirements before writing a single line of code.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">02</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Design & Plan</h3>
+        <p style="font-size: 0.875rem;">Architecture blueprints, UI/UX wireframes, and a detailed roadmap agreed upon before development begins.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">03</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Build & Iterate</h3>
+        <p style="font-size: 0.875rem;">Agile sprints with weekly demos. You see real progress and can give feedback at every stage.</p>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(22,163,74,0.2); margin-bottom: var(--space-md);">04</div>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Launch & Grow</h3>
+        <p style="font-size: 0.875rem;">Rigorous QA, smooth deployment, and ongoing support to continuously optimize and scale your product.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="container">
+    <h2>Not sure which service you need?</h2>
+    <p>Book a free 30-minute consultation and our experts will recommend the right solution for your business.</p>
+    <div class="cta-actions">
+      <a href="{{ url_for('main.contact') }}" class="btn btn-primary btn-lg">Book Free Consultation {{ icon('arrow-right', size=17) }}</a>
+      <a href="{{ url_for('main.pricing') }}" class="btn btn-outline btn-lg">See Pricing</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

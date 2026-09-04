@@ -1,0 +1,20 @@
+{# Logo Component Macro matching Logo.jsx #}
+{% macro render_logo(light=true, size='md', to='/', stacked=false) %}
+{% set heights = {'sm': 40, 'md': 52, 'lg': 72, 'xl': 90} %}
+{% set h = heights.get(size, 52) %}
+{% set logo_src = url_for('static', filename='images/logo_dark.png') if light else url_for('static', filename='images/logo_transparent.png') %}
+
+{% if to %}
+<a href="{{ to }}" aria-label="Anti-Matrix Home" style="text-decoration: none; display: inline-flex;">
+{% endif %}
+  <div style="display: inline-flex; align-items: center; justify-content: center; user-select: none;">
+    <img
+      src="{{ logo_src }}"
+      alt="Anti-Matrix Logo"
+      style="height: {{ h }}px; width: auto; object-fit: contain; display: block;"
+    />
+  </div>
+{% if to %}
+</a>
+{% endif %}
+{% endmacro %}

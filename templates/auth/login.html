@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% from 'components/logo.html' import render_logo %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Log In | Anti-Matrix{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card animate-fade-up">
+    {# Back link #}
+    <a href="{{ url_for('main.home') }}" class="back-link">
+      {{ icon('arrow-left', size=15) }} Back to Anti-Matrix
+    </a>
+
+    {# Logo #}
+    <div style="text-align: center; margin-bottom: var(--space-xl);">
+      {{ render_logo(light=true, size='lg', to=url_for('main.home'), stacked=true) }}
+    </div>
+
+    {# Success Card (hidden initially, toggled by auth.js on success) #}
+    <div id="login-success-card" style="display: none; text-align: center; padding: var(--space-xl) 0;">
+      <div style="font-size: 3rem; margin-bottom: var(--space-md); color: var(--color-primary-light);">✓</div>
+      <h2 style="margin-bottom: var(--space-sm);">Welcome back!</h2>
+      <p>You've successfully logged in. Redirecting you to your dashboard...</p>
+    </div>
+
+    {# Form Header #}
+    <div id="auth-header">
+      <h2>Welcome back</h2>
+      <p class="auth-subtitle">Sign in to your Anti-Matrix account</p>
+    </div>
+
+    {# Login Form #}
+    <form id="login-form" class="auth-form" action="{{ url_for('auth.login') }}" method="POST" noValidate aria-label="Login form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      {% if redirect_target %}
+        <input type="hidden" name="redirect" value="{{ redirect_target }}"/>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="login-email">Email Address</label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          class="form-control {{ 'error' if errors.get('email') else '' }}"
+          placeholder="you@company.com"
+          value="{{ email if email else '' }}"
+          autoComplete="email"
+          aria-required="true"
+        />
+        <span id="login-email-err" class="form-error" style="display: {{ 'block' if errors.get('email') else 'none' }};">
+          {{ errors.get('email', '') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <div class="password-field" style="position: relative;">
+          <input
+            id="login-password"
+            name="password"
+            type="password"
+            class="form-control {{ 'error' if errors.get('password') else '' }}"
+            placeholder="Your password"
+            autoComplete="current-password"
+            aria-required="true"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            data-target="login-password"
+            aria-label="Show password"
+          >
+            <span class="icon-eye">{{ icon('eye', size=17) }}</span>
+            <span class="icon-eye-off" style="display: none;">{{ icon('eye-off', size=17) }}</span>
+          </button>
+        </div>
+        <span id="login-password-err" class="form-error" style="display: {{ 'block' if errors.get('password') else 'none' }};">
+          {{ errors.get('password', '') }}
+        </span>
+      </div>
+
+      <div class="auth-extras">
+        <label class="checkbox-label">
+          <input id="login-remember" name="remember" type="checkbox" />
+          Remember me
+        </label>
+        <a href="#forgot" class="auth-link">Forgot password?</a>
+      </div>
+
+      <button id="login-submit-btn" type="submit" class="btn btn-primary w-full" style="justify-content: center; width: 100%;">
+        Sign In
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Don't have an account?
+      <a href="{{ url_for('auth.signup') }}" class="auth-link"> Create one free</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

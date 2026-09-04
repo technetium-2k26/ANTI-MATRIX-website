@@ -1,0 +1,47 @@
+{% from 'components/footer.html' import render_footer %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='svg/favicon.svg') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Anti-Matrix - Enterprise technology solutions including web development, mobile applications, AI/ML systems, and digital transformation services." />
+    <meta property="og:title" content="{% block og_title %}Anti-Matrix | Enterprise Digital Transformation{% endblock %}" />
+    <meta property="og:description" content="Anti-Matrix delivers cutting-edge technology solutions for modern enterprises. Web, Mobile, AI/ML, and Digital Growth services." />
+    <meta property="og:type" content="website" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+    
+    <title>{% block title %}Anti-Matrix | Enterprise Digital Transformation{% endblock %}</title>
+    
+    {# Google Fonts matching index.html #}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    {# Primary Design System Stylesheet #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    {# Conditional Navbar: Suppressed on auth routes (/login, /signup) #}
+    {% set is_auth_page = request.path in ['/login', '/signup'] %}
+    
+    {% if not is_auth_page %}
+      {% include 'components/navbar.html' %}
+    {% endif %}
+
+    <main id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    {# Conditional Footer #}
+    {% if not is_auth_page %}
+      {{ render_footer(show_cta=self.show_cta() if self.show_cta is defined else true) }}
+    {% endif %}
+
+    {# Vanilla JavaScript Interactive Scripts #}
+    <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
