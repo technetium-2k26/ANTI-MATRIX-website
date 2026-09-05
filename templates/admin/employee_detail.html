@@ -178,7 +178,7 @@
               No Offer Letter has been generated for this employee yet.
             </p>
             <a href="{{ url_for('admin.generate_offer_letter', employee_id=employee.employee_id) }}" class="btn btn-primary btn-sm" style="gap: 6px;">
-              {{ icon('sparkles', size=14) }} Generate Master Offer Letter
+              {{ icon('file-text', size=14) }} Generate Master Offer Letter
             </a>
           </div>
         {% endif %}

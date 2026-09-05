@@ -71,8 +71,8 @@
     <div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.02);">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-md);">
         <div>
-          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light);">Selected Candidate / Employee</span>
-          <h2 style="font-size: 1.35rem; margin: 0.2rem 0; color: #000000;">{{ employee.candidate_name }}</h2>
+          <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary-light);">Selected Candidate / Employee</span>
+          <h2 style="font-family: var(--font-admin-heading); font-size: 1.35rem; margin: 0.2rem 0; color: #0f172a; font-weight: 700;">{{ employee.candidate_name }}</h2>
           <div style="color: var(--color-text-dim); font-size: 0.875rem;">{{ employee.candidate_email }} &bull; {{ employee.candidate_phone }}</div>
         </div>
         <div style="text-align: right;">
@@ -200,13 +200,13 @@
           <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">Cancel</a>
           {% if active_template and template_exists %}
           <button type="submit" class="btn btn-primary" style="gap: 8px;">
-            {{ icon('sparkles', size=16) }} Generate Offer Letter DOCX
+            {{ icon('file-text', size=16) }} Generate Offer Letter DOCX
           </button>
           {% else %}
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.8rem; color: #ef4444;">Upload template to enable generation</span>
             <button type="button" class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed; gap: 8px;">
-              {{ icon('sparkles', size=16) }} Generate Offer Letter DOCX
+              {{ icon('file-text', size=16) }} Generate Offer Letter DOCX
             </button>
           </div>
           {% endif %}

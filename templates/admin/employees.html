@@ -33,7 +33,7 @@
         {{ icon('users', size=15) }} Candidate Applications
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab active">
-        {{ icon('user-check', size=15) }} Employees ({{ employees|length }})
+        {{ icon('user-check', size=15) }} Employees <span class="admin-tab-count">{{ employees|length }}</span>
       </a>
       <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
         {{ icon('file-text', size=15) }} Templates
@@ -141,7 +141,7 @@
                     {% set doc = emp.offer_letter_doc %}
                     {% if not doc %}
                       <a href="{{ url_for('admin.generate_offer_letter', employee_id=emp.employee_id) }}" class="btn btn-primary btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; gap: 4px;">
-                        {{ icon('sparkles', size=12) }} Generate
+                        {{ icon('file-text', size=12) }} Generate
                       </a>
                     {% else %}
                       <a href="{{ url_for('admin.preview_offer_letter', employee_id=emp.employee_id) }}" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.55rem; font-size: 0.75rem; gap: 4px;" title="Preview DOCX">

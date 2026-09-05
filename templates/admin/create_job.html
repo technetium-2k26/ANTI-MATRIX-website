@@ -8,19 +8,19 @@
   <div class="container" style="max-width: 900px; margin: 0 auto;">
     
     <!-- Clean Minimalist Header -->
-    <div style="margin-bottom: var(--space-xl); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-md); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: var(--space-lg);">
+    <div style="margin-bottom: var(--space-xl); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-md); border-bottom: 1px solid var(--color-border, #e2e8f0); padding-bottom: var(--space-lg);">
       <div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: 6px;">
-          <a href="{{ url_for('admin.dashboard') }}" style="color: var(--color-text-dim); text-decoration: none;">Admin</a>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; margin-bottom: 6px; font-family: var(--font-admin-sans);">
+          <a href="{{ url_for('admin.dashboard') }}" style="color: #64748b; text-decoration: none;">Admin</a>
           <span>/</span>
-          <a href="{{ url_for('admin.jobs') }}" style="color: var(--color-text-dim); text-decoration: none;">Job Postings</a>
+          <a href="{{ url_for('admin.jobs') }}" style="color: #64748b; text-decoration: none;">Job Postings</a>
           <span>/</span>
           <span style="color: var(--color-primary-light);">New Opening</span>
         </div>
-        <h1 style="font-size: clamp(1.6rem, 2.5vw, 2rem); font-weight: 700; color: var(--color-white); margin: 0; letter-spacing: -0.02em;">
+        <h1 style="font-family: var(--font-admin-heading); font-size: clamp(1.6rem, 2.5vw, 2rem); font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
           Create Job Posting
         </h1>
-        <p style="color: var(--color-text-dim); font-size: 0.9rem; margin: 4px 0 0 0;">
+        <p style="font-family: var(--font-admin-sans); color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">
           Add a new career or internship opportunity to the Anti-Matrix talent portal.
         </p>
       </div>
@@ -29,14 +29,14 @@
         <button type="button" onclick="togglePreviewDrawer()" class="btn btn-outline btn-sm" id="toggle-preview-btn" style="gap: 6px; font-weight: 500;">
           {{ icon('eye', size=14) }} <span id="preview-btn-text">Preview Card</span>
         </button>
-        <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="color: var(--color-text-dim); gap: 6px;">
+        <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="color: #64748b; gap: 6px;">
           {{ icon('arrow-left', size=14) }} Back to Postings
         </a>
       </div>
     </div>
 
-    <!-- Admin Nav Tabs (Subtle & Compact) -->
-    <div class="admin-nav-tabs" style="margin-bottom: var(--space-xl); background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06);">
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs">
       <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
         {{ icon('layout', size=14) }} Overview
       </a>
@@ -44,7 +44,7 @@
         {{ icon('briefcase', size=14) }} Job Postings
       </a>
       <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
-        {{ icon('users', size=14) }} Applications
+        {{ icon('users', size=14) }} Candidate Applications
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
         {{ icon('user-check', size=14) }} Employees
@@ -55,47 +55,47 @@
     </div>
 
     <!-- Live Preview Drawer (Collapsed by default, opens smoothly) -->
-    <div id="preview-drawer" style="display: none; margin-bottom: var(--space-xl); background: rgba(18, 24, 38, 0.6); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: var(--space-lg); backdrop-filter: blur(10px); animation: fadeIn 0.2s ease;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 8px;">
-        <span style="font-size: 0.8rem; font-weight: 600; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+    <div id="preview-drawer" style="display: none; margin-bottom: var(--space-xl); background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: var(--space-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); animation: fadeIn 0.2s ease;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+        <span style="font-family: var(--font-admin-heading); font-size: 0.8rem; font-weight: 600; color: #059669; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
           {{ icon('eye', size=14) }} Live Candidate View Preview
         </span>
-        <span id="preview-status-pill" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light); border: 1px solid rgba(16, 185, 129, 0.3);">
+        <span id="preview-status-pill" class="badge-status active">
           Active
         </span>
       </div>
 
-      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); max-width: 600px; margin: 0 auto;">
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: var(--space-lg); max-width: 600px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
           <div>
-            <span id="preview-dept" style="font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700; text-transform: uppercase;">Engineering</span>
-            <span style="color: var(--color-text-muted); margin: 0 6px;">&bull;</span>
-            <span id="preview-type-badge" style="font-size: 0.75rem; color: var(--color-text-dim);">Full-time</span>
+            <span id="preview-dept" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase;">Engineering</span>
+            <span style="color: #94a3b8; margin: 0 6px;">&bull;</span>
+            <span id="preview-type-badge" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b;">Full-time</span>
           </div>
-          <span id="preview-duration-badge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.06); color: var(--color-text-dim); display: none;">
+          <span id="preview-duration-badge" style="font-family: var(--font-admin-sans); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #f1f5f9; color: #475569; display: none;">
             Internship
           </span>
         </div>
 
-        <h3 id="preview-title" style="color: var(--color-white); font-size: 1.2rem; font-weight: 700; margin: 0 0 6px 0;">
+        <h3 id="preview-title" style="font-family: var(--font-admin-heading); color: #0f172a; font-size: 1.2rem; font-weight: 700; margin: 0 0 6px 0;">
           Job Title
         </h3>
 
-        <div style="font-size: 0.825rem; color: var(--color-text-dim); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-family: var(--font-admin-sans); font-size: 0.825rem; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
           {{ icon('map-pin', size=13) }} <span id="preview-loc">Remote (Worldwide)</span>
         </div>
 
-        <p id="preview-summary" style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 12px;">
+        <p id="preview-summary" style="font-family: var(--font-admin-sans); font-size: 0.85rem; color: #475569; line-height: 1.5; margin-bottom: 12px;">
           Short role description summary will appear here...
         </p>
 
         <div id="preview-skills-tags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;"></div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
-          <span id="preview-salary" style="font-size: 0.85rem; font-weight: 600; color: var(--color-primary-light);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+          <span id="preview-salary" style="font-family: var(--font-admin-sans); font-size: 0.85rem; font-weight: 600; color: #059669;">
             Competitive
           </span>
-          <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 600;">
+          <span style="font-family: var(--font-admin-sans); font-size: 0.85rem; color: #059669; font-weight: 600;">
             Apply Now &rarr;
           </span>
         </div>
@@ -106,18 +106,18 @@
     <form method="POST" action="{{ url_for('admin.create_job') }}" id="create-job-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: clamp(1.5rem, 3vw, 2.5rem); box-shadow: var(--shadow-sm);">
+      <div style="background: #ffffff; border: 1px solid var(--color-border, #e2e8f0); border-radius: var(--radius-lg); padding: clamp(1.5rem, 3vw, 2.5rem); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
 
         <!-- Section 1: Role Overview -->
         <div style="margin-bottom: var(--space-2xl);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 4px;">01</span>
-            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">Role Overview</h2>
+            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">01</span>
+            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Role Overview</h2>
           </div>
 
           <!-- Job Title -->
           <div class="form-group" style="margin-bottom: var(--space-lg);">
-            <label for="title" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+            <label for="title" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
               Job Title <span style="color: #f87171;">*</span>
             </label>
             <input
@@ -128,7 +128,7 @@
               placeholder="e.g. Senior Full-Stack Engineer"
               value="{{ form_data.get('title', '') }}"
               required
-              style="font-size: 1rem; padding: 0.75rem 1rem;"
+              style="font-family: var(--font-admin-sans); font-size: 0.95rem; padding: 0.75rem 1rem;"
               oninput="updatePreview()"
             />
           </div>
@@ -210,35 +210,35 @@
           </div>
         </div>
 
-        <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); margin: var(--space-xl) 0;"></div>
+        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
 
         <!-- Section 2: Program Tier & Compensation -->
         <div style="margin-bottom: var(--space-2xl);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 4px;">02</span>
-            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">Program Tier &amp; Compensation</h2>
+            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">02</span>
+            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Program Tier &amp; Compensation</h2>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg);">
             
             <!-- Program Tier (Internship Fee Engine) -->
             <div class="form-group">
-              <label for="duration" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+              <label for="duration" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
                 Program Duration &amp; Fee
               </label>
-              <select id="duration" name="duration" class="form-input" style="appearance: auto;" onchange="updateDurationTier(); updatePreview();">
+              <select id="duration" name="duration" class="form-input" style="appearance: auto; font-family: var(--font-admin-sans);" onchange="updateDurationTier(); updatePreview();">
                 <option value="" {{ 'selected' if not form_data.get('duration') else '' }}>Standard Role (Free Application)</option>
                 <option value="1_month" {{ 'selected' if form_data.get('duration') == '1_month' else '' }}>1 Month Internship (₹199 Fee)</option>
                 <option value="3_months" {{ 'selected' if form_data.get('duration') == '3_months' else '' }}>3 Months Internship (₹399 Fee + Aadhaar Verification)</option>
               </select>
-              <span id="tier-hint" style="font-size: 0.75rem; color: var(--color-text-dim); display: block; margin-top: 6px;">
+              <span id="tier-hint" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b; display: block; margin-top: 6px;">
                 Standard opening. No application or verification fee required.
               </span>
             </div>
 
             <!-- Salary / Stipend -->
             <div class="form-group">
-              <label for="salary" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+              <label for="salary" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
                 Salary / Stipend
               </label>
               <input
@@ -248,13 +248,14 @@
                 class="form-input"
                 placeholder="e.g. Competitive or ₹15,000 - ₹25,000/mo"
                 value="{{ form_data.get('salary', '') }}"
+                style="font-family: var(--font-admin-sans);"
                 oninput="updatePreview()"
               />
             </div>
 
             <!-- Application Deadline -->
             <div class="form-group">
-              <label for="application_deadline" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+              <label for="application_deadline" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
                 Application Deadline
               </label>
               <input
@@ -264,28 +265,29 @@
                 class="form-input"
                 placeholder="e.g. Rolling / Open until filled"
                 value="{{ form_data.get('application_deadline', '') }}"
+                style="font-family: var(--font-admin-sans);"
               />
             </div>
 
           </div>
         </div>
 
-        <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); margin: var(--space-xl) 0;"></div>
+        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
 
         <!-- Section 3: Role Descriptions -->
         <div style="margin-bottom: var(--space-2xl);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 4px;">03</span>
-            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">Role Descriptions</h2>
+            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">03</span>
+            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Role Descriptions</h2>
           </div>
 
           <!-- Short Teaser -->
           <div class="form-group" style="margin-bottom: var(--space-lg);">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label for="short_description" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem; margin: 0;">
+              <label for="short_description" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem; margin: 0;">
                 Short Summary (Card Teaser) <span style="color: #f87171;">*</span>
               </label>
-              <span id="char-counter" style="font-size: 0.75rem; color: var(--color-text-dim);">0/260</span>
+              <span id="char-counter" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b;">0/260</span>
             </div>
             <input
               type="text"
@@ -296,13 +298,14 @@
               value="{{ form_data.get('short_description', '') }}"
               required
               maxlength="260"
+              style="font-family: var(--font-admin-sans);"
               oninput="handleShortDescChange(); updatePreview();"
             />
           </div>
 
           <!-- Full Job Description -->
           <div class="form-group">
-            <label for="description" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+            <label for="description" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
               Full Job Description <span style="color: #f87171;">*</span>
             </label>
             <textarea
@@ -312,23 +315,23 @@
               class="form-textarea"
               placeholder="Describe the opportunity, core mission, project scope, and what success looks like in this position..."
               required
-              style="line-height: 1.6; font-size: 0.9rem;"
+              style="font-family: var(--font-admin-sans); line-height: 1.6; font-size: 0.9rem;"
             >{{ form_data.get('description', '') }}</textarea>
           </div>
         </div>
 
-        <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); margin: var(--space-xl) 0;"></div>
+        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
 
         <!-- Section 4: Skills & Requirements -->
         <div style="margin-bottom: var(--space-2xl);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.12); padding: 2px 8px; border-radius: 4px;">04</span>
-            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">Skills &amp; Criteria</h2>
+            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">04</span>
+            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Skills &amp; Criteria</h2>
           </div>
 
           <!-- Skills Input -->
           <div class="form-group" style="margin-bottom: var(--space-lg);">
-            <label for="skills" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+            <label for="skills" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
               Required Skills (Comma-separated)
             </label>
             <input
@@ -338,9 +341,10 @@
               class="form-input"
               placeholder="e.g. React, Python, Node.js, PostgreSQL, Docker"
               value="{{ form_data.get('skills', '') }}"
+              style="font-family: var(--font-admin-sans);"
               oninput="updatePreview()"
             />
-            <span style="font-size: 0.75rem; color: var(--color-text-dim); display: block; margin-top: 4px;">
+            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b; display: block; margin-top: 4px;">
               Separate tags with commas. These appear as visual badges on the job listing.
             </span>
           </div>
@@ -349,7 +353,7 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
             
             <div class="form-group">
-              <label for="responsibilities" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+              <label for="responsibilities" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
                 Responsibilities (One item per line)
               </label>
               <textarea
@@ -358,12 +362,12 @@
                 rows="4"
                 class="form-textarea"
                 placeholder="Architect scalable services&#10;Collaborate with design and product teams&#10;Deliver high-craft code and automated testing"
-                style="line-height: 1.5; font-size: 0.875rem;"
+                style="font-family: var(--font-admin-sans); line-height: 1.5; font-size: 0.875rem;"
               >{{ form_data.get('responsibilities', '') }}</textarea>
             </div>
 
             <div class="form-group">
-              <label for="requirements" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
+              <label for="requirements" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
                 Requirements &amp; Qualifications (One item per line)
               </label>
               <textarea
@@ -372,14 +376,14 @@
                 rows="4"
                 class="form-textarea"
                 placeholder="Degree in Computer Science or equivalent practical experience&#10;Proficiency in modern full-stack development&#10;Clear verbal and written communication skills"
-                style="line-height: 1.5; font-size: 0.875rem;"
+                style="font-family: var(--font-admin-sans); line-height: 1.5; font-size: 0.875rem;"
               >{{ form_data.get('requirements', '') }}</textarea>
             </div>
 
           </div>
         </div>
 
-        <div style="border-top: 1px solid rgba(255, 255, 255, 0.06); margin: var(--space-xl) 0;"></div>
+        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
 
         <!-- Section 5: Visibility & Publishing Action -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-lg);">
@@ -397,10 +401,10 @@
                 onchange="onActiveToggle(this.checked)"
               />
               <div>
-                <span style="font-weight: 600; font-size: 0.95rem; color: var(--color-white);" id="status-title">
+                <span style="font-family: var(--font-admin-heading); font-weight: 600; font-size: 0.95rem; color: #0f172a;" id="status-title">
                   Publish Immediately
                 </span>
-                <span style="font-size: 0.775rem; color: var(--color-text-dim); display: block;" id="status-sub">
+                <span style="font-family: var(--font-admin-sans); font-size: 0.775rem; color: #64748b; display: block;" id="status-sub">
                   Live and visible on the public Careers portal upon saving.
                 </span>
               </div>
@@ -409,10 +413,10 @@
 
           <!-- Buttons -->
           <div style="display: flex; align-items: center; gap: 10px;">
-            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost" style="color: var(--color-text-dim);">
+            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost" style="color: #64748b;">
               Cancel
             </a>
-            <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.6rem; font-weight: 600; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);">
+            <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.6rem; font-weight: 600; gap: 6px;">
               {{ icon('check', size=16) }} Publish Job Posting
             </button>
           </div>

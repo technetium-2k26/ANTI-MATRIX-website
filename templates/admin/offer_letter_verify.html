@@ -24,7 +24,7 @@
           {{ icon('check-circle', size=22) }}
         </div>
         <div>
-          <h3 style="font-size: 1.05rem; margin: 0; color: #000000;">Offer Letter Generated Successfully</h3>
+          <h3 style="font-family: var(--font-admin-heading); font-size: 1.05rem; margin: 0; color: #0f172a; font-weight: 700;">Offer Letter Generated Successfully</h3>
           <p style="color: var(--color-text-dim); font-size: 0.825rem; margin: 0;">
             File: <code style="color: var(--color-primary-light); font-weight: 700;">{{ emp_doc.file_name }}</code> &bull; Generated on {{ emp_doc.generated_at.strftime('%b %d, %Y, %I:%M %p') }}
           </p>
@@ -126,7 +126,7 @@
           <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light); margin-bottom: 0.75rem;">
             {{ icon('check-circle', size=26) }}
           </div>
-          <h3 style="color: #000000; margin-bottom: 0.25rem;">Offer Letter Already Sent</h3>
+          <h3 style="font-family: var(--font-admin-heading); color: #0f172a; font-weight: 700; margin-bottom: 0.25rem;">Offer Letter Already Sent</h3>
           <p style="color: var(--color-text-dim); font-size: 0.875rem; max-width: 500px; margin: 0 auto var(--space-lg);">
             This Offer Letter was successfully delivered to <strong>{{ employee.candidate_email }}</strong> on 
             {{ emp_doc.sent_at.strftime('%B %d, %Y at %I:%M %p') if emp_doc.sent_at else 'earlier' }}.
@@ -139,7 +139,7 @@
       {% else %}
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
-            <h4 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #000000;">Ready for Final Dispatch</h4>
+            <h4 style="margin: 0 0 0.25rem 0; font-size: 1rem; color: #0f172a; font-family: var(--font-admin-heading); font-weight: 700;">Ready for Final Dispatch</h4>
             <p style="margin: 0; color: var(--color-text-dim); font-size: 0.825rem;">
               Clicking below will send the official Offer Letter with attachment to {{ employee.candidate_email }}.
             </p>

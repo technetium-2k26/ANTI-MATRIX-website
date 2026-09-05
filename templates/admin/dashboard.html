@@ -33,16 +33,16 @@
         {{ icon('layout', size=15) }} Overview
       </a>
       <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab">
-        {{ icon('briefcase', size=15) }} Job Postings ({{ total_jobs }})
+        {{ icon('briefcase', size=15) }} Job Postings <span class="admin-tab-count">{{ total_jobs }}</span>
       </a>
       <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
-        {{ icon('users', size=15) }} Candidate Applications ({{ total_applications }})
+        {{ icon('users', size=15) }} Candidate Applications <span class="admin-tab-count">{{ total_applications }}</span>
         {% if new_applications > 0 %}
-          <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: #38bdf8; color: #070a12; font-weight: 800; border-radius: 999px;">{{ new_applications }} NEW</span>
+          <span class="admin-tab-count new">{{ new_applications }} NEW</span>
         {% endif %}
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
-        {{ icon('user-check', size=15) }} Employees ({{ total_employees }})
+        {{ icon('user-check', size=15) }} Employees <span class="admin-tab-count">{{ total_employees }}</span>
       </a>
       <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
         {{ icon('file-text', size=15) }} Templates
@@ -52,7 +52,7 @@
     <!-- Summary Stat Cards -->
     <div class="admin-stats-grid">
       <div class="stat-card">
-        <div class="stat-icon">{{ icon('briefcase', size=22) }}</div>
+        <div class="stat-icon">{{ icon('briefcase', size=20) }}</div>
         <div class="stat-info">
           <div class="stat-value">{{ total_jobs }}</div>
           <div class="stat-label">Total Jobs</div>
@@ -60,31 +60,31 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light);">
-          {{ icon('check-circle', size=22) }}
+        <div class="stat-icon" style="background: #f0fdf4; color: #059669; border-color: #bbf7d0;">
+          {{ icon('check-circle', size=20) }}
         </div>
         <div class="stat-info">
-          <div class="stat-value" style="color: var(--color-primary-light);">{{ active_jobs }}</div>
+          <div class="stat-value" style="color: #059669;">{{ active_jobs }}</div>
           <div class="stat-label">Active Openings</div>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
-          {{ icon('users', size=22) }}
+        <div class="stat-icon" style="background: #f8fafc; color: #475569; border-color: #e2e8f0;">
+          {{ icon('users', size=20) }}
         </div>
         <div class="stat-info">
-          <div class="stat-value" style="color: #c084fc;">{{ total_applications }}</div>
+          <div class="stat-value">{{ total_applications }}</div>
           <div class="stat-label">Total Applications</div>
         </div>
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
-          {{ icon('sparkles', size=22) }}
+        <div class="stat-icon" style="background: #eff6ff; color: #2563eb; border-color: #bfdbfe;">
+          {{ icon('inbox', size=20) }}
         </div>
         <div class="stat-info">
-          <div class="stat-value" style="color: #38bdf8;">{{ new_applications }}</div>
+          <div class="stat-value" style="color: #2563eb;">{{ new_applications }}</div>
           <div class="stat-label">New Submissions</div>
         </div>
       </div>
@@ -96,8 +96,8 @@
       <!-- Recent Job Postings Widget -->
       <div class="card" style="padding: var(--space-xl);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
-          <h3 style="font-size: 1.15rem; color: #000000; display: flex; align-items: center; gap: 8px;">
-            {{ icon('briefcase', size=16, color='var(--color-primary-light)') }} Recent Job Postings
+          <h3 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;">
+            {{ icon('briefcase', size=16, color='#059669') }} Recent Job Postings
           </h3>
           <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">
             View All {{ icon('arrow-right', size=12) }}
@@ -154,8 +154,8 @@
       <!-- Recent Applications Widget -->
       <div class="card" style="padding: var(--space-xl);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
-          <h3 style="font-size: 1.15rem; color: #000000; display: flex; align-items: center; gap: 8px;">
-            {{ icon('users', size=16, color='var(--color-primary-light)') }} Recent Applications
+          <h3 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;">
+            {{ icon('users', size=16, color='#059669') }} Recent Applications
           </h3>
           <a href="{{ url_for('admin.applications') }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">
             View All {{ icon('arrow-right', size=12) }}

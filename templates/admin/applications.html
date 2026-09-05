@@ -25,7 +25,7 @@
         {{ icon('briefcase', size=15) }} Job Postings
       </a>
       <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab active">
-        {{ icon('users', size=15) }} Candidate Applications ({{ applications|length }})
+        {{ icon('users', size=15) }} Candidate Applications <span class="admin-tab-count">{{ applications|length }}</span>
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
         {{ icon('user-check', size=15) }} Employees
