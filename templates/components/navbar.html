@@ -41,13 +41,6 @@
           Contact
         </a>
       </li>
-      {% if current_user.is_authenticated and current_user.role == 'admin' %}
-        <li>
-          <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.path.startswith('/admin') else '' }}" style="display: inline-flex; align-items: center; gap: 5px; color: var(--color-primary-light); font-weight: 600;">
-            {{ icon('shield', size=13) }} Admin Dashboard
-          </a>
-        </li>
-      {% endif %}
     </ul>
 
     {# Desktop actions #}
@@ -78,7 +71,7 @@
           {# Profile dropdown panel #}
           <div
             id="profile-dropdown-panel"
-            style="display:none; position:absolute; top:calc(100% + 10px); right:0; min-width:230px; background:#fff; border:1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); z-index:9999; overflow:hidden;"
+            style="display:none; position:absolute; top:calc(100% + 10px); right:0; min-width:240px; background:#fff; border:1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); z-index:9999; overflow:hidden;"
             role="menu"
           >
             {# User info header #}
@@ -110,13 +103,37 @@
 
             {# Dropdown links #}
             <div style="padding: 0.4rem 0;">
-              <a href="{{ url_for('main.my_applications') }}"
-                 role="menuitem"
-                 style="display:flex; align-items:center; gap:10px; padding:0.6rem 1.1rem; font-size:0.875rem; color:var(--color-text); text-decoration:none; transition:background 0.15s;"
-                 onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
-                {{ icon('briefcase', size=15) }}
-                My Applications
-              </a>
+              {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}"
+                   role="menuitem"
+                   style="display:flex; align-items:center; gap:10px; padding:0.65rem 1.1rem; font-size:0.875rem; color:var(--color-primary); font-weight:700; text-decoration:none; transition:background 0.15s;"
+                   onmouseover="this.style.background='rgba(5,150,105,0.08)'" onmouseout="this.style.background='transparent'">
+                  {{ icon('shield', size=15) }}
+                  Admin Dashboard
+                </a>
+                <a href="{{ url_for('admin.jobs') }}"
+                   role="menuitem"
+                   style="display:flex; align-items:center; gap:10px; padding:0.65rem 1.1rem; font-size:0.875rem; color:var(--color-text); text-decoration:none; transition:background 0.15s;"
+                   onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+                  {{ icon('briefcase', size=15) }}
+                  Job Postings
+                </a>
+                <a href="{{ url_for('admin.applications') }}"
+                   role="menuitem"
+                   style="display:flex; align-items:center; gap:10px; padding:0.65rem 1.1rem; font-size:0.875rem; color:var(--color-text); text-decoration:none; transition:background 0.15s;"
+                   onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+                  {{ icon('users', size=15) }}
+                  Applications
+                </a>
+              {% else %}
+                <a href="{{ url_for('main.my_applications') }}"
+                   role="menuitem"
+                   style="display:flex; align-items:center; gap:10px; padding:0.6rem 1.1rem; font-size:0.875rem; color:var(--color-text); text-decoration:none; transition:background 0.15s;"
+                   onmouseover="this.style.background='var(--color-bg-alt)'" onmouseout="this.style.background='transparent'">
+                  {{ icon('briefcase', size=15) }}
+                  My Applications
+                </a>
+              {% endif %}
               <div style="height:1px; background:var(--color-border); margin:0.35rem 0;"></div>
               <a href="{{ url_for('auth.logout') }}"
                  role="menuitem"
@@ -159,14 +176,21 @@
   <a href="{{ url_for('main.careers') }}" class="{{ 'active' if request.path.startswith('/careers') else '' }}">Careers</a>
   <a href="{{ url_for('main.contact') }}" class="{{ 'active' if request.path.startswith('/contact') else '' }}">Contact</a>
   {% if current_user.is_authenticated %}
-    <a href="{{ url_for('main.my_applications') }}" class="{{ 'active' if request.path.startswith('/my-applications') else '' }}">
-      My Applications
-    </a>
-  {% endif %}
-  {% if current_user.is_authenticated and current_user.role == 'admin' %}
-    <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.path.startswith('/admin') else '' }}" style="color: var(--color-primary-light); font-weight: 700;">
-      🛡️ Admin Dashboard
-    </a>
+    {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.path.startswith('/admin') else '' }}" style="color: var(--color-primary-light); font-weight: 700;">
+        🛡️ Admin Dashboard
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="{{ 'active' if request.path == '/admin/jobs' else '' }}">
+        💼 Job Postings
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="{{ 'active' if request.path == '/admin/applications' else '' }}">
+        👥 Candidate Applications
+      </a>
+    {% else %}
+      <a href="{{ url_for('main.my_applications') }}" class="{{ 'active' if request.path.startswith('/my-applications') else '' }}">
+        My Applications
+      </a>
+    {% endif %}
   {% endif %}
   
   <div class="mobile-nav-divider"></div>

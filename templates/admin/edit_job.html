@@ -4,203 +4,607 @@
 {% block title %}Edit Job Posting: {{ job.title }} | Anti-Matrix Admin{% endblock %}
 
 {% block content %}
-<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
-  <div class="container" style="max-width: 900px;">
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh; padding-bottom: var(--space-3xl);">
+  <div class="container" style="max-width: 1200px;">
     
-    <!-- Admin Header -->
+    <!-- Admin Header & Breadcrumbs -->
     <div class="admin-header" style="margin-bottom: var(--space-xl);">
       <div class="admin-header-title">
-        <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-xs); display: inline-flex; align-items: center; gap: 6px;">
-          {{ icon('arrow-left', size=14) }} Back to Job Postings
-        </a>
-        <h1>Edit Job Posting</h1>
-        <p>Updating details for: <strong style="color: var(--color-primary-light);">{{ job.title }}</strong></p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-xs); font-size: 0.85rem; color: var(--color-text-dim);">
+          <a href="{{ url_for('admin.dashboard') }}" style="color: var(--color-text-dim); text-decoration: none;">Admin</a>
+          <span>/</span>
+          <a href="{{ url_for('admin.jobs') }}" style="color: var(--color-text-dim); text-decoration: none;">Job Postings</a>
+          <span>/</span>
+          <span style="color: var(--color-primary-light); font-weight: 600;">Edit Role #{{ job.id }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <h1 style="margin: 0; font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 800; letter-spacing: -0.02em;">Edit Job Posting</h1>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light); border: 1px solid rgba(16, 185, 129, 0.3);">
+            {{ icon('edit-3', size=12) }} ID: #{{ job.id }}
+          </span>
+        </div>
+        <p style="margin-top: 6px; margin-bottom: 0; color: var(--color-text-dim); font-size: 0.95rem;">
+          Updating specifications for: <strong style="color: var(--color-white);">{{ job.title }}</strong>
+        </p>
       </div>
-      <div>
-        <a href="{{ url_for('admin.applications', job_id=job.id) }}" class="btn btn-outline btn-sm">
-          {{ icon('users', size=14) }} View Applications ({{ job.application_count }})
+
+      <div style="display: flex; gap: var(--space-sm); align-items: center;">
+        <a href="{{ url_for('admin.applications', job_id=job.id) }}" class="btn btn-outline btn-sm" style="gap: 6px;">
+          {{ icon('users', size=14) }} View Applicants ({{ job.application_count }})
+        </a>
+        <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="gap: 6px;">
+          {{ icon('arrow-left', size=14) }} Back to Postings
         </a>
       </div>
     </div>
 
-    <!-- Edit Form Card -->
-    <div class="card" style="padding: var(--space-2xl);">
-      <form method="POST" action="{{ url_for('admin.edit_job', job_id=job.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-        <!-- Basic Information -->
-        <div class="form-section-title">
-          {{ icon('briefcase', size=16, color='var(--color-primary-light)') }} Basic Information
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="title" class="form-label">Job Title <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              class="form-input"
-              value="{{ job.title }}"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="department" class="form-label">Department <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="department"
-              name="department"
-              class="form-input"
-              value="{{ job.department }}"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="location" class="form-label">Location <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              class="form-input"
-              value="{{ job.location }}"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="employment_type" class="form-label">Employment Type <span style="color: #f87171;">*</span></label>
-            <select id="employment_type" name="employment_type" class="form-input" style="appearance: auto;">
-              {% set types = ['Full-time', 'Part-time', 'Internship', 'Contract', 'Remote', 'Hybrid'] %}
-              {% for t in types %}
-                <option value="{{ t }}" {{ 'selected' if job.employment_type == t else '' }}>{{ t }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="duration" class="form-label">Internship Duration</label>
-            <select id="duration" name="duration" class="form-input" style="appearance: auto;">
-              <option value="" {{ 'selected' if not job.duration else '' }}>-- Optional (For Internships) --</option>
-              <option value="1_month" {{ 'selected' if job.duration == '1_month' else '' }}>1 Month (₹199 Application Fee)</option>
-              <option value="3_months" {{ 'selected' if job.duration == '3_months' else '' }}>3 Months (₹399 Application Fee)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Descriptions -->
-        <div class="form-section-title">
-          {{ icon('file-text', size=16, color='var(--color-primary-light)') }} Descriptions
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-lg);">
-          <label for="short_description" class="form-label">Short Summary (Shown on job card) <span style="color: #f87171;">*</span></label>
-          <input
-            type="text"
-            id="short_description"
-            name="short_description"
-            class="form-input"
-            value="{{ job.short_description }}"
-            required
-          />
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-lg);">
-          <label for="description" class="form-label">Full Job Description <span style="color: #f87171;">*</span></label>
-          <textarea
-            id="description"
-            name="description"
-            rows="5"
-            class="form-textarea"
-            required
-          >{{ job.description }}</textarea>
-        </div>
-
-        <!-- Detailed Requirements -->
-        <div class="form-section-title">
-          {{ icon('check-square', size=16, color='var(--color-primary-light)') }} Responsibilities & Qualifications
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-lg);">
-          <label for="skills" class="form-label">Key Skills & Tags (Comma-separated)</label>
-          <input
-            type="text"
-            id="skills"
-            name="skills"
-            class="form-input"
-            value="{{ job.skills or '' }}"
-          />
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-lg);">
-          <label for="responsibilities" class="form-label">Core Responsibilities (One item per line)</label>
-          <textarea
-            id="responsibilities"
-            name="responsibilities"
-            rows="4"
-            class="form-textarea"
-          >{{ job.responsibilities or '' }}</textarea>
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-lg);">
-          <label for="requirements" class="form-label">Requirements & Qualifications (One item per line)</label>
-          <textarea
-            id="requirements"
-            name="requirements"
-            rows="4"
-            class="form-textarea"
-          >{{ job.requirements or '' }}</textarea>
-        </div>
-
-        <!-- Logistics & Status -->
-        <div class="form-section-title">
-          {{ icon('settings', size=16, color='var(--color-primary-light)') }} Compensation & Visibility
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
-          <div class="form-group">
-            <label for="salary" class="form-label">Salary / Stipend Range</label>
-            <input
-              type="text"
-              id="salary"
-              name="salary"
-              class="form-input"
-              value="{{ job.salary or '' }}"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="application_deadline" class="form-label">Application Deadline</label>
-            <input
-              type="text"
-              id="application_deadline"
-              name="application_deadline"
-              class="form-input"
-              value="{{ job.application_deadline or '' }}"
-            />
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-2xl);">
-          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--color-text); font-weight: 600;">
-            <input type="checkbox" name="is_active" value="true" {{ 'checked' if job.is_active else '' }} style="width: 18px; height: 18px; accent-color: var(--color-primary);" />
-            Active on public Careers page
-          </label>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md);">
-          <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost">Cancel</a>
-          <button type="submit" class="btn btn-primary btn-lg" style="gap: 8px;">
-            {{ icon('check', size=16) }} Update Job Posting
-          </button>
-        </div>
-      </form>
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs" style="margin-bottom: var(--space-2xl);">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
+        {{ icon('layout', size=15) }} Overview
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab active">
+        {{ icon('briefcase', size=15) }} Job Postings
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
+        {{ icon('users', size=15) }} Candidate Applications
+      </a>
+      <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
+        {{ icon('user-check', size=15) }} Employees
+      </a>
+      <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
+        {{ icon('file-text', size=15) }} Templates
+      </a>
     </div>
+
+    <!-- Two-Column Executive Form Layout -->
+    <form method="POST" action="{{ url_for('admin.edit_job', job_id=job.id) }}" id="edit-job-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: var(--space-2xl); align-items: start;">
+        
+        <!-- ================= LEFT COLUMN: ROLE SPECIFICATIONS ================= -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-xl);">
+
+          <!-- 1. Role Overview Card -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); display: flex; align-items: center; justify-content: center;">
+                  {{ icon('briefcase', size=18) }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">1. General Role Information</h3>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Primary identity, department grouping, and work arrangement</p>
+                </div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--color-primary-light); font-weight: 600; text-transform: uppercase;">Step 1 of 4</span>
+            </div>
+
+            <!-- Job Title -->
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                <label for="title" class="form-label" style="font-weight: 700; color: var(--color-white); margin-bottom: 0;">
+                  Job Title <span style="color: #f87171;">*</span>
+                </label>
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">Shown prominently as main headline</span>
+              </div>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                class="form-input"
+                value="{{ job.title }}"
+                required
+                style="font-size: 1rem; padding: 0.75rem 1rem; border-color: rgba(255,255,255,0.15);"
+                oninput="updatePreview()"
+              />
+            </div>
+
+            <!-- Department & Location Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+              <!-- Department -->
+              <div class="form-group">
+                <label for="department" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Department <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="department"
+                  name="department"
+                  class="form-input"
+                  value="{{ job.department }}"
+                  required
+                  list="department-suggestions"
+                  oninput="updatePreview()"
+                />
+                <datalist id="department-suggestions">
+                  <option value="Engineering">
+                  <option value="AI & Machine Learning">
+                  <option value="UI/UX & Product Design">
+                  <option value="Cloud Infrastructure & DevOps">
+                  <option value="Cybersecurity">
+                  <option value="Digital Marketing & Growth">
+                  <option value="Product Management">
+                </datalist>
+              </div>
+
+              <!-- Location -->
+              <div class="form-group">
+                <label for="location" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Location <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  class="form-input"
+                  value="{{ job.location }}"
+                  required
+                  list="location-suggestions"
+                  oninput="updatePreview()"
+                />
+                <datalist id="location-suggestions">
+                  <option value="Remote (Worldwide)">
+                  <option value="Chennai, Tamil Nadu, India">
+                  <option value="Bangalore, Karnataka, India">
+                  <option value="Hybrid (Chennai HQ)">
+                </datalist>
+              </div>
+            </div>
+
+            <!-- Employment Type -->
+            <div class="form-group">
+              <label for="employment_type" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Employment Type <span style="color: #f87171;">*</span>
+              </label>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
+                {% set types = ['Full-time', 'Internship', 'Part-time', 'Contract', 'Remote', 'Hybrid'] %}
+                {% for t in types %}
+                  <label class="emp-type-label" style="display: flex; align-items: center; gap: 6px; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.825rem; transition: all 0.15s; background: rgba(0,0,0,0.2);">
+                    <input
+                      type="radio"
+                      name="employment_type"
+                      value="{{ t }}"
+                      {{ 'checked' if job.employment_type == t else '' }}
+                      style="accent-color: var(--color-primary);"
+                      onchange="updateEmpType('{{ t }}'); updatePreview();"
+                    />
+                    <span style="color: var(--color-text);">{{ t }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 2. Role Narrative & Descriptions Card -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.12); color: #60a5fa; display: flex; align-items: center; justify-content: center;">
+                  {{ icon('file-text', size=18) }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">2. Role Description &amp; Scope</h3>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Public summary teaser and comprehensive role narrative</p>
+                </div>
+              </div>
+              <span style="font-size: 0.75rem; color: #60a5fa; font-weight: 600; text-transform: uppercase;">Step 2 of 4</span>
+            </div>
+
+            <!-- Short Summary -->
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem;">
+                <label for="short_description" class="form-label" style="font-weight: 700; color: var(--color-white); margin-bottom: 0;">
+                  Short Summary (Card Teaser) <span style="color: #f87171;">*</span>
+                </label>
+                <span id="char-count" style="font-size: 0.75rem; color: var(--color-text-muted);">Recommended: 120-180 chars</span>
+              </div>
+              <input
+                type="text"
+                id="short_description"
+                name="short_description"
+                class="form-input"
+                value="{{ job.short_description }}"
+                required
+                maxlength="260"
+                style="padding: 0.75rem 1rem;"
+                oninput="updateCharCount(); updatePreview();"
+              />
+            </div>
+
+            <!-- Full Job Description -->
+            <div class="form-group">
+              <label for="description" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Full Role Description <span style="color: #f87171;">*</span>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows="6"
+                class="form-textarea"
+                required
+                style="line-height: 1.6; font-size: 0.9rem;"
+              >{{ job.description }}</textarea>
+            </div>
+          </div>
+
+          <!-- 3. Key Skills & Tag Chips Card -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(168, 85, 247, 0.12); color: #c084fc; display: flex; align-items: center; justify-content: center;">
+                  {{ icon('code', size=18) }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">3. Required Tech Stack &amp; Skills</h3>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Search keywords and visual skill badges displayed on job postings</p>
+                </div>
+              </div>
+              <span style="font-size: 0.75rem; color: #c084fc; font-weight: 600; text-transform: uppercase;">Step 3 of 4</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label for="skills" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Skills &amp; Technologies (Comma-separated)
+              </label>
+              <input
+                type="text"
+                id="skills"
+                name="skills"
+                class="form-input"
+                value="{{ job.skills or '' }}"
+                style="padding: 0.75rem 1rem;"
+                oninput="renderSkillBadges(); updatePreview();"
+              />
+            </div>
+
+            <!-- Quick-add interactive skill chips -->
+            <div>
+              <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">
+                Popular Skills — Click to add:
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                {% set popular_skills = [
+                  'React', 'Node.js', 'Python', 'TypeScript', 'PostgreSQL', 
+                  'Next.js', 'AWS', 'Docker', 'Kubernetes', 'AI/ML', 
+                  'PyTorch', 'Figma', 'GraphQL', 'TailwindCSS', 'FastAPI', 'CI/CD'
+                ] %}
+                {% for sk in popular_skills %}
+                  <button
+                    type="button"
+                    onclick="addSkillTag('{{ sk }}')"
+                    style="background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); border-radius: 999px; padding: 3px 10px; font-size: 0.75rem; color: var(--color-text-dim); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px;"
+                    onmouseover="this.style.borderColor='var(--color-primary)'; this.style.color='var(--color-primary-light)'"
+                    onmouseout="this.style.borderColor='var(--color-border)'; this.style.color='var(--color-text-dim)'"
+                  >
+                    <span>+</span> {{ sk }}
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Responsibilities & Requirements Card -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(245, 158, 11, 0.12); color: #fbbf24; display: flex; align-items: center; justify-content: center;">
+                  {{ icon('check-square', size=18) }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">4. Responsibilities &amp; Qualifications</h3>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Bullet criteria shown on the detailed job application page</p>
+                </div>
+              </div>
+              <span style="font-size: 0.75rem; color: #fbbf24; font-weight: 600; text-transform: uppercase;">Step 4 of 4</span>
+            </div>
+
+            <!-- Core Responsibilities -->
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <label for="responsibilities" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Core Responsibilities (One item per line)
+              </label>
+              <textarea
+                id="responsibilities"
+                name="responsibilities"
+                rows="4"
+                class="form-textarea"
+                style="line-height: 1.6; font-size: 0.9rem;"
+              >{{ job.responsibilities or '' }}</textarea>
+            </div>
+
+            <!-- Requirements & Qualifications -->
+            <div class="form-group">
+              <label for="requirements" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Requirements &amp; Qualifications (One item per line)
+              </label>
+              <textarea
+                id="requirements"
+                name="requirements"
+                rows="4"
+                class="form-textarea"
+                style="line-height: 1.6; font-size: 0.9rem;"
+              >{{ job.requirements or '' }}</textarea>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= RIGHT COLUMN: LOGISTICS, FEES & LIVE PREVIEW ================= -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-xl); position: sticky; top: calc(var(--nav-height, 80px) + 1.5rem);">
+
+          <!-- Publishing & Action Panel -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid rgba(16, 185, 129, 0.35); background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, var(--color-surface) 100%); box-shadow: var(--shadow-md);">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--color-white); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
+              {{ icon('zap', size=16, color='var(--color-primary-light)') }} Publishing Controls
+            </h3>
+
+            <!-- Active Toggle -->
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg);">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <input
+                  type="checkbox"
+                  name="is_active"
+                  id="is_active"
+                  value="true"
+                  {{ 'checked' if job.is_active else '' }}
+                  style="width: 18px; height: 18px; accent-color: var(--color-primary); margin-top: 2px;"
+                  onchange="updatePreviewStatus()"
+                />
+                <div>
+                  <div style="font-weight: 700; font-size: 0.9rem; color: var(--color-white);" id="status-label-text">
+                    {{ 'Active • Published Online' if job.is_active else 'Inactive • Hidden Draft' }}
+                  </div>
+                  <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-top: 2px;">
+                    When enabled, this opening is instantly visible on the public Careers page.
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center; gap: 8px; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 18px rgba(16,185,129,0.3);">
+              {{ icon('check', size=18) }} Save Changes
+            </button>
+
+            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; margin-top: var(--space-sm); color: var(--color-text-dim);">
+              Cancel &amp; Discard
+            </a>
+          </div>
+
+          <!-- Compensation & Internship Fee Engine -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface);">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-white); margin-bottom: var(--space-md); display: flex; align-items: center; gap: 8px;">
+              {{ icon('credit-card', size=16, color='var(--color-primary-light)') }} Program &amp; Compensation
+            </h3>
+
+            <!-- Internship Duration & Fee Tier -->
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <label for="duration" class="form-label" style="font-weight: 700; color: var(--color-white); display: flex; justify-content: space-between;">
+                <span>Internship Program Tier</span>
+                <span id="fee-badge" class="badge" style="background: rgba(255,255,255,0.05); color: var(--color-text-dim); font-size: 0.7rem;">
+                  No Fee (Standard)
+                </span>
+              </label>
+              
+              <select id="duration" name="duration" class="form-input" style="appearance: auto; font-weight: 600;" onchange="updateDurationFee()">
+                <option value="" {{ 'selected' if not job.duration else '' }}>
+                  Standard Job Opening (No Application Fee)
+                </option>
+                <option value="1_month" {{ 'selected' if job.duration == '1_month' else '' }}>
+                  1 Month Internship (₹199 Application Fee)
+                </option>
+                <option value="3_months" {{ 'selected' if job.duration == '3_months' else '' }}>
+                  3 Months Internship (₹399 Fee + Aadhaar/PAN Verification)
+                </option>
+              </select>
+
+              <!-- Fee Policy Explainer Box -->
+              <div id="fee-explanation-box" style="margin-top: 8px; font-size: 0.775rem; color: var(--color-text-dim); background: rgba(0,0,0,0.25); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 8px 10px; line-height: 1.5;">
+                Standard position. Candidates can submit their applications without any application fee.
+              </div>
+            </div>
+
+            <!-- Salary / Stipend -->
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label for="salary" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Salary / Stipend Range
+              </label>
+              <input
+                type="text"
+                id="salary"
+                name="salary"
+                class="form-input"
+                value="{{ job.salary or '' }}"
+                oninput="updatePreview()"
+              />
+            </div>
+
+            <!-- Application Deadline -->
+            <div class="form-group">
+              <label for="application_deadline" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Application Deadline
+              </label>
+              <input
+                type="text"
+                id="application_deadline"
+                name="application_deadline"
+                class="form-input"
+                value="{{ job.application_deadline or '' }}"
+              />
+            </div>
+          </div>
+
+          <!-- Live Careers Card Mini Preview -->
+          <div class="card" style="padding: var(--space-lg); border: 1px dashed rgba(16, 185, 129, 0.4); background: rgba(0,0,0,0.2);">
+            <div style="font-size: 0.725rem; font-weight: 700; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-sm); display: flex; align-items: center; justify-content: space-between;">
+              <span>{{ icon('eye', size=12) }} Live Public Preview</span>
+              <span id="preview-status-pill" class="badge-status {{ 'active' if job.is_active else 'inactive' }}" style="font-size: 0.65rem;">
+                {{ 'Active' if job.is_active else 'Draft' }}
+              </span>
+            </div>
+
+            <!-- Mini Job Card -->
+            <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+                <span id="preview-dept" style="font-size: 0.7rem; color: var(--color-primary-light); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                  {{ job.department }}
+                </span>
+                <span id="preview-type-badge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--color-text-dim);">
+                  {{ job.employment_type }}
+                </span>
+              </div>
+
+              <h4 id="preview-title" style="color: var(--color-white); font-size: 1rem; font-weight: 700; margin: 0 0 4px 0; line-height: 1.3;">
+                {{ job.title }}
+              </h4>
+
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                {{ icon('map-pin', size=11) }} <span id="preview-loc">{{ job.location }}</span>
+              </div>
+
+              <p id="preview-summary" style="font-size: 0.78rem; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ job.short_description }}
+              </p>
+
+              <div id="preview-skills-tags" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;">
+                {% if job.skills %}
+                  {% for s in job.skills.split(',')[:4] %}
+                    <span style="font-size: 0.65rem; background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); padding: 1px 6px; border-radius: 3px; color: var(--color-text-dim);">{{ s.strip() }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--color-border); padding-top: 8px;">
+                <span id="preview-salary" style="font-size: 0.75rem; font-weight: 600; color: var(--color-primary-light);">
+                  {{ job.salary or 'Competitive' }}
+                </span>
+                <span style="font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                  Apply Now &rarr;
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </form>
 
   </div>
 </section>
+
+<!-- Interactive Scripts for Professional Admin UX -->
+<script>
+function addSkillTag(skill) {
+  var input = document.getElementById('skills');
+  var current = input.value.trim();
+  if (!current) {
+    input.value = skill;
+  } else {
+    var arr = current.split(',').map(function(s) { return s.trim(); });
+    if (arr.indexOf(skill) === -1) {
+      input.value = current + ', ' + skill;
+    }
+  }
+  updatePreview();
+}
+
+function updateEmpType(val) {
+  var durSelect = document.getElementById('duration');
+  if (val === 'Internship' && !durSelect.value) {
+    durSelect.value = '1_month';
+    updateDurationFee();
+  }
+  document.getElementById('preview-type-badge').textContent = val;
+}
+
+function updateDurationFee() {
+  var val = document.getElementById('duration').value;
+  var badge = document.getElementById('fee-badge');
+  var explainer = document.getElementById('fee-explanation-box');
+
+  if (val === '1_month') {
+    badge.textContent = '₹199 Application Fee';
+    badge.style.background = 'rgba(16, 185, 129, 0.15)';
+    badge.style.color = 'var(--color-primary-light)';
+    explainer.innerHTML = '<strong>1 Month Internship Program</strong>: Candidates are charged ₹199 non-refundable application processing fee at checkout.';
+  } else if (val === '3_months') {
+    badge.textContent = '₹399 Application Fee';
+    badge.style.background = 'rgba(16, 185, 129, 0.2)';
+    badge.style.color = 'var(--color-primary-light)';
+    explainer.innerHTML = '<strong>3 Months Internship Program</strong>: Candidates are charged ₹399 fee + mandatory Aadhaar / PAN / College ID verification.';
+  } else {
+    badge.textContent = 'No Fee (Standard)';
+    badge.style.background = 'rgba(255,255,255,0.05)';
+    badge.style.color = 'var(--color-text-dim)';
+    explainer.textContent = 'Standard position. Candidates can submit their applications without any application fee.';
+  }
+}
+
+function updateCharCount() {
+  var len = document.getElementById('short_description').value.length;
+  var counter = document.getElementById('char-count');
+  counter.textContent = len + '/260 characters';
+  if (len > 220) {
+    counter.style.color = '#fbbf24';
+  } else {
+    counter.style.color = 'var(--color-text-muted)';
+  }
+}
+
+function updatePreviewStatus() {
+  var active = document.getElementById('is_active').checked;
+  var pill = document.getElementById('preview-status-pill');
+  var label = document.getElementById('status-label-text');
+  if (active) {
+    pill.className = 'badge-status active';
+    pill.textContent = 'Active';
+    label.innerHTML = 'Active &bull; Published Online';
+  } else {
+    pill.className = 'badge-status inactive';
+    pill.textContent = 'Draft';
+    label.innerHTML = 'Draft &bull; Hidden From Public';
+  }
+}
+
+function updatePreview() {
+  var title = document.getElementById('title').value.trim() || 'Job Title';
+  var dept = document.getElementById('department').value.trim() || 'Engineering';
+  var loc = document.getElementById('location').value.trim() || 'Remote';
+  var summary = document.getElementById('short_description').value.trim() || '';
+  var salary = document.getElementById('salary').value.trim() || 'Competitive';
+  var skills = document.getElementById('skills').value.trim();
+
+  document.getElementById('preview-title').textContent = title;
+  document.getElementById('preview-dept').textContent = dept;
+  document.getElementById('preview-loc').textContent = loc;
+  document.getElementById('preview-summary').textContent = summary;
+  document.getElementById('preview-salary').textContent = salary;
+
+  var skillsContainer = document.getElementById('preview-skills-tags');
+  skillsContainer.innerHTML = '';
+  if (skills) {
+    var arr = skills.split(',').slice(0, 4);
+    arr.forEach(function(s) {
+      s = s.trim();
+      if (s) {
+        var span = document.createElement('span');
+        span.style.cssText = 'font-size: 0.65rem; background: rgba(255,255,255,0.04); border: 1px solid var(--color-border); padding: 1px 6px; border-radius: 3px; color: var(--color-text-dim);';
+        span.textContent = s;
+        skillsContainer.appendChild(span);
+      }
+    });
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  updateDurationFee();
+  updateCharCount();
+  updatePreview();
+});
+</script>
 {% endblock %}
