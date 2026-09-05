@@ -392,21 +392,33 @@ def mark_application_under_review(app_id):
     return redirect(url_for('admin.application_detail', app_id=application.id))
 
 
-@admin_bp.route('/applications/<int:app_id>/send-application-email', methods=['POST'])
+@admin_bp.route('/applications/<int:app_id>/send-application-email', methods=['GET', 'POST'])
 @admin_required
 def send_application_success_email_action(app_id):
-    application = db.session.get(JobApplication, app_id) or abort(404)
+    if request.method == 'GET':
+        return redirect(url_for('admin.application_detail', app_id=app_id))
+
+    application = db.session.get(JobApplication, app_id)
+    if not application:
+        flash("Candidate application record not found.", "danger")
+        return redirect(url_for('admin.applications'))
 
     if application.application_success_email_status == 'SENT':
-        flash('Application Successful email has already been sent to this candidate.', 'warning')
+        sent_time = application.application_success_email_sent_at.strftime('%b %d, %Y') if application.application_success_email_sent_at else 'earlier'
+        flash(f'Application Successful email has already been sent to this candidate on {sent_time}.', 'warning')
         return redirect(url_for('admin.application_detail', app_id=application.id))
 
-    from services.email_service import send_application_successful_email
-    success, msg = send_application_successful_email(application)
-    if success:
-        flash(f"Application Successful email sent to {application.email} successfully via Brevo.", 'success')
-    else:
-        flash(f"Failed to send email: {msg}", 'danger')
+    try:
+        from services.email_service import send_application_successful_email
+        success, msg = send_application_successful_email(application)
+        if success:
+            flash(f"Application Successful email sent to {application.email} successfully.", 'success')
+        else:
+            flash(f"Failed to send email: {msg}", 'danger')
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Error in send_application_success_email_action: {str(e)}", exc_info=True)
+        flash(f"Unable to dispatch email: {str(e)}", 'danger')
 
     return redirect(url_for('admin.application_detail', app_id=application.id))
 

@@ -258,21 +258,34 @@ def replace_variables(template_str, variable_dict):
 # =====================================================================
 
 # =====================================================================
-# CORE EMAIL TRANSMISSION (BREVO API & MIME FALLBACK)
+# CORE EMAIL TRANSMISSION (BREVO API & SMTP RELAY)
 # =====================================================================
 
 def send_brevo_email(recipient_email, recipient_name, subject, body_text, body_html=None, attachment_path=None, attachment_name=None):
     """
-    Sends transactional email using Brevo (Sendinblue) API v3.
+    Sends transactional email using Brevo (Sendinblue) API v3 or SMTP relay.
     Endpoint: https://api.brevo.com/v3/smtp/email
     Header: api-key
-    Falls back to SMTP/Simulation if BREVO_API_KEY is not configured.
+    Falls back cleanly to SMTP relay / Simulation if BREVO_API_KEY is not configured.
     """
-    api_key = os.environ.get('BREVO_API_KEY') or (current_app.config.get('BREVO_API_KEY') if current_app else None)
-    sender_email = os.environ.get('BREVO_SENDER_EMAIL') or os.environ.get('SENDER_EMAIL') or (current_app.config.get('BREVO_SENDER_EMAIL') if current_app else 'info@antimatrix.co.in')
-    sender_name = os.environ.get('BREVO_SENDER_NAME') or (current_app.config.get('BREVO_SENDER_NAME') if current_app else 'Anti Matrix')
+    api_key = (
+        os.environ.get('BREVO_API_KEY', '').strip() or 
+        (current_app.config.get('BREVO_API_KEY', '').strip() if current_app else '')
+    )
+    sender_email = (
+        os.environ.get('BREVO_SENDER_EMAIL', '').strip() or 
+        os.environ.get('SENDER_EMAIL', '').strip() or 
+        (current_app.config.get('BREVO_SENDER_EMAIL', '').strip() if current_app else '') or
+        (current_app.config.get('SENDER_EMAIL', '').strip() if current_app else '') or
+        'info@antimatrix.co.in'
+    )
+    sender_name = (
+        os.environ.get('BREVO_SENDER_NAME', '').strip() or 
+        (current_app.config.get('BREVO_SENDER_NAME', '').strip() if current_app else '') or
+        'Anti Matrix'
+    )
 
-    # If Brevo API key is not present, fall back cleanly to MIME / SMTP / Simulation
+    # If Brevo API key is not present, use SMTP / Simulation mode
     if not api_key:
         return send_mime_email(recipient_email, subject, body_text, body_html, attachment_path, attachment_name)
 
@@ -316,8 +329,8 @@ def send_brevo_email(recipient_email, recipient_name, subject, body_text, body_h
         response = requests.post("https://api.brevo.com/v3/smtp/email", headers=headers, json=payload, timeout=25)
         if response.status_code in [200, 201, 202]:
             resp_data = response.json() if response.text else {}
-            provider_id = resp_data.get('messageId') or f"brevo_{int(datetime.now(timezone.utc).timestamp())}"
-            return True, "Email successfully sent via Brevo", provider_id
+            provider_id = resp_data.get('messageId') or f"brevo_api_{int(datetime.now(timezone.utc).timestamp())}"
+            return True, "Email successfully sent via Brevo API", provider_id
         else:
             if current_app:
                 current_app.logger.error(f"Brevo API error ({response.status_code}): {response.text}")
@@ -331,25 +344,56 @@ def send_brevo_email(recipient_email, recipient_name, subject, body_text, body_h
             return False, err_msg, None
     except Exception as e:
         if current_app:
-            current_app.logger.error(f"Brevo request exception: {str(e)}")
+            current_app.logger.error(f"Brevo API request exception: {str(e)}")
         return False, f"Email delivery failed: {str(e)}", None
 
 
 def send_mime_email(recipient_email, subject, body_text, body_html=None, attachment_path=None, attachment_name=None):
     """
-    Dispatches a multipart MIME email (HTML + Plain Text + Optional Attachment).
+    Dispatches a multipart MIME email via SMTP (HTML + Plain Text + Optional Attachment).
     Connects to SMTP if configured; otherwise logs simulated transmission in development.
+    Supports port 587 (STARTTLS) and port 465 (SSL).
     """
-    smtp_server = os.environ.get('SMTP_SERVER')
-    smtp_port = int(os.environ.get('SMTP_PORT', 587))
-    smtp_user = os.environ.get('SMTP_USER')
-    smtp_password = os.environ.get('SMTP_PASSWORD')
-    sender_email = os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in')
+    smtp_server = (
+        os.environ.get('SMTP_SERVER', '').strip() or 
+        (current_app.config.get('SMTP_SERVER', '').strip() if current_app else '')
+    )
+    smtp_port_raw = (
+        os.environ.get('SMTP_PORT', '').strip() or 
+        (str(current_app.config.get('SMTP_PORT', '587')).strip() if current_app else '587') or 
+        '587'
+    )
+    try:
+        smtp_port = int(smtp_port_raw) if smtp_port_raw.isdigit() else 587
+    except (ValueError, TypeError):
+        smtp_port = 587
+
+    smtp_user = (
+        os.environ.get('SMTP_USER', '').strip() or 
+        (current_app.config.get('SMTP_USER', '').strip() if current_app else '')
+    )
+    smtp_password = (
+        os.environ.get('SMTP_PASSWORD', '').strip() or 
+        (current_app.config.get('SMTP_PASSWORD', '').strip() if current_app else '')
+    )
+    sender_email = (
+        os.environ.get('SENDER_EMAIL', '').strip() or 
+        os.environ.get('BREVO_SENDER_EMAIL', '').strip() or 
+        (current_app.config.get('SENDER_EMAIL', '').strip() if current_app else '') or
+        (current_app.config.get('BREVO_SENDER_EMAIL', '').strip() if current_app else '') or
+        (current_app.config.get('CONTACT_EMAIL', '').strip() if current_app else '') or
+        'info@antimatrix.co.in'
+    )
+    sender_name = (
+        os.environ.get('BREVO_SENDER_NAME', '').strip() or 
+        (current_app.config.get('BREVO_SENDER_NAME', '').strip() if current_app else '') or
+        'Anti Matrix'
+    )
 
     try:
         if smtp_server and smtp_user and smtp_password:
             msg = MIMEMultipart('mixed')
-            msg['From'] = f"Anti-Matrix <{sender_email}>"
+            msg['From'] = f"{sender_name} <{sender_email}>"
             msg['To'] = recipient_email
             msg['Subject'] = subject
 
@@ -370,22 +414,47 @@ def send_mime_email(recipient_email, subject, body_text, body_html=None, attachm
                     part.add_header('Content-Disposition', f'attachment; filename="{att_name}"')
                     msg.attach(part)
 
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.send_message(msg)
+            if smtp_port == 465:
+                # SSL-on-connect
+                with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=25) as server:
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
+            else:
+                # Standard STARTTLS on port 587
+                with smtplib.SMTP(smtp_server, smtp_port, timeout=25) as server:
+                    server.ehlo()
+                    server.starttls()
+                    server.ehlo()
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
 
-            return True, "Email successfully sent via SMTP", None
+            provider_id = f"smtp_{int(datetime.now(timezone.utc).timestamp())}"
+            return True, "Email successfully sent via SMTP", provider_id
         else:
             # Simulated Sandbox Mode
-            print(f"[EMAIL SERVICE SIMULATION] Sent email to {recipient_email}")
-            print(f"  Subject: {subject}")
-            if attachment_path:
-                print(f"  Attachment: {attachment_name or os.path.basename(attachment_path)}")
-            return True, "Email successfully sent (sandbox mode)", "sim_msg_id_" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+            if current_app:
+                current_app.logger.info(f"[EMAIL SIMULATION] Sent email to {recipient_email} | Subject: {subject}")
+            else:
+                print(f"[EMAIL SIMULATION] Sent email to {recipient_email} | Subject: {subject}")
+            sim_id = "sim_msg_id_" + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+            return True, "Email successfully sent (sandbox mode)", sim_id
 
+    except smtplib.SMTPAuthenticationError:
+        if current_app:
+            current_app.logger.error("SMTP authentication failed. Please verify SMTP_USER and SMTP_PASSWORD.")
+        return False, "Email authentication failed. Please verify the Brevo SMTP credentials.", None
+    except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected, TimeoutError, OSError) as e:
+        if current_app:
+            current_app.logger.error(f"SMTP connection error: {str(e)}")
+        return False, "Unable to connect to the email service. Please check network connection and SMTP server settings.", None
+    except smtplib.SMTPException as e:
+        if current_app:
+            current_app.logger.error(f"SMTP protocol error: {str(e)}")
+        return False, f"SMTP error occurred: {str(e)}", None
     except Exception as e:
-        return False, str(e), None
+        if current_app:
+            current_app.logger.error(f"Unexpected email delivery exception: {str(e)}")
+        return False, f"Email delivery failed: {str(e)}", None
 
 
 # =====================================================================
@@ -398,39 +467,58 @@ def render_application_successful_email(application):
     Returns dictionary with rendered subject, plain text body, and responsive HTML body.
     """
     if not application:
-        return {'subject': '', 'body_text': '', 'body_html': ''}
+        return {'to': '', 'subject': '', 'body_text': '', 'body_html': ''}
 
     job = application.job
-    job_title = job.title if job else "Internship Position"
-    app_date = application.created_at.strftime("%d/%m/%Y") if application.created_at else datetime.now(timezone.utc).strftime("%d/%m/%Y")
-    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in') if current_app else 'info@antimatrix.co.in'
+    job_title = job.title if job and job.title else "Internship Position"
+    app_date = (
+        application.created_at.strftime("%d/%m/%Y") 
+        if application.created_at 
+        else datetime.now(timezone.utc).strftime("%d/%m/%Y")
+    )
+    company_email = (
+        (current_app.config.get('CONTACT_EMAIL') if current_app else None) or 
+        os.environ.get('CONTACT_EMAIL') or 
+        os.environ.get('SENDER_EMAIL') or 
+        'info@antimatrix.co.in'
+    )
     website = "www.antimatrix.co.in"
+    candidate_name = application.full_name or (f"{application.first_name or ''} {application.last_name or ''}".strip()) or "Applicant"
+    formatted_code = application.formatted_code if hasattr(application, 'formatted_code') else f"AM-APP-{application.id:06d}"
 
     variables = {
-        'Student Name': application.full_name,
+        'Student Name': candidate_name,
         'Internship Role': job_title,
-        'Application ID': application.formatted_code,
+        'Application ID': formatted_code,
         'Application Date': app_date,
         'Company Email': company_email,
         'Website': website,
-        'employee_name': application.full_name,
+        'employee_name': candidate_name,
         'job_title': job_title,
-        'application_id': application.formatted_code,
+        'application_id': formatted_code,
         'application_date': app_date,
         'company_email': company_email,
         'website': website
     }
 
-    tmpl = EmailTemplate.query.filter_by(template_type='application_successful').first()
-    raw_subject = tmpl.subject if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
-    raw_body = tmpl.body if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_BODY
+    raw_subject = DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
+    raw_body = DEFAULT_APPLICATION_SUCCESSFUL_BODY
+    try:
+        tmpl = EmailTemplate.query.filter_by(template_type='application_successful').first()
+        if tmpl and tmpl.subject:
+            raw_subject = tmpl.subject
+        if tmpl and tmpl.body:
+            raw_body = tmpl.body
+    except Exception as e:
+        if current_app:
+            current_app.logger.warning(f"Could not load custom EmailTemplate: {str(e)}")
 
     subject = replace_variables(raw_subject, variables)
     body_text = replace_variables(raw_body, variables)
     body_html = markdown_to_html_email(body_text, title=subject)
 
     return {
-        'to': application.email,
+        'to': application.email or '',
         'subject': subject,
         'body_text': body_text,
         'body_html': body_html
@@ -440,61 +528,71 @@ def render_application_successful_email(application):
 def send_application_successful_email(application):
     """
     Sends the official Application Successful confirmation email via Brevo.
-    Enforces strict duplicate sending protection.
+    Enforces strict duplicate sending protection and safe database transactions.
     """
     if not application:
         return False, "Invalid application record."
 
-    recipient_email = application.email
+    recipient_email = (application.email or "").strip()
     if not recipient_email:
-        return False, "Candidate does not have a registered email address."
+        return False, "Candidate email address is missing for this application."
 
     # Duplicate send check
     if application.application_success_email_status == 'SENT':
         sent_time = application.application_success_email_sent_at.strftime('%b %d, %Y') if application.application_success_email_sent_at else 'earlier'
         return False, f"Application Successful email already sent on {sent_time}."
 
-    rendered = render_application_successful_email(application)
-    subject = rendered['subject']
-    body_text = rendered['body_text']
-    body_html = rendered['body_html']
+    try:
+        rendered = render_application_successful_email(application)
+        subject = rendered.get('subject') or DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
+        body_text = rendered.get('body_text') or DEFAULT_APPLICATION_SUCCESSFUL_BODY
+        body_html = rendered.get('body_html')
 
-    success, msg, provider_id = send_brevo_email(
-        recipient_email=recipient_email,
-        recipient_name=application.full_name,
-        subject=subject,
-        body_text=body_text,
-        body_html=body_html
-    )
+        success, msg, provider_id = send_brevo_email(
+            recipient_email=recipient_email,
+            recipient_name=application.full_name or recipient_email,
+            subject=subject,
+            body_text=body_text,
+            body_html=body_html
+        )
 
-    now_utc = datetime.now(timezone.utc)
-    if success:
-        application.application_success_email_status = 'SENT'
-        application.application_success_email_sent_at = now_utc
-        log_status = 'SENT'
-        error_msg = None
-    else:
-        application.application_success_email_status = 'FAILED'
-        log_status = 'FAILED'
-        error_msg = msg
+        now_utc = datetime.now(timezone.utc)
+        if success:
+            application.application_success_email_status = 'SENT'
+            application.application_success_email_sent_at = now_utc
+            log_status = 'SENT'
+            error_msg = None
+        else:
+            application.application_success_email_status = 'FAILED'
+            log_status = 'FAILED'
+            error_msg = msg
 
-    # Log to EmailLog
-    email_log = EmailLog(
-        recipient_email=recipient_email,
-        template_type='application_successful',
-        reference_id=application.formatted_code,
-        subject=subject,
-        body_preview=body_text[:200],
-        status=log_status,
-        provider_message_id=provider_id,
-        error_message=error_msg,
-        has_attachment=False,
-        sent_at=now_utc
-    )
-    db.session.add(email_log)
-    db.session.commit()
+        # Log to EmailLog
+        try:
+            email_log = EmailLog(
+                recipient_email=recipient_email,
+                template_type='application_successful',
+                reference_id=application.formatted_code,
+                subject=subject,
+                body_preview=body_text[:200] if body_text else '',
+                status=log_status,
+                provider_message_id=provider_id,
+                error_message=error_msg,
+                has_attachment=False,
+                sent_at=now_utc
+            )
+            db.session.add(email_log)
+            db.session.commit()
+        except Exception as db_err:
+            db.session.rollback()
+            if current_app:
+                current_app.logger.error(f"Database error saving EmailLog: {str(db_err)}")
 
-    return success, msg
+        return success, msg
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Unexpected error in send_application_successful_email: {str(e)}", exc_info=True)
+        return False, f"Failed to send email: {str(e)}"
 
 
 # =====================================================================
@@ -507,45 +605,61 @@ def render_shortlisted_offer_email(application, custom_params=None):
     Returns dictionary with rendered subject, plain text body, and responsive HTML body.
     """
     if not application:
-        return {'subject': '', 'body_text': '', 'body_html': ''}
+        return {'to': '', 'subject': '', 'body_text': '', 'body_html': ''}
 
     custom_params = custom_params or {}
     job = application.job
-    job_title = job.title if job else "Internship Position"
+    job_title = job.title if job and job.title else "Internship Position"
     duration = application.duration_display if application.duration_display else (f"{job.duration.replace('_', ' ').title()}" if job and job.duration else "3 Months")
     joining_date = custom_params.get('start_date') or custom_params.get('joining_date') or "Immediate / As mutually agreed"
-    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in') if current_app else 'info@antimatrix.co.in'
+    company_email = (
+        (current_app.config.get('CONTACT_EMAIL') if current_app else None) or 
+        os.environ.get('CONTACT_EMAIL') or 
+        os.environ.get('SENDER_EMAIL') or 
+        'info@antimatrix.co.in'
+    )
     website = "www.antimatrix.co.in"
+    candidate_name = application.full_name or (f"{application.first_name or ''} {application.last_name or ''}".strip()) or "Applicant"
+    formatted_code = application.formatted_code if hasattr(application, 'formatted_code') else f"AM-APP-{application.id:06d}"
+    emp_id = application.employee.employee_id if application.employee else formatted_code
 
     variables = {
-        'Student Name': application.full_name,
+        'Student Name': candidate_name,
         'Internship Role': job_title,
-        'Application ID': application.formatted_code,
+        'Application ID': formatted_code,
         'Internship Duration': duration,
         'Start Date': joining_date,
         'Company Email': company_email,
         'Website': website,
-        'employee_name': application.full_name,
-        'employee_id': application.employee.employee_id if application.employee else application.formatted_code,
+        'employee_name': candidate_name,
+        'employee_id': emp_id,
         'job_title': job_title,
-        'department': job.department if job else 'Engineering',
-        'application_id': application.formatted_code,
+        'department': job.department if job and job.department else 'Engineering',
+        'application_id': formatted_code,
         'internship_duration': duration,
         'start_date': joining_date,
         'company_email': company_email,
         'website': website
     }
 
-    tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
-    raw_subject = tmpl.subject if tmpl else DEFAULT_OFFER_LETTER_SUBJECT
-    raw_body = tmpl.body if tmpl else DEFAULT_OFFER_LETTER_BODY
+    raw_subject = DEFAULT_OFFER_LETTER_SUBJECT
+    raw_body = DEFAULT_OFFER_LETTER_BODY
+    try:
+        tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
+        if tmpl and tmpl.subject:
+            raw_subject = tmpl.subject
+        if tmpl and tmpl.body:
+            raw_body = tmpl.body
+    except Exception as e:
+        if current_app:
+            current_app.logger.warning(f"Could not load custom EmailTemplate: {str(e)}")
 
     subject = replace_variables(raw_subject, variables)
     body_text = replace_variables(raw_body, variables)
     body_html = markdown_to_html_email(body_text, title=subject)
 
     return {
-        'to': application.email,
+        'to': application.email or '',
         'subject': subject,
         'body_text': body_text,
         'body_html': body_html
@@ -570,9 +684,9 @@ def send_offer_letter_shortlisted_email(application_or_employee, start_date=None
     if not app:
         return False, "Missing associated candidate application record."
 
-    recipient_email = app.email
+    recipient_email = (app.email or "").strip()
     if not recipient_email:
-        return False, "Candidate does not have a registered email address."
+        return False, "Candidate email address is missing for this application."
 
     # Retrieve candidate-specific Offer Letter document
     emp_doc = app.offer_letter_doc
@@ -584,54 +698,64 @@ def send_offer_letter_shortlisted_email(application_or_employee, start_date=None
         sent_time = emp_doc.sent_at.strftime('%b %d, %Y') if emp_doc.sent_at else 'earlier'
         return False, f"Offer Letter already sent on {sent_time}. Duplicate sending is prevented."
 
-    rendered = render_shortlisted_offer_email(app, custom_params={'start_date': start_date})
-    subject = rendered['subject']
-    body_text = rendered['body_text']
-    body_html = rendered['body_html']
+    try:
+        rendered = render_shortlisted_offer_email(app, custom_params={'start_date': start_date})
+        subject = rendered.get('subject') or DEFAULT_OFFER_LETTER_SUBJECT
+        body_text = rendered.get('body_text') or DEFAULT_OFFER_LETTER_BODY
+        body_html = rendered.get('body_html')
 
-    success, msg, provider_id = send_brevo_email(
-        recipient_email=recipient_email,
-        recipient_name=app.full_name,
-        subject=subject,
-        body_text=body_text,
-        body_html=body_html,
-        attachment_path=emp_doc.file_path,
-        attachment_name=emp_doc.file_name
-    )
+        success, msg, provider_id = send_brevo_email(
+            recipient_email=recipient_email,
+            recipient_name=app.full_name or recipient_email,
+            subject=subject,
+            body_text=body_text,
+            body_html=body_html,
+            attachment_path=emp_doc.file_path,
+            attachment_name=emp_doc.file_name
+        )
 
-    now_utc = datetime.now(timezone.utc)
-    if success:
-        emp_doc.email_status = 'sent'
-        emp_doc.status = 'SENT'
-        emp_doc.sent_at = now_utc
-        emp_doc.verified_at = now_utc
-        emp_doc.email_error = None
-        log_status = 'SENT'
-        error_msg = None
-    else:
-        emp_doc.email_status = 'failed'
-        emp_doc.email_error = msg
-        log_status = 'FAILED'
-        error_msg = msg
+        now_utc = datetime.now(timezone.utc)
+        if success:
+            emp_doc.email_status = 'sent'
+            emp_doc.status = 'SENT'
+            emp_doc.sent_at = now_utc
+            emp_doc.verified_at = now_utc
+            emp_doc.email_error = None
+            log_status = 'SENT'
+            error_msg = None
+        else:
+            emp_doc.email_status = 'failed'
+            emp_doc.email_error = msg
+            log_status = 'FAILED'
+            error_msg = msg
 
-    # Log to EmailLog
-    email_log = EmailLog(
-        recipient_email=recipient_email,
-        template_type='offer_letter',
-        reference_id=employee.employee_id if employee else app.formatted_code,
-        subject=subject,
-        body_preview=body_text[:200],
-        status=log_status,
-        provider_message_id=provider_id,
-        error_message=error_msg,
-        has_attachment=True,
-        attachment_name=emp_doc.file_name,
-        sent_at=now_utc
-    )
-    db.session.add(email_log)
-    db.session.commit()
+        # Log to EmailLog
+        try:
+            email_log = EmailLog(
+                recipient_email=recipient_email,
+                template_type='offer_letter',
+                reference_id=employee.employee_id if employee else app.formatted_code,
+                subject=subject,
+                body_preview=body_text[:200] if body_text else '',
+                status=log_status,
+                provider_message_id=provider_id,
+                error_message=error_msg,
+                has_attachment=True,
+                attachment_name=emp_doc.file_name,
+                sent_at=now_utc
+            )
+            db.session.add(email_log)
+            db.session.commit()
+        except Exception as db_err:
+            db.session.rollback()
+            if current_app:
+                current_app.logger.error(f"Database error saving EmailLog: {str(db_err)}")
 
-    return success, msg
+        return success, msg
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Unexpected error in send_offer_letter_shortlisted_email: {str(e)}", exc_info=True)
+        return False, f"Failed to send Offer Letter email: {str(e)}"
 
 
 # =====================================================================
@@ -664,11 +788,11 @@ def render_sample_email_preview(template_type):
 
     tmpl = EmailTemplate.query.filter_by(template_type=template_type).first()
     if template_type == 'application_successful':
-        raw_subject = tmpl.subject if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
-        raw_body = tmpl.body if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_BODY
+        raw_subject = tmpl.subject if tmpl and tmpl.subject else DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
+        raw_body = tmpl.body if tmpl and tmpl.body else DEFAULT_APPLICATION_SUCCESSFUL_BODY
     else:
-        raw_subject = tmpl.subject if tmpl else DEFAULT_OFFER_LETTER_SUBJECT
-        raw_body = tmpl.body if tmpl else DEFAULT_OFFER_LETTER_BODY
+        raw_subject = tmpl.subject if tmpl and tmpl.subject else DEFAULT_OFFER_LETTER_SUBJECT
+        raw_body = tmpl.body if tmpl and tmpl.body else DEFAULT_OFFER_LETTER_BODY
 
     subject = replace_variables(raw_subject, sample_variables)
     body_text = replace_variables(raw_body, sample_variables)
@@ -689,8 +813,9 @@ def send_test_email(template_type, recipient_email):
     preview = render_sample_email_preview(template_type)
     test_subject = f"[TEST PREVIEW] {preview['subject']}"
     
-    success, msg, provider_id = send_mime_email(
+    success, msg, provider_id = send_brevo_email(
         recipient_email=recipient_email,
+        recipient_name=recipient_email,
         subject=test_subject,
         body_text=preview['body_text'],
         body_html=preview['body_html']
@@ -698,19 +823,24 @@ def send_test_email(template_type, recipient_email):
 
     # Log test send
     now_utc = datetime.now(timezone.utc)
-    email_log = EmailLog(
-        recipient_email=recipient_email,
-        template_type='test',
-        reference_id=f"TEST_{template_type.upper()}",
-        subject=test_subject,
-        body_preview=preview['body_text'][:200],
-        status='SENT' if success else 'FAILED',
-        provider_message_id=provider_id,
-        error_message=None if success else msg,
-        has_attachment=False,
-        sent_at=now_utc
-    )
-    db.session.add(email_log)
-    db.session.commit()
+    try:
+        email_log = EmailLog(
+            recipient_email=recipient_email,
+            template_type='test',
+            reference_id=f"TEST_{template_type.upper()}",
+            subject=test_subject,
+            body_preview=preview['body_text'][:200] if preview['body_text'] else '',
+            status='SENT' if success else 'FAILED',
+            provider_message_id=provider_id,
+            error_message=None if success else msg,
+            has_attachment=False,
+            sent_at=now_utc
+        )
+        db.session.add(email_log)
+        db.session.commit()
+    except Exception as db_err:
+        db.session.rollback()
+        if current_app:
+            current_app.logger.error(f"Database error saving test EmailLog: {str(db_err)}")
 
     return success, msg

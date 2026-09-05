@@ -143,9 +143,17 @@ class Config:
     CASHFREE_WEBHOOK_URL = os.environ.get('CASHFREE_WEBHOOK_URL', '')
 
     # Brevo (Sendinblue) Email Service Settings
-    BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
-    BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in'))
-    BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'Anti Matrix')
+    BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
+    BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in')).strip()
+    BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'Anti Matrix').strip()
+
+    # SMTP Relay Settings (Brevo SMTP or custom relay)
+    SMTP_SERVER = os.environ.get('SMTP_SERVER', '').strip()
+    _smtp_port_raw = os.environ.get('SMTP_PORT', '587').strip()
+    SMTP_PORT = int(_smtp_port_raw) if _smtp_port_raw.isdigit() else 587
+    SMTP_USER = os.environ.get('SMTP_USER', '').strip()
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '').strip()
+    SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in').strip()
 
     # Payment Test Mode Switch (Bypasses Cashfree for local testing when True)
     PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')

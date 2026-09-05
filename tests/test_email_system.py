@@ -296,6 +296,111 @@ class TestAntiMatrixEmailSystem(unittest.TestCase):
         self.assertEqual(updated_app.status, 'APPLIED')
         self.assertEqual(updated_app.application_success_email_status, 'PENDING')
 
+    def test_08_get_request_on_send_application_email_redirects_safely(self):
+        """GET request on send-application-email should safely redirect without 500 error."""
+        self.login_admin()
+        res = self.client.get(f'/admin/applications/{self.app_record.id}/send-application-email', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'Rahul Kumar', res.data)
+
+    def test_09_nonexistent_application_send_email_graceful(self):
+        """Non-existent application ID lookup returns friendly danger message rather than 500."""
+        self.login_admin()
+        res = self.client.post('/admin/applications/999999/send-application-email', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'record not found', res.data)
+
+    def test_10_missing_candidate_email_validation(self):
+        """Candidate with missing email address yields friendly error message rather than HTTP 500."""
+        no_email_app = JobApplication(
+            job_id=self.job.id,
+            application_code='AM-APP-999999',
+            full_name='No Email Candidate',
+            email='',
+            phone='+91 9999999999',
+            resume_filename='test.pdf',
+            resume_path='uploads/resumes/test.pdf',
+            payment_status='paid',
+            status='UNDER_REVIEW',
+            application_status='UNDER_REVIEW'
+        )
+        db.session.add(no_email_app)
+        db.session.commit()
+
+        self.login_admin()
+        res = self.client.post(f'/admin/applications/{no_email_app.id}/send-application-email', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'email address is missing', res.data)
+
+        # Status should NOT be marked SENT
+        db.session.expire_all()
+        updated = db.session.get(JobApplication, no_email_app.id)
+        self.assertNotEqual(updated.application_success_email_status, 'SENT')
+
+    def test_11_send_application_email_preserves_application_stage_under_review(self):
+        """Sending Application Successful email must NOT prematurely advance status to SHORTLISTED."""
+        self.app_record.status = 'UNDER_REVIEW'
+        self.app_record.application_status = 'UNDER_REVIEW'
+        db.session.commit()
+
+        self.login_admin()
+        res = self.client.post(f'/admin/applications/{self.app_record.id}/send-application-email', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+
+        db.session.expire_all()
+        updated_app = db.session.get(JobApplication, self.app_record.id)
+        self.assertEqual(updated_app.application_success_email_status, 'SENT')
+        # Crucial check: application status remains UNDER_REVIEW!
+        self.assertEqual(updated_app.status, 'UNDER_REVIEW')
+        self.assertEqual(updated_app.application_status, 'UNDER_REVIEW')
+
+    def test_12_smtp_authentication_failure_gracefully_handled(self):
+        """Invalid SMTP credentials should set FAILED status with clean message, never uncaught 500."""
+        import os
+        from unittest.mock import patch
+        import smtplib
+
+        self.app_record.application_success_email_status = 'PENDING'
+        db.session.commit()
+
+        self.login_admin()
+
+        with patch('smtplib.SMTP') as mock_smtp:
+            instance = mock_smtp.return_value.__enter__.return_value
+            instance.login.side_effect = smtplib.SMTPAuthenticationError(535, b'5.7.8 Authentication failed')
+
+            # Set SMTP env vars so send_mime_email attempts SMTP
+            with patch.dict(os.environ, {
+                'BREVO_API_KEY': '',
+                'SMTP_SERVER': 'smtp-relay.brevo.com',
+                'SMTP_PORT': '587',
+                'SMTP_USER': 'bad_user',
+                'SMTP_PASSWORD': 'bad_password',
+                'SENDER_EMAIL': 'info@antimatrix.co.in'
+            }):
+                res = self.client.post(f'/admin/applications/{self.app_record.id}/send-application-email', follow_redirects=True)
+                self.assertEqual(res.status_code, 200)
+                self.assertIn(b'Email authentication failed', res.data)
+
+        db.session.expire_all()
+        updated = db.session.get(JobApplication, self.app_record.id)
+        self.assertEqual(updated.application_success_email_status, 'FAILED')
+
+    def test_13_database_records_and_ids_preserved(self):
+        """Verify that sending emails does not modify or delete existing job postings or users."""
+        job_count_before = JobPosting.query.count()
+        user_count_before = User.query.count()
+        app_id_before = self.app_record.id
+        app_code_before = self.app_record.formatted_code
+
+        self.login_admin()
+        self.client.post(f'/admin/applications/{self.app_record.id}/send-application-email', follow_redirects=True)
+
+        self.assertEqual(JobPosting.query.count(), job_count_before)
+        self.assertEqual(User.query.count(), user_count_before)
+        self.assertEqual(self.app_record.id, app_id_before)
+        self.assertEqual(self.app_record.formatted_code, app_code_before)
+
 
 if __name__ == '__main__':
     unittest.main()
