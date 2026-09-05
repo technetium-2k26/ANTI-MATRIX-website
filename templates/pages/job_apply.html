@@ -5,368 +5,690 @@
 
 {% block content %}
 <!-- Apply Page Hero -->
-<section class="apply-hero">
-  <div class="container" style="max-width: 900px;">
-    <a href="{{ url_for('main.careers') }}" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-md); display: inline-flex; align-items: center; gap: 6px;">
-      {{ icon('arrow-left', size=14) }} Back to Careers
-    </a>
+<section class="page-hero" style="padding-bottom: var(--space-xl); background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border);">
+  <div class="container" style="max-width: 1200px;">
     
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: var(--space-sm);">
-      <span class="badge">{{ icon('briefcase', size=11) }} {{ job.department }}</span>
-      <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('map-pin', size=11) }} {{ job.location }}</span>
-      <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('clock', size=11) }} {{ job.employment_type }}</span>
-      {% if job.duration_display %}
-        <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-          {{ icon('clock', size=11) }} Internship Duration: {{ job.duration_display }}
-        </span>
-      {% endif %}
-      {% if job.fee_display %}
-        <span style="font-size: 0.8rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.1); padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.25);">
-          {{ icon('credit-card', size=11) }} Application Fee: {{ job.fee_display }}
-        </span>
-      {% elif job.salary %}
-        <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('credit-card', size=11) }} {{ job.salary }}</span>
-      {% endif %}
+    <!-- Navigation Breadcrumbs -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-md);">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-text-dim);">
+        <a href="{{ url_for('main.careers') }}" style="color: var(--color-text-dim); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+          {{ icon('arrow-left', size=13) }} Careers
+        </a>
+        <span>/</span>
+        <span style="color: var(--color-text-dim);">{{ job.department }}</span>
+        <span>/</span>
+        <span style="color: var(--color-primary-light); font-weight: 600;">Application</span>
+      </div>
+
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700;">
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-light); display: inline-block;"></span>
+        Active Opening &bull; Verified Portal
+      </div>
     </div>
 
-    <h1 style="font-size: clamp(1.85rem, 3.5vw, 2.5rem); font-weight: 800; color: #000000; margin-bottom: var(--space-sm);">
-      Apply for {{ job.title }}
-    </h1>
-    <p style="color: var(--color-text-dim); font-size: 1rem; max-width: 750px;">
-      {{ job.short_description }}
-    </p>
+    <!-- Role Summary Header Card -->
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-xl); box-shadow: var(--shadow-md);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-lg);">
+        <div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: var(--space-sm);">
+            <span class="badge" style="background: rgba(16,185,129,0.15); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.3);">
+              {{ icon('briefcase', size=11) }} {{ job.department }}
+            </span>
+            <span style="font-size: 0.825rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">
+              {{ icon('map-pin', size=12) }} {{ job.location }}
+            </span>
+            <span style="font-size: 0.825rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">
+              {{ icon('clock', size=12) }} {{ job.employment_type }}
+            </span>
+            {% if job.duration_display %}
+              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
+                {{ icon('clock', size=12) }} Duration: {{ job.duration_display }}
+              </span>
+            {% endif %}
+            {% if job.fee_display %}
+              <span style="font-size: 0.825rem; color: var(--color-primary-light); font-weight: 800; display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.12); padding: 0.2rem 0.65rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.3);">
+                {{ icon('credit-card', size=12) }} Application Fee: {{ job.fee_display }}
+              </span>
+            {% elif job.salary %}
+              <span style="font-size: 0.825rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">
+                {{ icon('credit-card', size=12) }} {{ job.salary }}
+              </span>
+            {% endif %}
+          </div>
 
-    <!-- Prominent Internship Duration & Fee Callout -->
-    {% if job.is_internship and job.duration %}
-      <div style="margin-top: var(--space-md); padding: var(--space-md) var(--space-lg); background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
-        <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #60a5fa; flex-shrink: 0;">
-          {{ icon('clock', size=20) }}
+          <h1 style="font-size: clamp(1.75rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-xs); line-height: 1.2;">
+            Apply for {{ job.title }}
+          </h1>
+
+          <p style="color: var(--color-text-dim); font-size: 0.95rem; max-width: 780px; margin: 0; line-height: 1.6;">
+            {{ job.short_description }}
+          </p>
         </div>
-        <div style="flex: 1; min-width: 240px;">
-          <div style="font-size: 0.95rem; font-weight: 700; color: var(--color-white);">
-            Internship Duration: <span style="color: #60a5fa;">{{ job.duration_display }}</span>
-          </div>
-          <div style="font-size: 0.825rem; color: var(--color-text-dim); margin-top: 2px;">
-            Application Fee: <strong style="color: var(--color-primary-light);">{{ job.fee_display }}</strong> &bull; Payable via Cashfree Payment Gateway before final application submission.
-          </div>
+
+        <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
+          {{ icon('eye', size=13) }} View All Openings
+        </a>
+      </div>
+
+      <!-- Application Steps Indicator -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); margin-top: var(--space-xl); border-top: 1px solid var(--color-border); padding-top: var(--space-md);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: #000; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">1</span>
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-white);">Personal Details</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: #000; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">2</span>
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-white);">Education Info</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: #000; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">3</span>
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-white);">Resume &amp; Proofs</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.08); color: var(--color-text-dim); font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">4</span>
+          <span style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-dim);">Review &amp; Submit</span>
         </div>
       </div>
-    {% endif %}
+    </div>
+
   </div>
 </section>
 
-<!-- Application Form Section -->
-<section class="section" style="padding-top: 0; background: var(--color-bg);">
-  <div class="container" style="max-width: 900px;">
-    <div class="apply-card">
-      <form method="POST" action="{{ url_for('main.apply_job', job_id=job.id) }}" enctype="multipart/form-data" id="job-application-form" novalidate>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+<!-- Application Form & Sidebar Layout -->
+<section class="section" style="background: var(--color-bg); padding-top: var(--space-2xl); padding-bottom: var(--space-3xl);">
+  <div class="container" style="max-width: 1200px;">
+    
+    <form method="POST" action="{{ url_for('main.apply_job', job_id=job.id) }}" enctype="multipart/form-data" id="job-application-form" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-        <!-- 1. PERSONAL INFORMATION -->
-        <div class="form-section-title">
-          {{ icon('user', size=16, color='var(--color-primary-light)') }} 1. Personal Information
-        </div>
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2xl); align-items: start;">
         
-        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="first_name" class="form-label">First Name <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="first_name"
-              name="first_name"
-              class="form-input"
-              placeholder="e.g. Arun"
-              value="{{ form_data.get('first_name', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-first_name" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
+        <!-- ================= LEFT COLUMN: CANDIDATE DOSSIER FORM ================= -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-xl);">
 
-          <div class="form-group">
-            <label for="last_name" class="form-label">Last Name <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="last_name"
-              name="last_name"
-              class="form-input"
-              placeholder="e.g. Kumar"
-              value="{{ form_data.get('last_name', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-last_name" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="email" class="form-label">Email ID <span style="color: #f87171;">*</span></label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              class="form-input"
-              placeholder="e.g. arun.kumar@example.com"
-              value="{{ form_data.get('email', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-email" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="phone" class="form-label">Phone Number (10-Digit) <span style="color: #f87171;">*</span></label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              class="form-input"
-              placeholder="e.g. 9876543210"
-              maxlength="10"
-              value="{{ form_data.get('phone', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-phone" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-        </div>
-
-        <!-- ADDRESS & LOCATION -->
-        <div class="form-group" style="margin-bottom: var(--space-md);">
-          <label for="address" class="form-label">Address <span style="color: #f87171;">*</span></label>
-          <textarea
-            id="address"
-            name="address"
-            rows="2"
-            class="form-textarea"
-            placeholder="Door No., Street, Area / Locality..."
-            required
-          >{{ form_data.get('address', '') }}</textarea>
-          <span class="field-error-msg" id="err-address" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="state" class="form-label">State <span style="color: #f87171;">*</span></label>
-            <select id="state" name="state" class="form-input" style="appearance: auto;" required onchange="handleStateChange()">
-              <option value="">-- Select State --</option>
-              {% for st_name in states_and_cities.keys() %}
-                <option value="{{ st_name }}" {{ 'selected' if form_data.get('state') == st_name else '' }}>{{ st_name }}</option>
-              {% endfor %}
-            </select>
-            <span class="field-error-msg" id="err-state" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="city" class="form-label">City <span style="color: #f87171;">*</span></label>
-            <select id="city" name="city" class="form-input" style="appearance: auto;" required>
-              <option value="">-- Select City --</option>
-            </select>
-            <span class="field-error-msg" id="err-city" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="pincode" class="form-label">Pincode (6 Digits) <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="pincode"
-              name="pincode"
-              class="form-input"
-              placeholder="e.g. 600001"
-              maxlength="6"
-              pattern="[1-9][0-9]{5}"
-              value="{{ form_data.get('pincode', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-pincode" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-        </div>
-
-        <!-- 2. EDUCATION -->
-        <div class="form-section-title" style="margin-top: var(--space-xl);">
-          {{ icon('award', size=16, color='var(--color-primary-light)') }} 2. Education
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="education_level" class="form-label">Education <span style="color: #f87171;">*</span></label>
-            <select id="education_level" name="education_level" class="form-input" style="appearance: auto;" required>
-              <option value="">-- Select Education Level --</option>
-              {% for edu in education_levels %}
-                <option value="{{ edu }}" {{ 'selected' if (form_data.get('education_level') == edu or form_data.get('education') == edu) else '' }}>{{ edu }}</option>
-              {% endfor %}
-            </select>
-            <span class="field-error-msg" id="err-education_level" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="degree" class="form-label">Degree <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="degree"
-              name="degree"
-              class="form-input"
-              placeholder="e.g. B.Tech / B.E. / B.Sc / BCA"
-              value="{{ form_data.get('degree', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-degree" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-        </div>
-
-        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-          <div class="form-group">
-            <label for="major" class="form-label">Major / Specialization <span style="color: #f87171;">*</span></label>
-            <input
-              type="text"
-              id="major"
-              name="major"
-              class="form-input"
-              placeholder="e.g. Computer Science / AI / Information Technology"
-              value="{{ form_data.get('major', '') }}"
-              required
-            />
-            <span class="field-error-msg" id="err-major" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-
-          <div class="form-group">
-            <label for="graduation_year" class="form-label">Graduation Year (Up to 2029) <span style="color: #f87171;">*</span></label>
-            <select id="graduation_year" name="graduation_year" class="form-input" style="appearance: auto;" required>
-              <option value="">-- Select Graduation Year --</option>
-              {% for yr in graduation_years %}
-                <option value="{{ yr }}" {{ 'selected' if form_data.get('graduation_year')|string == yr|string else '' }}>{{ yr }}</option>
-              {% endfor %}
-            </select>
-            <span class="field-error-msg" id="err-graduation_year" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-          </div>
-        </div>
-
-        <!-- 3. DOCUMENTS / PROOFS (DYNAMIC BASED ON DURATION) -->
-        {% if job.duration == '3_months' %}
-          <!-- 3-Month Proofs Section -->
-          <div class="form-section-title" style="margin-top: var(--space-xl);" id="proofs-section">
-            {{ icon('file-text', size=16, color='var(--color-primary-light)') }} 3. Identity Documents & Proofs
-          </div>
-
-          <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-md); font-size: 0.8125rem; color: var(--color-text-dim);">
-            <strong>3 Months Internship Requirement:</strong> Aadhaar Card is required for identity verification. PAN Card and College ID are optional.
-          </div>
-
-          <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-md);">
-            <!-- Aadhaar Card (Required for 3 Months) -->
-            <div class="form-group">
-              <label class="form-label">Aadhaar Card <span style="color: #f87171;">*</span></label>
-              <div class="file-upload-box" onclick="document.getElementById('aadhaar-input').click();" style="padding: var(--space-md); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.2);">
-                <div class="icon-box" style="margin: 0 auto 0.5rem; width: 34px; height: 34px;">{{ icon('upload-cloud', size=18) }}</div>
-                <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-white);">Upload Aadhaar Card</div>
-                <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
-                <div id="aadhaar-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--color-primary-light); display: none;"></div>
+          <!-- CARD 1: PERSONAL INFORMATION -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); display: flex; align-items: center; justify-content: center;">
+                {{ icon('user', size=18) }}
               </div>
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">1. Personal &amp; Contact Information</h3>
+                <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Provide your legal identity and contact credentials for application tracking</p>
+              </div>
+            </div>
+
+            <!-- Name row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+              <div class="form-group">
+                <label for="first_name" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  First Name <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="first_name"
+                  name="first_name"
+                  class="form-input"
+                  placeholder="e.g. Arun"
+                  value="{{ form_data.get('first_name', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-first_name" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="last_name" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Last Name <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  class="form-input"
+                  placeholder="e.g. Kumar"
+                  value="{{ form_data.get('last_name', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-last_name" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+            </div>
+
+            <!-- Email & Phone row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+              <div class="form-group">
+                <label for="email" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Email Address <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  class="form-input"
+                  placeholder="e.g. arun.kumar@gmail.com"
+                  value="{{ form_data.get('email', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-email" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="phone" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Phone Number (10 Digits) <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  class="form-input"
+                  placeholder="e.g. 9876543210"
+                  maxlength="10"
+                  value="{{ form_data.get('phone', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-phone" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label for="address" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                Residential Address <span style="color: #f87171;">*</span>
+              </label>
+              <textarea
+                id="address"
+                name="address"
+                rows="2"
+                class="form-textarea"
+                placeholder="Door No., Street Name, Area / Locality..."
+                required
+                style="line-height: 1.6; font-size: 0.9rem;"
+              >{{ form_data.get('address', '') }}</textarea>
+              <span class="field-error-msg" id="err-address" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+            </div>
+
+            <!-- State, City, Pincode in 3 columns -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md);">
+              <div class="form-group">
+                <label for="state" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  State <span style="color: #f87171;">*</span>
+                </label>
+                <select id="state" name="state" class="form-input" style="appearance: auto; padding: 0.75rem 0.85rem;" required onchange="handleStateChange()">
+                  <option value="">-- Select State --</option>
+                  {% for st_name in states_and_cities.keys() %}
+                    <option value="{{ st_name }}" {{ 'selected' if form_data.get('state') == st_name else '' }}>{{ st_name }}</option>
+                  {% endfor %}
+                </select>
+                <span class="field-error-msg" id="err-state" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="city" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  City <span style="color: #f87171;">*</span>
+                </label>
+                <select id="city" name="city" class="form-input" style="appearance: auto; padding: 0.75rem 0.85rem;" required>
+                  <option value="">-- Select City --</option>
+                </select>
+                <span class="field-error-msg" id="err-city" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="pincode" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Pincode (6 Digits) <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="pincode"
+                  name="pincode"
+                  class="form-input"
+                  placeholder="e.g. 600001"
+                  maxlength="6"
+                  pattern="[1-9][0-9]{5}"
+                  value="{{ form_data.get('pincode', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-pincode" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 2: ACADEMIC CREDENTIALS -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.12); color: #60a5fa; display: flex; align-items: center; justify-content: center;">
+                {{ icon('award', size=18) }}
+              </div>
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">2. Academic Qualifications</h3>
+                <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Your educational degree, discipline, and expected graduation schedule</p>
+              </div>
+            </div>
+
+            <!-- Education level & Degree -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-md);">
+              <div class="form-group">
+                <label for="education_level" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Highest Education Level <span style="color: #f87171;">*</span>
+                </label>
+                <select id="education_level" name="education_level" class="form-input" style="appearance: auto; padding: 0.75rem 1rem;" required>
+                  <option value="">-- Select Education Level --</option>
+                  {% for edu in education_levels %}
+                    <option value="{{ edu }}" {{ 'selected' if (form_data.get('education_level') == edu or form_data.get('education') == edu) else '' }}>{{ edu }}</option>
+                  {% endfor %}
+                </select>
+                <span class="field-error-msg" id="err-education_level" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="degree" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Degree Program <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="degree"
+                  name="degree"
+                  class="form-input"
+                  placeholder="e.g. B.Tech / B.E. / B.Sc / BCA / MCA"
+                  value="{{ form_data.get('degree', '') }}"
+                  required
+                  list="degree-suggestions"
+                  style="padding: 0.75rem 1rem;"
+                />
+                <datalist id="degree-suggestions">
+                  {% for deg in common_degrees %}
+                    <option value="{{ deg }}">
+                  {% endfor %}
+                </datalist>
+                <span class="field-error-msg" id="err-degree" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+            </div>
+
+            <!-- Major & Graduation Year -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+              <div class="form-group">
+                <label for="major" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Major / Specialization <span style="color: #f87171;">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="major"
+                  name="major"
+                  class="form-input"
+                  placeholder="e.g. Computer Science, Artificial Intelligence, IT"
+                  value="{{ form_data.get('major', '') }}"
+                  required
+                  style="padding: 0.75rem 1rem;"
+                />
+                <span class="field-error-msg" id="err-major" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="graduation_year" class="form-label" style="font-weight: 700; color: var(--color-white);">
+                  Graduation Year (Up to 2029) <span style="color: #f87171;">*</span>
+                </label>
+                <select id="graduation_year" name="graduation_year" class="form-input" style="appearance: auto; padding: 0.75rem 1rem;" required>
+                  <option value="">-- Select Graduation Year --</option>
+                  {% for yr in graduation_years %}
+                    <option value="{{ yr }}" {{ 'selected' if form_data.get('graduation_year')|string == yr|string else '' }}>{{ yr }}</option>
+                  {% endfor %}
+                </select>
+                <span class="field-error-msg" id="err-graduation_year" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 3: 3-MONTH INTERNSHIP IDENTITY DOCUMENTS (CONDITIONAL) -->
+          {% if job.duration == '3_months' %}
+            <div class="card" style="padding: var(--space-xl); border: 1.5px solid rgba(59, 130, 246, 0.35); background: radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.08) 0%, var(--color-surface) 100%); box-shadow: var(--shadow-sm);">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.15); color: #60a5fa; display: flex; align-items: center; justify-content: center;">
+                    {{ icon('shield', size=18) }}
+                  </div>
+                  <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">3. Identity Verification Proofs</h3>
+                    <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Mandatory compliance for the 3-Months Internship track</p>
+                  </div>
+                </div>
+                <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);">
+                  3-Month Requirement
+                </span>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md);">
+                <!-- Aadhaar Card Upload (Required) -->
+                <div class="form-group">
+                  <label class="form-label" style="font-weight: 700; color: var(--color-white);">
+                    Aadhaar Document <span style="color: #f87171;">*</span>
+                  </label>
+                  <div
+                    class="file-upload-dropzone"
+                    onclick="document.getElementById('aadhaar-input').click();"
+                    style="padding: var(--space-lg); text-align: center; border: 1.5px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.25); transition: all 0.2s;"
+                    onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='rgba(16,185,129,0.04)';"
+                    onmouseout="this.style.borderColor='var(--color-border)'; this.style.background='rgba(0,0,0,0.25)';"
+                  >
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; color: var(--color-primary-light);">
+                      {{ icon('upload-cloud', size=18) }}
+                    </div>
+                    <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-white);">Upload Aadhaar</div>
+                    <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-top: 2px; margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
+                    <div id="aadhaar-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary-light); display: none;"></div>
+                  </div>
+                  <input
+                    type="file"
+                    id="aadhaar-input"
+                    name="aadhaar"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    style="display: none;"
+                    required
+                    onchange="handleFileSelected(this, 'aadhaar-name-display', 'err-aadhaar', ['pdf','jpg','jpeg','png'])"
+                  />
+                  <span class="field-error-msg" id="err-aadhaar" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+                </div>
+
+                <!-- PAN Card (Optional) -->
+                <div class="form-group">
+                  <label class="form-label" style="font-weight: 700; color: var(--color-white);">
+                    PAN Card <span style="font-size: 0.75rem; color: var(--color-text-dim); font-weight: normal;">(Optional)</span>
+                  </label>
+                  <div
+                    class="file-upload-dropzone"
+                    onclick="document.getElementById('pan-input').click();"
+                    style="padding: var(--space-lg); text-align: center; border: 1.5px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.25); transition: all 0.2s;"
+                    onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='rgba(16,185,129,0.04)';"
+                    onmouseout="this.style.borderColor='var(--color-border)'; this.style.background='rgba(0,0,0,0.25)';"
+                  >
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; color: var(--color-text-dim);">
+                      {{ icon('upload-cloud', size=18) }}
+                    </div>
+                    <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-white);">Upload PAN</div>
+                    <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-top: 2px; margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
+                    <div id="pan-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary-light); display: none;"></div>
+                  </div>
+                  <input
+                    type="file"
+                    id="pan-input"
+                    name="pan"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    style="display: none;"
+                    onchange="handleFileSelected(this, 'pan-name-display', 'err-pan', ['pdf','jpg','jpeg','png'])"
+                  />
+                  <span class="field-error-msg" id="err-pan" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+                </div>
+
+                <!-- College ID (Optional) -->
+                <div class="form-group">
+                  <label class="form-label" style="font-weight: 700; color: var(--color-white);">
+                    College ID Card <span style="font-size: 0.75rem; color: var(--color-text-dim); font-weight: normal;">(Optional)</span>
+                  </label>
+                  <div
+                    class="file-upload-dropzone"
+                    onclick="document.getElementById('college-id-input').click();"
+                    style="padding: var(--space-lg); text-align: center; border: 1.5px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.25); transition: all 0.2s;"
+                    onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='rgba(16,185,129,0.04)';"
+                    onmouseout="this.style.borderColor='var(--color-border)'; this.style.background='rgba(0,0,0,0.25)';"
+                  >
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; color: var(--color-text-dim);">
+                      {{ icon('upload-cloud', size=18) }}
+                    </div>
+                    <div style="font-size: 0.875rem; font-weight: 700; color: var(--color-white);">Upload College ID</div>
+                    <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-top: 2px; margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
+                    <div id="college-id-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 700; color: var(--color-primary-light); display: none;"></div>
+                  </div>
+                  <input
+                    type="file"
+                    id="college-id-input"
+                    name="college_id"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    style="display: none;"
+                    onchange="handleFileSelected(this, 'college-id-name-display', 'err-college_id', ['pdf','jpg','jpeg','png'])"
+                  />
+                  <span class="field-error-msg" id="err-college_id" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- CARD 4: RESUME / CV UPLOAD -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); display: flex; align-items: center; justify-content: center;">
+                  {{ icon('file-text', size=18) }}
+                </div>
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">
+                    {% if job.duration == '3_months' %}4{% else %}3{% endif %}. Resume / Curriculum Vitae <span style="color: #f87171;">*</span>
+                  </h3>
+                  <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Uploaded resume is reviewed by engineering leads and recruiters</p>
+                </div>
+              </div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light);">
+                Mandatory
+              </span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <div
+                class="file-upload-dropzone"
+                onclick="document.getElementById('resume-input').click();"
+                style="padding: var(--space-2xl) var(--space-xl); text-align: center; border: 2px dashed rgba(16, 185, 129, 0.35); border-radius: var(--radius-lg); cursor: pointer; background: rgba(16, 185, 129, 0.02); transition: all 0.25s;"
+                onmouseover="this.style.borderColor='var(--color-primary)'; this.style.background='rgba(16,185,129,0.06)';"
+                onmouseout="this.style.borderColor='rgba(16, 185, 129, 0.35)'; this.style.background='rgba(16,185,129,0.02)';"
+              >
+                <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-md); color: var(--color-primary-light);">
+                  {{ icon('upload-cloud', size=26) }}
+                </div>
+                <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-white); margin-bottom: 0.25rem;">
+                  Click to Browse or Drag &amp; Drop Your Resume
+                </div>
+                <p style="font-size: 0.825rem; color: var(--color-text-dim); margin-bottom: 0;">
+                  Accepted formats: <strong style="color: var(--color-primary-light);">PDF, DOC, DOCX</strong> &bull; Maximum file size: <strong>16 MB</strong>
+                </p>
+                <div id="resume-name-display" style="margin-top: 1rem; font-size: 0.9rem; font-weight: 700; color: var(--color-primary-light); display: none;"></div>
+              </div>
+
               <input
                 type="file"
-                id="aadhaar-input"
-                name="aadhaar"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                id="resume-input"
+                name="resume"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 style="display: none;"
                 required
-                onchange="handleFileSelected(this, 'aadhaar-name-display', 'err-aadhaar', ['pdf','jpg','jpeg','png'])"
+                onchange="handleFileSelected(this, 'resume-name-display', 'err-resume', ['pdf','doc','docx'])"
               />
-              <span class="field-error-msg" id="err-aadhaar" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-            </div>
-
-            <!-- PAN Card (Optional for 3 Months) -->
-            <div class="form-group">
-              <label class="form-label">PAN Card <span style="font-size: 0.75rem; color: var(--color-text-dim); font-weight: normal;">(Optional)</span></label>
-              <div class="file-upload-box" onclick="document.getElementById('pan-input').click();" style="padding: var(--space-md); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.2);">
-                <div class="icon-box" style="margin: 0 auto 0.5rem; width: 34px; height: 34px;">{{ icon('upload-cloud', size=18) }}</div>
-                <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-white);">Upload PAN Card</div>
-                <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
-                <div id="pan-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--color-primary-light); display: none;"></div>
-              </div>
-              <input
-                type="file"
-                id="pan-input"
-                name="pan"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                style="display: none;"
-                onchange="handleFileSelected(this, 'pan-name-display', 'err-pan', ['pdf','jpg','jpeg','png'])"
-              />
-              <span class="field-error-msg" id="err-pan" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
-            </div>
-
-            <!-- College ID Card (Optional for 3 Months) -->
-            <div class="form-group">
-              <label class="form-label">College ID Card <span style="font-size: 0.75rem; color: var(--color-text-dim); font-weight: normal;">(Optional)</span></label>
-              <div class="file-upload-box" onclick="document.getElementById('college-id-input').click();" style="padding: var(--space-md); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.2);">
-                <div class="icon-box" style="margin: 0 auto 0.5rem; width: 34px; height: 34px;">{{ icon('upload-cloud', size=18) }}</div>
-                <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-white);">Upload College ID</div>
-                <p style="font-size: 0.75rem; color: var(--color-text-dim); margin-bottom: 0;">PDF, JPG, PNG (Max 16MB)</p>
-                <div id="college-id-name-display" style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--color-primary-light); display: none;"></div>
-              </div>
-              <input
-                type="file"
-                id="college-id-input"
-                name="college_id"
-                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                style="display: none;"
-                onchange="handleFileSelected(this, 'college-id-name-display', 'err-college_id', ['pdf','jpg','jpeg','png'])"
-              />
-              <span class="field-error-msg" id="err-college_id" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+              <span class="field-error-msg" id="err-resume" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
             </div>
           </div>
-        {% endif %}
 
-        <!-- RESUME UPLOAD (Required for all applications) -->
-        <div class="form-section-title" style="margin-top: var(--space-xl);">
-          {{ icon('upload-cloud', size=16, color='var(--color-primary-light)') }} {% if job.duration == '3_months' %}4{% else %}3{% endif %}. Resume / Curriculum Vitae <span style="color: #f87171;">*</span>
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-xl);">
-          <div class="file-upload-box" onclick="document.getElementById('resume-input').click();" style="padding: var(--space-lg); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); cursor: pointer; background: rgba(0,0,0,0.02);">
-            <div class="icon-box" style="margin: 0 auto var(--space-sm); width: 42px; height: 42px;">{{ icon('upload-cloud', size=22) }}</div>
-            <div style="font-weight: 700; color: #000000; margin-bottom: 0.25rem;">
-              Click to browse and upload your Resume <span style="color: #f87171;">*</span>
+          <!-- CARD 5: PROFESSIONAL LINKS & PROFILES (OPTIONAL) -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-md); margin-bottom: var(--space-lg);">
+              <div style="width: 34px; height: 34px; border-radius: var(--radius-sm); background: rgba(168, 85, 247, 0.12); color: #c084fc; display: flex; align-items: center; justify-content: center;">
+                {{ icon('globe', size=18) }}
+              </div>
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-white); margin: 0;">
+                  {% if job.duration == '3_months' %}5{% else %}4{% endif %}. Online Profiles &amp; Portfolio <span style="font-size: 0.8rem; color: var(--color-text-dim); font-weight: normal;">(Optional)</span>
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--color-text-dim); margin: 0;">Showcase open-source projects, code samples, or live deployments</p>
+              </div>
             </div>
-            <p style="font-size: 0.8125rem; color: var(--color-text-dim); margin-bottom: 0;">
-              Accepted formats: <strong style="color: var(--color-primary-light);">PDF, DOC, DOCX</strong> (Max 16 MB)
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-md);">
+              <div class="form-group">
+                <label for="github_url" class="form-label" style="font-weight: 600; color: var(--color-white);">GitHub URL</label>
+                <input
+                  type="url"
+                  id="github_url"
+                  name="github_url"
+                  class="form-input"
+                  placeholder="https://github.com/username"
+                  value="{{ form_data.get('github_url', '') }}"
+                  style="padding: 0.65rem 0.85rem;"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="linkedin_url" class="form-label" style="font-weight: 600; color: var(--color-white);">LinkedIn URL</label>
+                <input
+                  type="url"
+                  id="linkedin_url"
+                  name="linkedin_url"
+                  class="form-input"
+                  placeholder="https://linkedin.com/in/username"
+                  value="{{ form_data.get('linkedin_url', '') }}"
+                  style="padding: 0.65rem 0.85rem;"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="portfolio_url" class="form-label" style="font-weight: 600; color: var(--color-white);">Portfolio / Website</label>
+                <input
+                  type="url"
+                  id="portfolio_url"
+                  name="portfolio_url"
+                  class="form-input"
+                  placeholder="https://yourportfolio.dev"
+                  value="{{ form_data.get('portfolio_url', '') }}"
+                  style="padding: 0.65rem 0.85rem;"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 6: LEGAL DECLARATION -->
+          <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-lg); line-height: 1.6; font-size: 0.825rem; color: var(--color-text-dim);">
+            <p style="margin-bottom: var(--space-xs); color: var(--color-text);">
+              <strong>Candidate Declaration &amp; Submission Agreement:</strong> By submitting this application, I confirm that all credentials, personal data, and documents uploaded by me are accurate, authentic, and belong solely to me.
             </p>
-            <div id="resume-name-display" style="margin-top: 0.75rem; font-size: 0.875rem; font-weight: 600; color: var(--color-primary-light); display: none;"></div>
+            <p style="margin-bottom: 0;">
+              I understand that application fees (where applicable) are strictly non-refundable once paid and do not guarantee an offer. Governed by Anti Matrix 
+              <a href="{{ url_for('main.terms') }}" target="_blank" style="color: var(--color-primary-light); text-decoration: underline;">Terms &amp; Conditions</a>, 
+              <a href="{{ url_for('main.privacy') }}" target="_blank" style="color: var(--color-primary-light); text-decoration: underline;">Privacy Policy</a>, and 
+              <a href="{{ url_for('main.refund_policy') }}" target="_blank" style="color: var(--color-primary-light); text-decoration: underline;">Refund &amp; Cancellation Policy</a>.
+            </p>
           </div>
-          <input
-            type="file"
-            id="resume-input"
-            name="resume"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            style="display: none;"
-            required
-            onchange="handleFileSelected(this, 'resume-name-display', 'err-resume', ['pdf','doc','docx'])"
-          />
-          <span class="field-error-msg" id="err-resume" style="color: #f87171; font-size: 0.775rem; display: none; margin-top: 0.25rem;"></span>
+
         </div>
 
-        <!-- Review & Submit Action -->
-        {% if job.is_internship and job.fee_inr > 0 %}
-          <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-xl); display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
-            <div>
-              <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Mandatory Next Step</div>
-              <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-white); margin-top: 2px;">
-                Review Application & Pay Application Fee (<span style="color: var(--color-primary-light);">{{ job.fee_display }}</span>)
+        <!-- ================= RIGHT COLUMN: STICKY APPLICATION SIDEBAR ================= -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-xl); position: sticky; top: calc(var(--nav-height, 80px) + 1.5rem);">
+
+          <!-- Position Snapshot Card -->
+          <div class="card" style="padding: var(--space-xl); border: 1px solid var(--color-border); background: var(--color-surface); box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; margin-bottom: 6px;">
+              Applying For
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-white); margin-bottom: var(--space-xs); line-height: 1.3;">
+              {{ job.title }}
+            </h3>
+            <div style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 600; margin-bottom: var(--space-md);">
+              {{ job.department }} &bull; {{ job.location }}
+            </div>
+
+            <!-- Fee & Program breakdown -->
+            {% if job.is_internship and job.fee_inr > 0 %}
+              <div style="background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.12) 0%, rgba(0,0,0,0.3) 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700;">
+                  Internship Fee
+                </div>
+                <div style="font-size: 1.75rem; font-weight: 900; color: var(--color-primary-light); font-family: var(--font-mono, monospace); margin: 2px 0;">
+                  {{ job.fee_display }}
+                </div>
+                <div style="font-size: 0.775rem; color: var(--color-text-dim);">
+                  {{ job.duration_display }} &bull; One-Time Processing Fee
+                </div>
               </div>
-              <div style="font-size: 0.8125rem; color: var(--color-text-dim); margin-top: 2px;">
-                Duration: <strong>{{ job.duration_display }}</strong> &bull; Secure checkout powered by Cashfree Payments.
+            {% else %}
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700;">
+                  Application Cost
+                </div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary-light); margin: 2px 0;">
+                  Free Submission
+                </div>
+                <div style="font-size: 0.775rem; color: var(--color-text-dim);">
+                  Standard Full-Time / Contract Position
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Primary Submit / Review CTA Button -->
+            {% if job.is_internship and job.fee_inr > 0 %}
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                id="submit-application-btn"
+                style="width: 100%; justify-content: center; font-weight: 800; font-size: 1rem; gap: 8px; box-shadow: 0 4px 18px rgba(16,185,129,0.35);"
+              >
+                Review &amp; Pay Fee ({{ job.fee_display }}) {{ icon('arrow-right', size=16) }}
+              </button>
+            {% else %}
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+                id="submit-application-btn"
+                style="width: 100%; justify-content: center; font-weight: 800; font-size: 1rem; gap: 8px; box-shadow: 0 4px 18px rgba(16,185,129,0.35);"
+              >
+                Submit Application {{ icon('send', size=16) }}
+              </button>
+            {% endif %}
+
+            <div style="font-size: 0.75rem; color: var(--color-text-muted); text-align: center; margin-top: 8px;">
+              {{ icon('lock', size=11) }} 256-Bit SSL Encrypted &bull; Instant Confirmation
+            </div>
+          </div>
+
+          <!-- What Happens Next? Timeline Card -->
+          <div class="card" style="padding: var(--space-lg); border: 1px solid var(--color-border); background: var(--color-surface);">
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-white); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-md); display: flex; align-items: center; gap: 6px;">
+              {{ icon('compass', size=14, color='var(--color-primary-light)') }} What Happens Next?
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: var(--space-md); font-size: 0.8rem;">
+              <div style="display: flex; gap: 10px;">
+                <span style="width: 22px; height: 22px; border-radius: 50%; background: rgba(16,185,129,0.15); color: var(--color-primary-light); font-weight: 800; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</span>
+                <div>
+                  <strong style="color: var(--color-white); display: block;">Application ID Assigned</strong>
+                  <span style="color: var(--color-text-dim);">You receive an official code (e.g. <code>AM-APP-XXXXXX</code>) and confirmation email.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                <span style="width: 22px; height: 22px; border-radius: 50%; background: rgba(59,130,246,0.15); color: #60a5fa; font-weight: 800; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</span>
+                <div>
+                  <strong style="color: var(--color-white); display: block;">Engineering Review</strong>
+                  <span style="color: var(--color-text-dim);">Technical leads evaluate your resume, skills, and academic profile.</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                <span style="width: 22px; height: 22px; border-radius: 50%; background: rgba(168,85,247,0.15); color: #c084fc; font-weight: 800; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</span>
+                <div>
+                  <strong style="color: var(--color-white); display: block;">Shortlisting &amp; Offer</strong>
+                  <span style="color: var(--color-text-dim);">Status is updated live in your profile, followed by an official Offer Letter.</span>
+                </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg" id="submit-application-btn" style="gap: 8px;">
-              Review Application {{ icon('arrow-right', size=16) }}
-            </button>
           </div>
-        {% else %}
-          <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md);">
-            <a href="{{ url_for('main.careers') }}" class="btn btn-ghost">Cancel</a>
-            <button type="submit" class="btn btn-primary btn-lg" id="submit-application-btn" style="gap: 8px;">
-              Submit Application {{ icon('send', size=16) }}
-            </button>
+
+          <!-- Help & Support -->
+          <div style="text-align: center; font-size: 0.8rem; color: var(--color-text-dim);">
+            Need assistance with your application?<br />
+            Contact us: <a href="mailto:info@antimatrix.com" style="color: var(--color-primary-light); text-decoration: none; font-weight: 600;">info@antimatrix.com</a>
           </div>
-        {% endif %}
-      </form>
-    </div>
+
+        </div>
+
+      </div>
+    </form>
+
   </div>
 </section>
 
@@ -446,80 +768,99 @@ function handleFileSelected(inputElem, displayId, errorId, allowedExts) {
   }
 
   if (display) {
-    display.textContent = '✓ Selected: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+    display.textContent = '✓ Ready: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
     display.style.display = 'block';
   }
 }
 
-// Client-side quick form validation
+// Client-Side Validation
 document.getElementById('job-application-form').addEventListener('submit', function(e) {
-  let hasError = false;
+  let hasErrors = false;
   
-  const validateField = (id, errId, msg, customCheck = null) => {
-    const elem = document.getElementById(id);
-    const errElem = document.getElementById(errId);
-    if (!elem) return;
-    
-    let isInvalid = false;
-    if (customCheck) {
-      isInvalid = !customCheck(elem.value.trim());
-    } else {
-      isInvalid = !elem.value.trim();
-    }
-    
-    if (isInvalid) {
-      if (errElem) {
-        errElem.textContent = msg;
-        errElem.style.display = 'block';
-      }
-      elem.classList.add('input-error');
-      hasError = true;
-    } else {
-      if (errElem) errElem.style.display = 'none';
-      elem.classList.remove('input-error');
-    }
-  };
+  // Clear errors
+  document.querySelectorAll('.field-error-msg').forEach(el => el.style.display = 'none');
 
-  validateField('first_name', 'err-first_name', 'First Name is required');
-  validateField('last_name', 'err-last_name', 'Last Name is required');
-  validateField('email', 'err-email', 'Please provide a valid email', (v) => /^\S+@\S+\.\S+$/.test(v));
-  validateField('phone', 'err-phone', 'Please enter a valid 10-digit Indian phone number', (v) => /^[6-9]\d{9}$/.test(v.replace(/\D/g, '')));
-  validateField('address', 'err-address', 'Address is required');
-  validateField('state', 'err-state', 'Please select a state');
-  validateField('city', 'err-city', 'Please select a city');
-  validateField('pincode', 'err-pincode', 'Enter a valid 6-digit pincode', (v) => /^[1-9][0-9]{5}$/.test(v));
-  validateField('education_level', 'err-education_level', 'Education level is required');
-  validateField('degree', 'err-degree', 'Degree is required');
-  validateField('major', 'err-major', 'Major / Specialization is required');
-  validateField('graduation_year', 'err-graduation_year', 'Graduation year is required (up to 2029)', (v) => parseInt(v) <= 2029);
+  const requiredFields = [
+    { id: 'first_name', name: 'First Name' },
+    { id: 'last_name', name: 'Last Name' },
+    { id: 'email', name: 'Email Address' },
+    { id: 'phone', name: 'Phone Number' },
+    { id: 'address', name: 'Address' },
+    { id: 'state', name: 'State' },
+    { id: 'city', name: 'City' },
+    { id: 'pincode', name: 'Pincode' },
+    { id: 'education_level', name: 'Education Level' },
+    { id: 'degree', name: 'Degree' },
+    { id: 'major', name: 'Major' },
+    { id: 'graduation_year', name: 'Graduation Year' }
+  ];
+
+  requiredFields.forEach(field => {
+    const el = document.getElementById(field.id);
+    const errEl = document.getElementById('err-' + field.id);
+    if (el && !el.value.trim()) {
+      if (errEl) {
+        errEl.textContent = field.name + ' is required.';
+        errEl.style.display = 'block';
+      }
+      hasErrors = true;
+    }
+  });
+
+  // Phone check
+  const phoneEl = document.getElementById('phone');
+  if (phoneEl && phoneEl.value.trim()) {
+    const phoneVal = phoneEl.value.replace(/\D/g, '');
+    if (phoneVal.length !== 10) {
+      const errEl = document.getElementById('err-phone');
+      if (errEl) {
+        errEl.textContent = 'Please enter a valid 10-digit phone number.';
+        errEl.style.display = 'block';
+      }
+      hasErrors = true;
+    }
+  }
+
+  // Pincode check
+  const pinEl = document.getElementById('pincode');
+  if (pinEl && pinEl.value.trim()) {
+    if (!/^[1-9][0-9]{5}$/.test(pinEl.value.trim())) {
+      const errEl = document.getElementById('err-pincode');
+      if (errEl) {
+        errEl.textContent = 'Please enter a valid 6-digit Indian pincode.';
+        errEl.style.display = 'block';
+      }
+      hasErrors = true;
+    }
+  }
 
   // Resume check
   const resumeInput = document.getElementById('resume-input');
-  if (resumeInput && (!resumeInput.files || !resumeInput.files.length)) {
-    const errResume = document.getElementById('err-resume');
-    if (errResume) {
-      errResume.textContent = 'Please upload your Resume (PDF, DOC, DOCX)';
-      errResume.style.display = 'block';
+  if (resumeInput && (!resumeInput.files || resumeInput.files.length === 0)) {
+    const errEl = document.getElementById('err-resume');
+    if (errEl) {
+      errEl.textContent = 'Resume upload is required.';
+      errEl.style.display = 'block';
     }
-    hasError = true;
+    hasErrors = true;
   }
 
   // Aadhaar check for 3 months
   const aadhaarInput = document.getElementById('aadhaar-input');
-  if (aadhaarInput && aadhaarInput.hasAttribute('required') && (!aadhaarInput.files || !aadhaarInput.files.length)) {
-    const errAadhaar = document.getElementById('err-aadhaar');
-    if (errAadhaar) {
-      errAadhaar.textContent = 'Aadhaar Card is required for 3-Month Internship';
-      errAadhaar.style.display = 'block';
+  if (aadhaarInput && (!aadhaarInput.files || aadhaarInput.files.length === 0)) {
+    const errEl = document.getElementById('err-aadhaar');
+    if (errEl) {
+      errEl.textContent = 'Aadhaar document upload is required for the 3-months internship.';
+      errEl.style.display = 'block';
     }
-    hasError = true;
+    hasErrors = true;
   }
 
-  if (hasError) {
+  if (hasErrors) {
     e.preventDefault();
-    const firstError = document.querySelector('.field-error-msg[style*="display: block"]');
-    if (firstError) {
-      firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const firstErr = document.querySelector('.field-error-msg[style*="display: block"]');
+    if (firstErr) {
+      firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 });
