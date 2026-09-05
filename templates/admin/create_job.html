@@ -4,28 +4,28 @@
 {% block title %}Create Job Posting | Anti-Matrix Admin{% endblock %}
 
 {% block content %}
-<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh; padding-bottom: var(--space-3xl);">
-  <div class="container" style="max-width: 900px; margin: 0 auto;">
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 1.5rem); background: #f8fafc; min-height: 88vh; padding-bottom: 3.5rem;">
+  <div class="container admin-form-container">
     
-    <!-- Clean Minimalist Header -->
-    <div style="margin-bottom: var(--space-xl); display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: var(--space-md); border-bottom: 1px solid var(--color-border, #e2e8f0); padding-bottom: var(--space-lg);">
+    <!-- Top Bar: Breadcrumb + Action Header -->
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1.25rem;">
       <div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #64748b; margin-bottom: 6px; font-family: var(--font-admin-sans);">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.825rem; color: #64748b; margin-bottom: 4px; font-family: var(--font-admin-sans);">
           <a href="{{ url_for('admin.dashboard') }}" style="color: #64748b; text-decoration: none;">Admin</a>
           <span>/</span>
           <a href="{{ url_for('admin.jobs') }}" style="color: #64748b; text-decoration: none;">Job Postings</a>
           <span>/</span>
-          <span style="color: var(--color-primary-light);">New Opening</span>
+          <span style="color: #0f172a; font-weight: 500;">Create</span>
         </div>
-        <h1 style="font-family: var(--font-admin-heading); font-size: clamp(1.6rem, 2.5vw, 2rem); font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
+        <h1 style="font-family: var(--font-admin-heading); font-size: 1.65rem; font-weight: 700; color: #0f172a; margin: 0; letter-spacing: -0.02em;">
           Create Job Posting
         </h1>
-        <p style="font-family: var(--font-admin-sans); color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">
-          Add a new career or internship opportunity to the Anti-Matrix talent portal.
+        <p style="font-family: var(--font-admin-sans); color: #64748b; font-size: 0.875rem; margin: 4px 0 0 0;">
+          Publish a new role or internship opportunity to the candidate portal.
         </p>
       </div>
 
-      <div style="display: flex; gap: 10px; align-items: center;">
+      <div style="display: flex; gap: 8px; align-items: center;">
         <button type="button" onclick="togglePreviewDrawer()" class="btn btn-outline btn-sm" id="toggle-preview-btn" style="gap: 6px; font-weight: 500;">
           {{ icon('eye', size=14) }} <span id="preview-btn-text">Preview Card</span>
         </button>
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Admin Nav Tabs -->
-    <div class="admin-nav-tabs">
+    <div class="admin-nav-tabs" style="margin-bottom: 1.75rem;">
       <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
         {{ icon('layout', size=14) }} Overview
       </a>
@@ -54,92 +54,85 @@
       </a>
     </div>
 
-    <!-- Live Preview Drawer (Collapsed by default, opens smoothly) -->
-    <div id="preview-drawer" style="display: none; margin-bottom: var(--space-xl); background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: var(--space-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); animation: fadeIn 0.2s ease;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-        <span style="font-family: var(--font-admin-heading); font-size: 0.8rem; font-weight: 600; color: #059669; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
-          {{ icon('eye', size=14) }} Live Candidate View Preview
+    <!-- Candidate Card Preview Drawer (Clean & Minimal) -->
+    <div id="preview-drawer" style="display: none; margin-bottom: 1.75rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+        <span style="font-family: var(--font-admin-heading); font-size: 0.775rem; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px;">
+          {{ icon('eye', size=14) }} Candidate View Preview
         </span>
-        <span id="preview-status-pill" class="badge-status active">
-          Active
-        </span>
+        <span id="preview-status-pill" class="badge-status active">Active</span>
       </div>
 
-      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: var(--space-lg); max-width: 600px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem; max-width: 580px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
           <div>
-            <span id="preview-dept" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase;">Engineering</span>
-            <span style="color: #94a3b8; margin: 0 6px;">&bull;</span>
-            <span id="preview-type-badge" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b;">Full-time</span>
+            <span id="preview-dept" style="font-size: 0.75rem; color: #059669; font-weight: 700; text-transform: uppercase;">Engineering</span>
+            <span style="color: #cbd5e1; margin: 0 6px;">&bull;</span>
+            <span id="preview-type-badge" style="font-size: 0.75rem; color: #64748b;">Full-time</span>
           </div>
-          <span id="preview-duration-badge" style="font-family: var(--font-admin-sans); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #f1f5f9; color: #475569; display: none;">
+          <span id="preview-duration-badge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #e2e8f0; color: #334155; font-weight: 600; display: none;">
             Internship
           </span>
         </div>
 
-        <h3 id="preview-title" style="font-family: var(--font-admin-heading); color: #0f172a; font-size: 1.2rem; font-weight: 700; margin: 0 0 6px 0;">
-          Job Title
+        <h3 id="preview-title" style="font-family: var(--font-admin-heading); color: #0f172a; font-size: 1.15rem; font-weight: 700; margin: 0 0 6px 0;">
+          Senior Software Engineer
         </h3>
 
-        <div style="font-family: var(--font-admin-sans); font-size: 0.825rem; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
           {{ icon('map-pin', size=13) }} <span id="preview-loc">Remote (Worldwide)</span>
         </div>
 
-        <p id="preview-summary" style="font-family: var(--font-admin-sans); font-size: 0.85rem; color: #475569; line-height: 1.5; margin-bottom: 12px;">
+        <p id="preview-summary" style="font-size: 0.85rem; color: #475569; line-height: 1.5; margin-bottom: 12px;">
           Short role description summary will appear here...
         </p>
 
-        <div id="preview-skills-tags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;"></div>
+        <div id="preview-skills-tags" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;"></div>
 
-        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-          <span id="preview-salary" style="font-family: var(--font-admin-sans); font-size: 0.85rem; font-weight: 600; color: #059669;">
-            Competitive
-          </span>
-          <span style="font-family: var(--font-admin-sans); font-size: 0.85rem; color: #059669; font-weight: 600;">
-            Apply Now &rarr;
-          </span>
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.825rem;">
+          <span id="preview-salary" style="font-weight: 600; color: #059669;">Competitive</span>
+          <span style="color: #059669; font-weight: 600;">Apply Now &rarr;</span>
         </div>
       </div>
     </div>
 
-    <!-- Main Clean Executive Form -->
+    <!-- Main Clean Professional Form -->
     <form method="POST" action="{{ url_for('admin.create_job') }}" id="create-job-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-      <div style="background: #ffffff; border: 1px solid var(--color-border, #e2e8f0); border-radius: var(--radius-lg); padding: clamp(1.5rem, 3vw, 2.5rem); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
+      <div class="admin-form-card">
 
         <!-- Section 1: Role Overview -->
-        <div style="margin-bottom: var(--space-2xl);">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">01</span>
-            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Role Overview</h2>
+        <div class="admin-form-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">1. Role Information</h2>
+            <span class="admin-section-desc">Basic identification and categorization</span>
           </div>
 
           <!-- Job Title -->
-          <div class="form-group" style="margin-bottom: var(--space-lg);">
-            <label for="title" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-              Job Title <span style="color: #f87171;">*</span>
+          <div class="form-group">
+            <label for="title" class="form-label">
+              <span>Job Title <span class="req">*</span></span>
             </label>
             <input
               type="text"
               id="title"
               name="title"
               class="form-input"
-              placeholder="e.g. Senior Full-Stack Engineer"
+              placeholder="e.g. Full-Stack Software Engineer"
               value="{{ form_data.get('title', '') }}"
               required
-              style="font-family: var(--font-admin-sans); font-size: 0.95rem; padding: 0.75rem 1rem;"
               oninput="updatePreview()"
             />
           </div>
 
           <!-- Department, Location & Employment Type (3 Columns) -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-sm);">
+          <div class="form-grid-3">
             
             <!-- Department -->
             <div class="form-group">
-              <label for="department" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
-                Department <span style="color: #f87171;">*</span>
+              <label for="department" class="form-label">
+                <span>Department <span class="req">*</span></span>
               </label>
               <input
                 type="text"
@@ -163,15 +156,15 @@
 
             <!-- Location -->
             <div class="form-group">
-              <label for="location" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
-                Location <span style="color: #f87171;">*</span>
+              <label for="location" class="form-label">
+                <span>Location <span class="req">*</span></span>
               </label>
               <input
                 type="text"
                 id="location"
                 name="location"
                 class="form-input"
-                placeholder="e.g. Remote or Chennai, India"
+                placeholder="e.g. Remote (Worldwide)"
                 value="{{ form_data.get('location', '') }}"
                 required
                 list="location-datalist"
@@ -187,8 +180,8 @@
 
             <!-- Employment Type -->
             <div class="form-group">
-              <label for="employment_type" class="form-label" style="font-weight: 600; color: var(--color-white); font-size: 0.9rem;">
-                Employment Type <span style="color: #f87171;">*</span>
+              <label for="employment_type" class="form-label">
+                <span>Employment Type <span class="req">*</span></span>
               </label>
               <select
                 id="employment_type"
@@ -210,53 +203,49 @@
           </div>
         </div>
 
-        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
-
-        <!-- Section 2: Program Tier & Compensation -->
-        <div style="margin-bottom: var(--space-2xl);">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">02</span>
-            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Program Tier &amp; Compensation</h2>
+        <!-- Section 2: Compensation & Program Configuration -->
+        <div class="admin-form-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">2. Compensation &amp; Program Duration</h2>
+            <span class="admin-section-desc">Tier selection and payment terms</span>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg);">
+          <div class="form-grid-3">
             
-            <!-- Program Tier (Internship Fee Engine) -->
+            <!-- Duration / Fee Tier -->
             <div class="form-group">
-              <label for="duration" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-                Program Duration &amp; Fee
+              <label for="duration" class="form-label">
+                <span>Program Tier &amp; Fee</span>
               </label>
-              <select id="duration" name="duration" class="form-input" style="appearance: auto; font-family: var(--font-admin-sans);" onchange="updateDurationTier(); updatePreview();">
-                <option value="" {{ 'selected' if not form_data.get('duration') else '' }}>Standard Role (Free Application)</option>
+              <select id="duration" name="duration" class="form-input" style="appearance: auto;" onchange="updateDurationTier(); updatePreview();">
+                <option value="" {{ 'selected' if not form_data.get('duration') else '' }}>Standard Full-Time (Free)</option>
                 <option value="1_month" {{ 'selected' if form_data.get('duration') == '1_month' else '' }}>1 Month Internship (₹199 Fee)</option>
                 <option value="3_months" {{ 'selected' if form_data.get('duration') == '3_months' else '' }}>3 Months Internship (₹399 Fee + Aadhaar Verification)</option>
               </select>
-              <span id="tier-hint" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b; display: block; margin-top: 6px;">
-                Standard opening. No application or verification fee required.
-              </span>
+              <span id="tier-hint" class="form-hint">Standard opening. No application fee required.</span>
             </div>
 
             <!-- Salary / Stipend -->
             <div class="form-group">
-              <label for="salary" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-                Salary / Stipend
+              <label for="salary" class="form-label">
+                <span>Salary / Stipend</span>
               </label>
               <input
                 type="text"
                 id="salary"
                 name="salary"
                 class="form-input"
-                placeholder="e.g. Competitive or ₹15,000 - ₹25,000/mo"
+                placeholder="e.g. ₹15,000 - ₹25,000/mo or Competitive"
                 value="{{ form_data.get('salary', '') }}"
-                style="font-family: var(--font-admin-sans);"
                 oninput="updatePreview()"
               />
+              <span class="form-hint">Displayed to applicants on career listing.</span>
             </div>
 
             <!-- Application Deadline -->
             <div class="form-group">
-              <label for="application_deadline" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-                Application Deadline
+              <label for="application_deadline" class="form-label">
+                <span>Application Deadline</span>
               </label>
               <input
                 type="text"
@@ -265,131 +254,117 @@
                 class="form-input"
                 placeholder="e.g. Rolling / Open until filled"
                 value="{{ form_data.get('application_deadline', '') }}"
-                style="font-family: var(--font-admin-sans);"
               />
+              <span class="form-hint">Leave blank or enter date / "Rolling".</span>
             </div>
 
           </div>
         </div>
 
-        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
-
-        <!-- Section 3: Role Descriptions -->
-        <div style="margin-bottom: var(--space-2xl);">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">03</span>
-            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Role Descriptions</h2>
+        <!-- Section 3: Descriptions -->
+        <div class="admin-form-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">3. Job Description</h2>
+            <span class="admin-section-desc">Summary and comprehensive role briefing</span>
           </div>
 
           <!-- Short Teaser -->
-          <div class="form-group" style="margin-bottom: var(--space-lg);">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-              <label for="short_description" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem; margin: 0;">
-                Short Summary (Card Teaser) <span style="color: #f87171;">*</span>
-              </label>
-              <span id="char-counter" style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b;">0/260</span>
-            </div>
+          <div class="form-group">
+            <label for="short_description" class="form-label">
+              <span>Short Teaser Summary <span class="req">*</span></span>
+              <span id="char-counter" class="char-count">0/260</span>
+            </label>
             <input
               type="text"
               id="short_description"
               name="short_description"
               class="form-input"
-              placeholder="A concise 1-2 sentence overview shown on careers discovery cards..."
+              placeholder="A concise 1-2 sentence overview shown on the careers listing card..."
               value="{{ form_data.get('short_description', '') }}"
               required
               maxlength="260"
-              style="font-family: var(--font-admin-sans);"
               oninput="handleShortDescChange(); updatePreview();"
             />
+            <span class="form-hint">Shown on cards and search results (max 260 characters).</span>
           </div>
 
           <!-- Full Job Description -->
           <div class="form-group">
-            <label for="description" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-              Full Job Description <span style="color: #f87171;">*</span>
+            <label for="description" class="form-label">
+              <span>Full Job Description <span class="req">*</span></span>
             </label>
             <textarea
               id="description"
               name="description"
               rows="6"
               class="form-textarea"
-              placeholder="Describe the opportunity, core mission, project scope, and what success looks like in this position..."
+              placeholder="Describe the opportunity, team mission, daily workflow, and core expectations..."
               required
-              style="font-family: var(--font-admin-sans); line-height: 1.6; font-size: 0.9rem;"
             >{{ form_data.get('description', '') }}</textarea>
           </div>
         </div>
 
-        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
-
         <!-- Section 4: Skills & Requirements -->
-        <div style="margin-bottom: var(--space-2xl);">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-md);">
-            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; font-weight: 700; color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">04</span>
-            <h2 style="font-family: var(--font-admin-heading); font-size: 1.15rem; font-weight: 700; color: #0f172a; margin: 0;">Skills &amp; Criteria</h2>
+        <div class="admin-form-section">
+          <div class="admin-section-header">
+            <h2 class="admin-section-title">4. Skills &amp; Qualifications</h2>
+            <span class="admin-section-desc">Key competencies and candidate requirements</span>
           </div>
 
           <!-- Skills Input -->
-          <div class="form-group" style="margin-bottom: var(--space-lg);">
-            <label for="skills" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-              Required Skills (Comma-separated)
+          <div class="form-group">
+            <label for="skills" class="form-label">
+              <span>Required Skills (Comma-separated)</span>
             </label>
             <input
               type="text"
               id="skills"
               name="skills"
               class="form-input"
-              placeholder="e.g. React, Python, Node.js, PostgreSQL, Docker"
+              placeholder="e.g. Python, Flask, React, PostgreSQL, Docker, Git"
               value="{{ form_data.get('skills', '') }}"
-              style="font-family: var(--font-admin-sans);"
               oninput="updatePreview()"
             />
-            <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b; display: block; margin-top: 4px;">
-              Separate tags with commas. These appear as visual badges on the job listing.
-            </span>
+            <span class="form-hint">Comma-separated tags shown as badges on the job listing.</span>
           </div>
 
           <!-- Responsibilities & Requirements Grid -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+          <div class="form-grid-2">
             
             <div class="form-group">
-              <label for="responsibilities" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-                Responsibilities (One item per line)
+              <label for="responsibilities" class="form-label">
+                <span>Key Responsibilities (One per line)</span>
               </label>
               <textarea
                 id="responsibilities"
                 name="responsibilities"
                 rows="4"
                 class="form-textarea"
-                placeholder="Architect scalable services&#10;Collaborate with design and product teams&#10;Deliver high-craft code and automated testing"
-                style="font-family: var(--font-admin-sans); line-height: 1.5; font-size: 0.875rem;"
+                placeholder="Architect and implement scalable services&#10;Collaborate with design and product teams&#10;Maintain code craft and write unit tests"
               >{{ form_data.get('responsibilities', '') }}</textarea>
             </div>
 
             <div class="form-group">
-              <label for="requirements" class="form-label" style="font-family: var(--font-admin-sans); font-weight: 600; color: #0f172a; font-size: 0.875rem;">
-                Requirements &amp; Qualifications (One item per line)
+              <label for="requirements" class="form-label">
+                <span>Requirements &amp; Criteria (One per line)</span>
               </label>
               <textarea
                 id="requirements"
                 name="requirements"
                 rows="4"
                 class="form-textarea"
-                placeholder="Degree in Computer Science or equivalent practical experience&#10;Proficiency in modern full-stack development&#10;Clear verbal and written communication skills"
-                style="font-family: var(--font-admin-sans); line-height: 1.5; font-size: 0.875rem;"
+                placeholder="Degree in Computer Science or equivalent practical background&#10;Proficiency in full-stack web technologies&#10;Strong problem-solving and communication skills"
               >{{ form_data.get('requirements', '') }}</textarea>
             </div>
 
           </div>
         </div>
 
-        <div style="border-top: 1px solid var(--color-border, #e2e8f0); margin: var(--space-xl) 0;"></div>
-
-        <!-- Section 5: Visibility & Publishing Action -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-lg);">
+        <!-- Section 5: Visibility & Publishing -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-top: 0.5rem;">
           
           <!-- Publication Status Toggle -->
-          <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center;">
             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
               <input
                 type="checkbox"
@@ -397,27 +372,27 @@
                 id="is_active"
                 value="true"
                 checked
-                style="width: 18px; height: 18px; accent-color: var(--color-primary); cursor: pointer;"
+                style="width: 17px; height: 17px; accent-color: #059669; cursor: pointer;"
                 onchange="onActiveToggle(this.checked)"
               />
               <div>
-                <span style="font-family: var(--font-admin-heading); font-weight: 600; font-size: 0.95rem; color: #0f172a;" id="status-title">
+                <span style="font-family: var(--font-admin-heading); font-weight: 600; font-size: 0.9rem; color: #0f172a;" id="status-title">
                   Publish Immediately
                 </span>
-                <span style="font-family: var(--font-admin-sans); font-size: 0.775rem; color: #64748b; display: block;" id="status-sub">
-                  Live and visible on the public Careers portal upon saving.
+                <span style="font-family: var(--font-admin-sans); font-size: 0.75rem; color: #64748b; display: block;" id="status-sub">
+                  Visible to candidates on the careers page immediately.
                 </span>
               </div>
             </label>
           </div>
 
-          <!-- Buttons -->
+          <!-- Actions -->
           <div style="display: flex; align-items: center; gap: 10px;">
-            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost" style="color: #64748b;">
+            <a href="{{ url_for('admin.jobs') }}" class="btn btn-ghost btn-sm" style="color: #64748b;">
               Cancel
             </a>
-            <button type="submit" class="btn btn-primary" style="padding: 0.7rem 1.6rem; font-weight: 600; gap: 6px;">
-              {{ icon('check', size=16) }} Publish Job Posting
+            <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600; gap: 6px;">
+              {{ icon('check', size=15) }} Create Job Posting
             </button>
           </div>
 
@@ -460,11 +435,11 @@ function updateDurationTier() {
   var badge = document.getElementById('preview-duration-badge');
 
   if (val === '1_month') {
-    hint.innerHTML = '<span style="color: var(--color-primary-light); font-weight: 600;">1 Month Internship:</span> ₹199 processing fee applies at checkout.';
+    hint.innerHTML = '<span style="color: #059669; font-weight: 600;">1 Month Internship:</span> ₹199 processing fee applies at checkout.';
     badge.textContent = '1 Month Internship (₹199)';
     badge.style.display = 'inline-block';
   } else if (val === '3_months') {
-    hint.innerHTML = '<span style="color: var(--color-primary-light); font-weight: 600;">3 Months Internship:</span> ₹399 processing fee + Aadhaar ID verification required.';
+    hint.innerHTML = '<span style="color: #059669; font-weight: 600;">3 Months Internship:</span> ₹399 processing fee + Aadhaar ID verification required.';
     badge.textContent = '3 Months Internship (₹399)';
     badge.style.display = 'inline-block';
   } else {
@@ -481,7 +456,7 @@ function handleShortDescChange() {
   if (val.length > 230) {
     counter.style.color = '#f59e0b';
   } else {
-    counter.style.color = 'var(--color-text-dim)';
+    counter.style.color = '#94a3b8';
   }
 }
 
@@ -493,24 +468,20 @@ function onActiveToggle(isChecked) {
 
   if (isChecked) {
     title.textContent = 'Publish Immediately';
-    sub.textContent = 'Live and visible on the public Careers portal upon saving.';
+    sub.textContent = 'Visible to candidates on the careers page immediately.';
     pill.textContent = 'Active';
-    pill.style.background = 'rgba(16, 185, 129, 0.15)';
-    pill.style.color = 'var(--color-primary-light)';
-    pill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+    pill.className = 'badge-status active';
   } else {
     title.textContent = 'Save as Hidden Draft';
     sub.textContent = 'Only visible to administrators in the job listings table.';
     pill.textContent = 'Draft';
-    pill.style.background = 'rgba(255, 255, 255, 0.08)';
-    pill.style.color = 'var(--color-text-dim)';
-    pill.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+    pill.className = 'badge-status inactive';
   }
 }
 
 // Live preview update
 function updatePreview() {
-  var title = document.getElementById('title').value.trim() || 'Senior Full-Stack Engineer';
+  var title = document.getElementById('title').value.trim() || 'Software Engineer';
   var dept = document.getElementById('department').value.trim() || 'Engineering';
   var loc = document.getElementById('location').value.trim() || 'Remote (Worldwide)';
   var empType = document.getElementById('employment_type').value || 'Full-time';
@@ -533,7 +504,7 @@ function updatePreview() {
       s = s.trim();
       if (s) {
         var span = document.createElement('span');
-        span.style.cssText = 'font-size: 0.72rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; color: var(--color-text-dim);';
+        span.style.cssText = 'font-size: 0.725rem; background: #e2e8f0; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 4px; color: #334155; font-weight: 500;';
         span.textContent = s;
         skillsContainer.appendChild(span);
       }
@@ -549,3 +520,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+
