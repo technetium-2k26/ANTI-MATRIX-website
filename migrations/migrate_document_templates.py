@@ -24,33 +24,23 @@ def run_migration():
         os.makedirs(os.path.join(app.root_path, 'uploads', 'generated_documents'), exist_ok=True)
 
         # Check / Seed DocumentTemplate for Offer Letter
-        master_template_name = 'offer letter (Anti-matrix).docx'
-        master_template_path = os.path.join(app.root_path, 'uploads', 'templates', master_template_name)
-        
-        # If not present in uploads/templates, check known download sources
-        if not os.path.exists(master_template_path):
-            candidates = [
-                r'C:\Users\Prave\Downloads\offer letter (Anti-matrix).docx',
-                r'C:\Users\Prave\Desktop\offer letter (Anti-matrix).docx',
-                r'C:\Users\Prave\Desktop\ANTI-MATRIX\offer letter (Anti-matrix).docx'
-            ]
-            for c in candidates:
-                if os.path.exists(c):
-                    shutil.copy(c, master_template_path)
-                    print(f"[MIGRATION] Master template copied from {c} to {master_template_path}")
-                    break
-
-        offer_template = DocumentTemplate.query.filter_by(template_type='offer_letter').first()
+        templates_dir = os.path.join(app.root_path, 'uploads', 'templates')
+        offer_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).first()
         if not offer_template:
-            offer_template = DocumentTemplate(
-                template_type='offer_letter',
-                name='Anti-Matrix Master Offer Letter',
-                filename=master_template_name,
-                file_path=master_template_path,
-                is_active=True
-            )
-            db.session.add(offer_template)
-            print("[MIGRATION] Seeded Offer Letter document template record.")
+            # Find any existing docx template file in uploads/templates/
+            existing_files = [f for f in os.listdir(templates_dir) if f.lower().endswith('.docx')]
+            if existing_files:
+                sample_file = existing_files[0]
+                sample_path = os.path.join(templates_dir, sample_file)
+                offer_template = DocumentTemplate(
+                    template_type='offer_letter',
+                    name='Anti-Matrix Master Offer Letter',
+                    filename=sample_file,
+                    file_path=sample_path,
+                    is_active=True
+                )
+                db.session.add(offer_template)
+                print(f"[MIGRATION] Seeded Offer Letter document template record pointing to {sample_path}.")
 
         # Seed default EmailTemplate for Application Successful
         app_success_email = EmailTemplate.query.filter_by(template_type='application_successful').first()

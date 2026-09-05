@@ -104,6 +104,13 @@ def create_app(config_name=None):
                         )
                     '''))
                     conn.commit()
+
+            if 'employee_documents' in inspector.get_table_names():
+                emp_doc_cols = [c['name'] for c in inspector.get_columns('employee_documents')]
+                if 'template_id' not in emp_doc_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text('ALTER TABLE employee_documents ADD COLUMN template_id INTEGER REFERENCES document_templates(id)'))
+                        conn.commit()
         except Exception as e:
             app.logger.warning(f"Database auto-migration note: {str(e)}")
 

@@ -212,39 +212,56 @@
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
         
-        <!-- 1. Offer Letter Master Template (ACTIVE) -->
-        <div class="card" style="padding: var(--space-xl); border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <!-- 1. Offer Letter Master Template (DATABASE DRIVEN) -->
+        <div class="card" style="padding: var(--space-xl); border-color: {% if offer_doc_template and offer_template_file_exists %}rgba(16, 185, 129, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
             <div>
+              {% if offer_doc_template and offer_template_file_exists %}
               <div class="badge" style="background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); border-color: rgba(16, 185, 129, 0.3); margin-bottom: 0.25rem;">
                 Active Master Template
               </div>
+              {% else %}
+              <div class="badge" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3); margin-bottom: 0.25rem;">
+                Not Uploaded / Inactive
+              </div>
+              {% endif %}
               <h3 style="font-size: 1.15rem; font-weight: 800; color: #000000; margin-bottom: 0.2rem;">
                 1. Offer Letter
               </h3>
             </div>
-            <div style="color: var(--color-primary-light);">{{ icon('file-check', size=24) }}</div>
+            <div style="color: {% if offer_doc_template and offer_template_file_exists %}var(--color-primary-light){% else %}#eab308{% endif %};">
+              {{ icon('file-check', size=24) }}
+            </div>
           </div>
 
           <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Official 2-page Offer Letter master template. Dynamic fields are automatically filled during employee Offer Letter generation.
+            Official Offer Letter master template. Uploaded DOCX is cloned and dynamic fields are populated during employee generation.
           </p>
 
           <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
             <div style="margin-bottom: 0.35rem;">
               <span style="color: var(--color-text-dim);">Current Template:</span>
-              <strong style="color: var(--color-primary-light); font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
-                {{ offer_doc_template.filename if offer_doc_template else 'offer letter (Anti-matrix).docx' }}
+              <strong style="color: {% if offer_doc_template and offer_template_file_exists %}var(--color-primary-light){% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
+                {{ offer_doc_template.filename if (offer_doc_template and offer_template_file_exists) else 'No Offer Letter Template Uploaded' }}
               </strong>
             </div>
-            <div>
-              <span style="color: var(--color-text-dim);">Status:</span>
-              <span class="badge-status active" style="font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.35rem;">Active</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+              <div>
+                <span style="color: var(--color-text-dim);">Status:</span>
+                {% if offer_doc_template and offer_template_file_exists %}
+                <span class="badge-status active" style="font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.35rem;">Active</span>
+                {% else %}
+                <span class="badge-status inactive" style="font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.35rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
+                {% endif %}
+              </div>
+              {% if offer_doc_template %}
+              <span style="font-size: 0.75rem; color: var(--color-text-muted);">Uploaded: {{ offer_doc_template.created_at.strftime('%d %b %Y') }}</span>
+              {% endif %}
             </div>
           </div>
 
           <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(16, 185, 129, 0.05); padding: var(--space-sm); border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.15);">
-            <strong style="color: var(--color-primary-light);">Available Fields:</strong><br />
+            <strong style="color: var(--color-primary-light);">Available Placeholders:</strong><br />
             <code style="color: var(--color-primary-light);">&#123;&#123;offer_date&#125;&#125;</code>, 
             <code style="color: var(--color-primary-light);">&#123;&#123;employee_name&#125;&#125;</code>, 
             <code style="color: var(--color-primary-light);">&#123;&#123;reference_number&#125;&#125;</code>, 
@@ -257,20 +274,22 @@
             <code style="color: var(--color-primary-light);">&#123;&#123;acceptance_deadline&#125;&#125;</code>
           </div>
 
-          <!-- Replace Template Form -->
+          <!-- Upload / Replace Template Form -->
           <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-sm);">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <div style="display: flex; gap: var(--space-xs); margin-bottom: var(--space-sm);">
               <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
-              <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
-                Replace
+              <button type="submit" class="btn {% if offer_doc_template and offer_template_file_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
+                {% if offer_doc_template and offer_template_file_exists %}Replace Template{% else %}Upload Template{% endif %}
               </button>
             </div>
           </form>
 
+          {% if offer_doc_template and offer_template_file_exists %}
           <a href="{{ url_for('admin.download_document_template', template_type='offer_letter') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.8rem; gap: 6px;">
             {{ icon('download', size=13) }} Download Master Template
           </a>
+          {% endif %}
         </div>
 
         <!-- 2. Experience Letter Template (UPLOAD ONLY) -->

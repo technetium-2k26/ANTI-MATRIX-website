@@ -6,11 +6,11 @@ class DocumentTemplate(db.Model):
     __tablename__ = 'document_templates'
 
     id = db.Column(db.Integer, primary_key=True)
-    template_type = db.Column(db.String(50), unique=True, nullable=False, index=True)  # 'offer_letter', 'experience_letter', 'certificate'
+    template_type = db.Column(db.String(50), nullable=False, index=True)  # 'offer_letter', 'experience_letter', 'certificate'
     name = db.Column(db.String(100), nullable=False)
-    filename = db.Column(db.String(255), nullable=False)
-    file_path = db.Column(db.String(500), nullable=False)
-    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    filename = db.Column(db.String(255), nullable=False)  # Original display filename
+    file_path = db.Column(db.String(500), nullable=False)  # Stored absolute/relative filesystem path
+    is_active = db.Column(db.Boolean, default=True, nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
         db.DateTime,
@@ -19,8 +19,12 @@ class DocumentTemplate(db.Model):
         nullable=False
     )
 
+    @property
+    def original_filename(self):
+        return self.filename
+
     def __repr__(self):
-        return f"<DocumentTemplate id={self.id} type='{self.template_type}' filename='{self.filename}'>"
+        return f"<DocumentTemplate id={self.id} type='{self.template_type}' active={self.is_active} filename='{self.filename}'>"
 
 
 class EmailTemplate(db.Model):
@@ -53,6 +57,12 @@ class EmployeeDocument(db.Model):
         nullable=False,
         index=True
     )
+    template_id = db.Column(
+        db.Integer,
+        db.ForeignKey('document_templates.id', ondelete='SET NULL'),
+        nullable=True,
+        index=True
+    )
     document_type = db.Column(db.String(50), default='offer_letter', nullable=False)  # 'offer_letter', 'experience_letter', 'certificate'
     file_name = db.Column(db.String(255), nullable=False)
     file_path = db.Column(db.String(500), nullable=False)
@@ -81,6 +91,9 @@ class EmployeeDocument(db.Model):
         'Employee',
         backref=db.backref('documents', cascade='all, delete-orphan', lazy=True)
     )
+
+    # Relationship to DocumentTemplate
+    template = db.relationship('DocumentTemplate', backref=db.backref('generated_documents', lazy=True))
 
     def __repr__(self):
         return f"<EmployeeDocument id={self.id} emp_id={self.employee_id} type='{self.document_type}' status='{self.status}' email='{self.email_status}'>"

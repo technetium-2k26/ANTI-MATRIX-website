@@ -54,25 +54,38 @@ def replace_placeholders_in_paragraph(paragraph, mapping):
                     r.text = ""
 
 
-def get_offer_letter_master_path():
-    """Returns the absolute file path to the active Master Offer Letter template."""
-    root = current_app.root_path
-    
-    # Check database configuration
-    active_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).first()
-    if active_template and os.path.exists(active_template.file_path):
-        return active_template.file_path
+class OfferLetterTemplateNotFoundError(Exception):
+    """Raised when no active Offer Letter template record exists in the database."""
+    pass
 
-    # Standard locations
-    preferred_path = os.path.join(root, 'uploads', 'templates', 'offer letter (Anti-matrix).docx')
-    if os.path.exists(preferred_path):
-        return preferred_path
 
-    fallback_path = os.path.join(root, 'uploads', 'templates', 'offer_letter_master.docx')
-    if os.path.exists(fallback_path):
-        return fallback_path
+class OfferLetterTemplateFileMissingError(Exception):
+    """Raised when the active Offer Letter template record exists in DB, but the physical file is missing from disk/storage."""
+    pass
 
-    raise FileNotFoundError("Master Offer Letter DOCX template 'offer letter (Anti-matrix).docx' was not found.")
+
+def get_active_offer_letter_template():
+    """
+    Retrieves the active Offer Letter DocumentTemplate record from the database.
+    Strictly queries the database for an active template and validates that its stored file exists.
+    Does NOT search for hardcoded filenames or fallback to arbitrary filesystem paths.
+    """
+    active_template = DocumentTemplate.query.filter_by(
+        template_type='offer_letter',
+        is_active=True
+    ).order_by(DocumentTemplate.id.desc()).first()
+
+    if not active_template:
+        raise OfferLetterTemplateNotFoundError(
+            "Offer Letter template has not been uploaded. Please upload an Offer Letter template from Admin Dashboard → Templates."
+        )
+
+    if not active_template.file_path or not os.path.exists(active_template.file_path):
+        raise OfferLetterTemplateFileMissingError(
+            "The active Offer Letter template record exists, but its file could not be found. Please upload the template again."
+        )
+
+    return active_template
 
 
 def generate_offer_letter_docx(employee, custom_params=None):
@@ -160,9 +173,9 @@ def generate_offer_letter_docx(employee, custom_params=None):
         '{{internship_duration}}': internship_duration
     }
 
-    # Load master template
-    master_path = get_offer_letter_master_path()
-    doc = docx.Document(master_path)
+    # Retrieve active master template from DB
+    active_template = get_active_offer_letter_template()
+    doc = docx.Document(active_template.file_path)
 
     # Process all standard paragraphs
     for p in doc.paragraphs:
@@ -202,6 +215,7 @@ def generate_offer_letter_docx(employee, custom_params=None):
     if not emp_doc:
         emp_doc = EmployeeDocument(
             employee_id=employee.id,
+            template_id=active_template.id,
             document_type='offer_letter',
             file_name=output_filename,
             file_path=output_filepath,
@@ -211,10 +225,14 @@ def generate_offer_letter_docx(employee, custom_params=None):
         )
         db.session.add(emp_doc)
     else:
+        emp_doc.template_id = active_template.id
         emp_doc.file_name = output_filename
         emp_doc.file_path = output_filepath
         emp_doc.status = 'GENERATED'
         emp_doc.generated_at = now_utc
+
+    db.session.commit()
+    return emp_doc, output_filepath
 
     db.session.commit()
     return emp_doc, output_filepath

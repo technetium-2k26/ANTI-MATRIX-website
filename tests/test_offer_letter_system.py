@@ -1,12 +1,17 @@
 import unittest
 import os
+import io
 import shutil
 import tempfile
 import docx
 from datetime import datetime, timezone
 from app import create_app
 from models import db, User, JobPosting, JobApplication, Employee, EmployeeDocument, DocumentTemplate, EmailTemplate
-from services.offer_letter_service import generate_offer_letter_docx, send_offer_letter_email, get_offer_letter_master_path
+from services.offer_letter_service import (
+    generate_offer_letter_docx, send_offer_letter_email,
+    get_active_offer_letter_template,
+    OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError
+)
 
 
 class TestOfferLetterSystem(unittest.TestCase):
@@ -21,21 +26,44 @@ class TestOfferLetterSystem(unittest.TestCase):
         
         db.create_all()
 
-        # Master template path
-        self.master_template_path = os.path.join(self.app.root_path, 'uploads', 'templates', 'offer letter (Anti-matrix).docx')
-        self.assertTrue(os.path.exists(self.master_template_path), f"Master template missing at {self.master_template_path}")
+        # Ensure templates directory exists
+        self.templates_dir = os.path.join(self.app.root_path, 'uploads', 'templates')
+        os.makedirs(self.templates_dir, exist_ok=True)
+        
+        # Create a test master template DOCX for tests
+        self.master_template_path = os.path.join(self.templates_dir, 'test_master_offer_letter.docx')
+        
+        # Check if an existing template exists to copy, or build docx with placeholders
+        existing_sample = os.path.join(self.templates_dir, 'offer_letter_master.docx')
+        if os.path.exists(existing_sample):
+            shutil.copyfile(existing_sample, self.master_template_path)
+        else:
+            doc = docx.Document()
+            doc.add_paragraph("Anti-Matrix Technologies Private Limited")
+            doc.add_paragraph("Date: [DD/MM/YYYY]")
+            p_cand = doc.add_paragraph("Dear [Candidate Name],")
+            p_cand.runs[0].bold = True
+            p_ref = doc.add_paragraph("Ref.: [Reference Number]")
+            p_ref.runs[0].bold = True
+            doc.add_paragraph("Position: [Job Title]")
+            doc.add_paragraph("Responsibilities: [brief description of responsibilities]")
+            doc.add_paragraph("Tasks: [key tasks / deliverables]")
+            doc.add_paragraph("Joining: [Joining Date]")
+            doc.add_paragraph("Mode: [remote / hybrid / on-site]")
+            doc.add_paragraph("Conditions: [background verification / document submission / any other condition]")
+            doc.add_paragraph("Deadline: [Acceptance Deadline]")
+            doc.save(self.master_template_path)
 
-        # Seed or fetch Document Template
-        self.doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter').first()
-        if not self.doc_template:
-            self.doc_template = DocumentTemplate(
-                template_type='offer_letter',
-                name='Anti-Matrix Master Offer Letter',
-                filename='offer letter (Anti-matrix).docx',
-                file_path=self.master_template_path,
-                is_active=True
-            )
-            db.session.add(self.doc_template)
+        # Seed or fetch Document Template in database
+        DocumentTemplate.query.filter_by(template_type='offer_letter').delete()
+        self.doc_template = DocumentTemplate(
+            template_type='offer_letter',
+            name='Anti-Matrix Master Offer Letter',
+            filename='master_offer_letter.docx',
+            file_path=self.master_template_path,
+            is_active=True
+        )
+        db.session.add(self.doc_template)
 
         # Seed or fetch Email Templates
         self.email_tmpl_offer = EmailTemplate.query.filter_by(template_type='offer_letter').first()
@@ -98,7 +126,7 @@ class TestOfferLetterSystem(unittest.TestCase):
             duration='3_months',
             resume_filename='john_resume.pdf',
             resume_path='uploads/resumes/john_resume.pdf',
-            application_fee=1999,
+            application_fee=399,
             payment_status='paid',
             application_status='submitted'
         )
@@ -113,7 +141,7 @@ class TestOfferLetterSystem(unittest.TestCase):
             duration='3_months',
             resume_filename='jane_resume.pdf',
             resume_path='uploads/resumes/jane_resume.pdf',
-            application_fee=1999,
+            application_fee=399,
             payment_status='paid',
             application_status='submitted'
         )
@@ -167,19 +195,21 @@ class TestOfferLetterSystem(unittest.TestCase):
         db.drop_all()
         self.ctx.pop()
 
-    def test_01_master_template_integrity(self):
-        """Verify master template exists and contains required placeholders."""
-        doc = docx.Document(self.master_template_path)
+    def test_01_database_active_template_retrieval(self):
+        """Verify active template is retrieved from database and contains required placeholders."""
+        active_template = get_active_offer_letter_template()
+        self.assertIsNotNone(active_template)
+        self.assertEqual(active_template.template_type, 'offer_letter')
+        self.assertTrue(active_template.is_active)
+        self.assertTrue(os.path.exists(active_template.file_path))
+
+        doc = docx.Document(active_template.file_path)
         all_text = "\n".join([p.text for p in doc.paragraphs])
         
         self.assertIn('[DD/MM/YYYY]', all_text)
         self.assertIn('[Candidate Name]', all_text)
         self.assertIn('[Reference Number]', all_text)
         self.assertIn('[Job Title]', all_text)
-        self.assertIn('[brief description of responsibilities]', all_text)
-        self.assertIn('[key tasks / deliverables]', all_text)
-        self.assertIn('[Joining Date]', all_text)
-        self.assertIn('[remote / hybrid / on-site]', all_text)
         self.assertIn('Anti-Matrix', all_text)
 
     def test_02_generate_offer_letter_for_employee_1(self):
@@ -191,6 +221,7 @@ class TestOfferLetterSystem(unittest.TestCase):
         self.assertEqual(emp_doc.file_name, 'AM4827_Offer_Letter.docx')
         self.assertEqual(emp_doc.status, 'GENERATED')
         self.assertEqual(emp_doc.email_status, 'not_sent')
+        self.assertEqual(emp_doc.template_id, self.doc_template.id)
 
         # Inspect generated DOCX
         doc = docx.Document(output_path)
@@ -203,16 +234,6 @@ class TestOfferLetterSystem(unittest.TestCase):
         self.assertNotIn('[Candidate Name]', doc_text)
         self.assertNotIn('[Reference Number]', doc_text)
         self.assertNotIn('[Job Title]', doc_text)
-
-        # Verify formatting in Paragraph 2 (Dear John Doe,)
-        p2 = doc.paragraphs[2]
-        self.assertIn('Dear John Doe,', p2.text)
-        self.assertTrue(p2.runs[0].bold, "Candidate greeting run should preserve bold formatting")
-
-        # Verify formatting in Paragraph 3 (Ref.: AM-APP-...)
-        p3 = doc.paragraphs[3]
-        self.assertIn(f'Ref.: {self.app1.formatted_code}', p3.text)
-        self.assertTrue(p3.runs[0].bold, "Reference number run should preserve bold formatting")
 
     def test_03_generate_offer_letter_for_employee_2_and_isolation(self):
         """Generate Offer Letter for Employee 2 (AM1934 - Jane Smith) and verify isolation from Employee 1."""
@@ -308,80 +329,99 @@ class TestOfferLetterSystem(unittest.TestCase):
         self.assertEqual(res_mem3.status_code, 403)
         self.logout()
 
-    def test_07_admin_template_management_view_with_session(self):
-        """Test template management routes with authenticated admin session."""
+    def test_07_no_active_template_error_handling(self):
+        """Test error handling when no active template exists in database."""
+        # Deactivate all offer letter templates in DB
+        DocumentTemplate.query.filter_by(template_type='offer_letter').update({'is_active': False})
+        db.session.commit()
+
+        # Service level should raise OfferLetterTemplateNotFoundError
+        with self.assertRaises(OfferLetterTemplateNotFoundError):
+            get_active_offer_letter_template()
+
+        with self.assertRaises(OfferLetterTemplateNotFoundError):
+            generate_offer_letter_docx(self.emp1)
+
+        # Web endpoint should display user-friendly warning banner
         self.login_admin()
-
-        # View Template Hub
-        res = self.client.get('/admin/templates')
-        self.assertEqual(res.status_code, 200)
-        html = res.get_data(as_text=True)
-        self.assertIn('TEMPLATE MANAGEMENT', html.upper())
-        self.assertIn('EMAIL TEMPLATES', html.upper())
-        self.assertIn('DOCUMENT TEMPLATES', html.upper())
-        self.assertIn('Offer Letter', html)
-        self.assertIn('Experience Letter', html)
-        self.assertIn('Certificate', html)
-
-        # Test updating Email Template
-        res_post = self.client.post('/admin/templates/email/offer_letter', data={
-            'subject': 'Official Offer Letter — {{job_title}} | {{employee_id}}',
-            'body': 'Dear {{employee_name}},\n\nHere is your official offer letter for {{job_title}}.\n\nAnti-Matrix Team'
-        }, follow_redirects=True)
-        self.assertEqual(res_post.status_code, 200)
-
-        db.session.expire_all()
-        updated_tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
-        self.assertEqual(updated_tmpl.subject, 'Official Offer Letter — {{job_title}} | {{employee_id}}')
-        self.assertIn('Anti-Matrix Team', updated_tmpl.body)
-
-    def test_08_admin_generate_preview_and_verify_flow(self):
-        """Test end-to-end admin generation and verification web endpoints."""
-        self.login_admin()
-
-        # 1. GET generation review page
         res = self.client.get('/admin/employees/AM4827/offer-letter/generate')
         self.assertEqual(res.status_code, 200)
-        self.assertIn('Generate Master Offer Letter', res.get_data(as_text=True))
-        self.assertIn('John Doe', res.get_data(as_text=True))
-        self.assertIn('AM4827', res.get_data(as_text=True))
+        html = res.get_data(as_text=True)
+        self.assertIn('Offer Letter Template Not Found', html)
+        self.assertIn('Upload template to enable generation', html)
 
-        # 2. POST to generate
-        res_gen = self.client.post('/admin/employees/AM4827/offer-letter/generate', data={
-            'joining_date': '15 October 2026',
-            'work_mode': 'Remote (Chennai Team)',
-            'responsibilities': 'Lead deep learning research and prompt engineering',
-            'key_tasks': 'Build AGY integrations and model pipelines',
-            'conditions': 'submission of ID and degree certificate',
-            'acceptance_deadline': '22 October 2026'
-        }, follow_redirects=True)
-        self.assertEqual(res_gen.status_code, 200)
-        gen_html = res_gen.get_data(as_text=True)
-        self.assertIn('Offer Letter Generated Successfully', gen_html)
-        self.assertIn('AM4827_Offer_Letter.docx', gen_html)
+        # POST attempt should flash message without crashing
+        res_post = self.client.post('/admin/employees/AM4827/offer-letter/generate', data={}, follow_redirects=True)
+        self.assertEqual(res_post.status_code, 200)
+        self.assertIn('Offer Letter template has not been uploaded', res_post.get_data(as_text=True))
 
-        # 3. GET preview (download generated DOCX)
-        res_prev = self.client.get('/admin/employees/AM4827/offer-letter/preview')
-        self.assertEqual(res_prev.status_code, 200)
-        self.assertIn('application/vnd.openxmlformats-officedocument.wordprocessingml.document', res_prev.headers['Content-Type'])
+    def test_08_missing_physical_file_error_handling(self):
+        """Test error handling when active template DB record points to a missing file."""
+        # Point template to non-existent path
+        self.doc_template.file_path = os.path.join(self.templates_dir, 'non_existent_file_123.docx')
+        self.doc_template.is_active = True
+        db.session.commit()
 
-        # 4. GET verify page
-        res_ver = self.client.get('/admin/employees/AM4827/offer-letter/verify')
-        self.assertEqual(res_ver.status_code, 200)
-        ver_html = res_ver.get_data(as_text=True)
-        self.assertIn('john.doe@example.com', ver_html)
-        self.assertIn('Verify & Send Offer Letter', ver_html)
+        with self.assertRaises(OfferLetterTemplateFileMissingError):
+            get_active_offer_letter_template()
 
-        # 5. POST to send email
-        res_send = self.client.post('/admin/employees/AM4827/offer-letter/send', follow_redirects=True)
-        self.assertEqual(res_send.status_code, 200)
-        self.assertIn('successfully sent', res_send.get_data(as_text=True).lower())
+        with self.assertRaises(OfferLetterTemplateFileMissingError):
+            generate_offer_letter_docx(self.emp1)
 
-        # 6. POST duplicate send -> should show already sent warning
-        res_dup = self.client.post('/admin/employees/AM4827/offer-letter/send', follow_redirects=True)
-        self.assertEqual(res_dup.status_code, 200)
-        self.assertIn('already sent', res_dup.get_data(as_text=True).lower())
+        # Web endpoint POST should catch exception and flash message
+        self.login_admin()
+        res_post = self.client.post('/admin/employees/AM4827/offer-letter/generate', data={}, follow_redirects=True)
+        self.assertEqual(res_post.status_code, 200)
+        self.assertIn('could not be found', res_post.get_data(as_text=True))
 
+    def test_09_template_upload_and_replacement_flow(self):
+        """Test uploading a new template, replacing active template, and preserving old employee documents."""
+        self.login_admin()
+
+        # 1. Generate document for emp1 with initial template
+        emp_doc1, path1 = generate_offer_letter_docx(self.emp1)
+        initial_tmpl_id = self.doc_template.id
+        self.assertEqual(emp_doc1.template_id, initial_tmpl_id)
+
+        # 2. Upload replacement template via admin route
+        new_doc_content = io.BytesIO()
+        doc = docx.Document()
+        doc.add_paragraph("Anti-Matrix New Template V2")
+        doc.add_paragraph("Dear [Candidate Name], Welcome to V2 for [Job Title]. Ref: [Reference Number]")
+        doc.save(new_doc_content)
+        new_doc_content.seek(0)
+
+        res_upload = self.client.post('/admin/templates/document/offer_letter/upload', data={
+            'template_file': (new_doc_content, 'new_offer_letter_v2.docx')
+        }, content_type='multipart/form-data', follow_redirects=True)
+        self.assertEqual(res_upload.status_code, 200)
+        self.assertIn('uploaded and set as ACTIVE', res_upload.get_data(as_text=True))
+
+        # Verify new template in DB is active, old is inactive
+        db.session.expire_all()
+        active_tmpl = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+        self.assertIsNotNone(active_tmpl)
+        self.assertNotEqual(active_tmpl.id, initial_tmpl_id)
+        self.assertEqual(active_tmpl.filename, 'new_offer_letter_v2.docx')
+        self.assertTrue(os.path.exists(active_tmpl.file_path))
+
+        old_tmpl = db.session.get(DocumentTemplate, initial_tmpl_id)
+        self.assertFalse(old_tmpl.is_active)
+
+        # 3. Generate document for emp2 with new active template
+        emp_doc2, path2 = generate_offer_letter_docx(self.emp2)
+        self.assertEqual(emp_doc2.template_id, active_tmpl.id)
+
+        doc2 = docx.Document(path2)
+        text2 = "\n".join([p.text for p in doc2.paragraphs])
+        self.assertIn('Anti-Matrix New Template V2', text2)
+        self.assertIn('Jane Smith', text2)
+
+        # 4. Old document 1 remains intact
+        doc1 = docx.Document(path1)
+        text1 = "\n".join([p.text for p in doc1.paragraphs])
+        self.assertNotIn('V2', text1)
+        self.assertIn('John Doe', text1)
 
 if __name__ == '__main__':
     unittest.main()

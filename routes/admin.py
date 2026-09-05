@@ -1,4 +1,6 @@
 import os
+import uuid
+import time
 from functools import wraps
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash,
@@ -10,7 +12,11 @@ from models import (
     db, JobPosting, JobApplication, Payment, User, Employee,
     DocumentTemplate, EmailTemplate, EmployeeDocument
 )
-from services.offer_letter_service import generate_offer_letter_docx, send_offer_letter_email
+from services.offer_letter_service import (
+    generate_offer_letter_docx, send_offer_letter_email,
+    OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError,
+    get_active_offer_letter_template
+)
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -519,21 +525,30 @@ def view_employee(employee_id):
 @admin_required
 def templates():
     """Template Management Hub for Email and Document Templates."""
-    # Ensure standard templates exist
+    # Ensure standard email templates exist
     app_success_email = EmailTemplate.query.filter_by(template_type='application_successful').first()
     offer_letter_email = EmailTemplate.query.filter_by(template_type='offer_letter').first()
     
-    offer_doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter').first()
-    exp_doc_template = DocumentTemplate.query.filter_by(template_type='experience_letter').first()
-    cert_doc_template = DocumentTemplate.query.filter_by(template_type='certificate').first()
+    # Active document templates
+    offer_doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    offer_template_file_exists = bool(offer_doc_template and offer_doc_template.file_path and os.path.exists(offer_doc_template.file_path))
+
+    exp_doc_template = DocumentTemplate.query.filter_by(template_type='experience_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    exp_template_file_exists = bool(exp_doc_template and exp_doc_template.file_path and os.path.exists(exp_doc_template.file_path))
+
+    cert_doc_template = DocumentTemplate.query.filter_by(template_type='certificate', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    cert_template_file_exists = bool(cert_doc_template and cert_doc_template.file_path and os.path.exists(cert_doc_template.file_path))
 
     return render_template(
         'admin/templates.html',
         app_success_email=app_success_email,
         offer_letter_email=offer_letter_email,
         offer_doc_template=offer_doc_template,
+        offer_template_file_exists=offer_template_file_exists,
         exp_doc_template=exp_doc_template,
-        cert_doc_template=cert_doc_template
+        exp_template_file_exists=exp_template_file_exists,
+        cert_doc_template=cert_doc_template,
+        cert_template_file_exists=cert_template_file_exists
     )
 
 
@@ -626,52 +641,51 @@ def upload_document_template(template_type):
         flash('Please select a DOCX template file to upload.', 'danger')
         return redirect(url_for('admin.templates'))
 
-    filename = secure_filename(uploaded_file.filename)
-    if not filename.lower().endswith('.docx'):
+    original_filename = secure_filename(uploaded_file.filename) or uploaded_file.filename
+    if not original_filename.lower().endswith('.docx'):
         flash('Only .docx Microsoft Word template files are accepted.', 'danger')
         return redirect(url_for('admin.templates'))
 
     templates_dir = os.path.join(current_app.root_path, 'uploads', 'templates')
     os.makedirs(templates_dir, exist_ok=True)
 
-    target_filename = f"{template_type}_master.docx"
+    # Secure unique stored filename to preserve history
+    unique_suffix = f"{int(time.time())}_{uuid.uuid4().hex[:6]}"
+    target_filename = f"{template_type}_{unique_suffix}.docx"
     target_path = os.path.join(templates_dir, target_filename)
 
     uploaded_file.save(target_path)
 
-    doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type).first()
     name_map = {
         'offer_letter': 'Anti-Matrix Master Offer Letter',
         'experience_letter': 'Anti-Matrix Master Experience Letter',
         'certificate': 'Anti-Matrix Master Internship Certificate'
     }
 
-    if not doc_tmpl:
-        doc_tmpl = DocumentTemplate(
-            template_type=template_type,
-            name=name_map.get(template_type, template_type.replace('_', ' ').title()),
-            filename=uploaded_file.filename,
-            file_path=target_path,
-            is_active=True
-        )
-        db.session.add(doc_tmpl)
-    else:
-        doc_tmpl.filename = uploaded_file.filename
-        doc_tmpl.file_path = target_path
-        doc_tmpl.is_active = True
+    # Deactivate previous active templates of this type
+    DocumentTemplate.query.filter_by(template_type=template_type, is_active=True).update({'is_active': False})
 
+    new_doc_tmpl = DocumentTemplate(
+        template_type=template_type,
+        name=name_map.get(template_type, template_type.replace('_', ' ').title()),
+        filename=uploaded_file.filename,
+        file_path=target_path,
+        is_active=True
+    )
+    db.session.add(new_doc_tmpl)
     db.session.commit()
-    flash(f"Document template for '{name_map.get(template_type)}' uploaded and activated successfully.", 'success')
+
+    flash(f"Document template '{uploaded_file.filename}' uploaded and set as ACTIVE successfully.", 'success')
     return redirect(url_for('admin.templates'))
 
 
 @admin_bp.route('/templates/document/<string:template_type>/download', methods=['GET'])
 @admin_required
 def download_document_template(template_type):
-    """Download the active master DOCX template file."""
-    doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type).first()
-    if not doc_tmpl or not os.path.exists(doc_tmpl.file_path):
-        flash('Requested master template file is not available.', 'warning')
+    """Download / preview the active master DOCX template file."""
+    doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type, is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    if not doc_tmpl or not doc_tmpl.file_path or not os.path.exists(doc_tmpl.file_path):
+        flash('Requested master template file is not available on storage. Please upload a template.', 'warning')
         return redirect(url_for('admin.templates'))
 
     return send_from_directory(
@@ -698,6 +712,9 @@ def generate_offer_letter(employee_id):
         flash('Employee is missing linked application or job posting data.', 'danger')
         return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
 
+    active_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    template_exists = bool(active_template and active_template.file_path and os.path.exists(active_template.file_path))
+
     if request.method == 'POST':
         custom_params = {
             'responsibilities': (request.form.get('responsibilities') or '').strip() or None,
@@ -712,6 +729,9 @@ def generate_offer_letter(employee_id):
             emp_doc, output_path = generate_offer_letter_docx(employee, custom_params)
             flash(f"Offer Letter for {employee.candidate_name} ({employee.employee_id}) generated successfully!", 'success')
             return redirect(url_for('admin.verify_offer_letter', employee_id=employee.employee_id))
+        except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError) as e:
+            flash(str(e), 'danger')
+            return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
         except Exception as e:
             flash(f"Error generating Offer Letter: {str(e)}", 'danger')
             return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
@@ -721,7 +741,9 @@ def generate_offer_letter(employee_id):
         'admin/offer_letter_generate.html',
         employee=employee,
         app=app_record,
-        job=job
+        job=job,
+        active_template=active_template,
+        template_exists=template_exists
     )
 
 

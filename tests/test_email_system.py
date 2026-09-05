@@ -3,7 +3,7 @@ import os
 import docx
 from datetime import datetime, timezone
 from app import create_app
-from models import db, User, JobPosting, JobApplication, Employee, EmployeeDocument, EmailTemplate, EmailLog
+from models import db, User, JobPosting, JobApplication, Employee, EmployeeDocument, DocumentTemplate, EmailTemplate, EmailLog
 from services.email_service import (
     DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT,
     DEFAULT_APPLICATION_SUCCESSFUL_BODY,
@@ -44,6 +44,27 @@ class TestAntiMatrixEmailSystem(unittest.TestCase):
             self.member = User(name='Regular Member', email='member@example.com', role='member', is_active=True)
             self.member.set_password('Member@2026!')
             db.session.add(self.member)
+
+        # Seed DocumentTemplate for Offer Letter
+        templates_dir = os.path.join(self.app.root_path, 'uploads', 'templates')
+        os.makedirs(templates_dir, exist_ok=True)
+        master_template_path = os.path.join(templates_dir, 'email_test_offer_letter_master.docx')
+        if not os.path.exists(master_template_path):
+            doc = docx.Document()
+            doc.add_paragraph("Anti-Matrix Master Offer Letter")
+            doc.add_paragraph("Dear [Candidate Name], Congratulations on [Job Title]. Ref: [Reference Number]")
+            doc.save(master_template_path)
+
+        doc_tmpl = DocumentTemplate.query.filter_by(template_type='offer_letter').first()
+        if not doc_tmpl:
+            doc_tmpl = DocumentTemplate(
+                template_type='offer_letter',
+                name='Anti-Matrix Master Offer Letter',
+                filename='email_test_offer_letter_master.docx',
+                file_path=master_template_path,
+                is_active=True
+            )
+            db.session.add(doc_tmpl)
 
         # Seed or fetch Official Email Templates
         self.app_success_tmpl = EmailTemplate.query.filter_by(template_type='application_successful').first()
