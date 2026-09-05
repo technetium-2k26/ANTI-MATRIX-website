@@ -10,7 +10,6 @@
     <!-- Admin Header -->
     <div class="admin-header">
       <div class="admin-header-title">
-        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('shield', size=11) }} Workforce Management</div>
         <h1>Employees & Credentials</h1>
         <p>Manage generated Employee IDs, credential statuses, and linked candidate internship applications.</p>
       </div>
@@ -112,7 +111,7 @@
                 </td>
                 <td>
                   {% if emp.application and emp.application.duration_display %}
-                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
+                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
                       {{ emp.application.duration_display }}
                     </span>
                   {% else %}

@@ -10,7 +10,6 @@
     <!-- Admin Header -->
     <div class="admin-header">
       <div class="admin-header-title">
-        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('briefcase', size=11) }} Job Management</div>
         <h1>Job Postings</h1>
         <p>Create, edit, toggle visibility, and monitor openings across all departments.</p>
       </div>
@@ -117,14 +116,14 @@
                   <span class="admin-table-subtitle">{{ icon('map-pin', size=10) }} {{ job.location }}</span>
                 </td>
                 <td>
-                  <span style="font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">
+                  <span style="font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">
                     {{ job.department }}
                   </span>
                 </td>
                 <td>{{ job.employment_type }}</td>
                 <td>
                   {% if job.duration_display %}
-                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
+                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
                       {{ job.duration_display }}
                     </span>
                   {% else %}

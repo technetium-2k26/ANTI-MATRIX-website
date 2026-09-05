@@ -7,7 +7,6 @@
 <!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <div class="badge">{{ icon('briefcase', size=11) }} Candidate Portal</div>
     <h1>My Applications</h1>
     <p>Track your submitted applications, review evaluation stages, and verify payment records.</p>
   </div>
@@ -38,7 +37,7 @@
                     {{ app.formatted_code }}
                   </span>
                   {% if app.duration_display %}
-                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
+                    <span style="font-size: 0.775rem; font-weight: 700; padding: 0.15rem 0.55rem; border-radius: 4px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
                       {{ app.duration_display }}
                     </span>
                   {% endif %}

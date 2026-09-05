@@ -20,7 +20,7 @@
         <span style="color: var(--color-primary-light); font-weight: 600;">Application</span>
       </div>
 
-      <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700;">
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.25rem 0.65rem; font-size: 0.75rem; color: var(--color-primary-light); font-weight: 700;">
         <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--color-primary-light); display: inline-block;"></span>
         Active Opening &bull; Verified Portal
       </div>
@@ -41,12 +41,12 @@
               {{ icon('clock', size=12) }} {{ job.employment_type }}
             </span>
             {% if job.duration_display %}
-              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
+              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
                 {{ icon('clock', size=12) }} Internship Duration: {{ job.duration_display }}
               </span>
             {% endif %}
             {% if job.fee_display %}
-              <span style="font-size: 0.825rem; color: var(--color-primary-light); font-weight: 800; display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.12); padding: 0.2rem 0.65rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.3);">
+              <span style="font-size: 0.825rem; color: var(--color-primary-light); font-weight: 800; display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.12); padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3);">
                 {{ icon('credit-card', size=12) }} Application Fee: {{ job.fee_display }}
               </span>
             {% elif job.salary %}

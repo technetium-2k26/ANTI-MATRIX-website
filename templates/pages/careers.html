@@ -7,7 +7,7 @@
 <!-- Page Hero -->
 <section class="page-hero" style="padding-bottom: var(--space-2xl);">
   <div class="container">
-    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 999px; padding: 0.35rem 1rem; margin-bottom: var(--space-md);">
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.35rem 0.85rem; margin-bottom: var(--space-md);">
       <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary-light); box-shadow: 0 0 10px var(--color-primary-light); display: inline-block;"></span>
       <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.05em;">
         Actively Hiring &bull; {{ jobs|length }} Position{{ 's' if jobs|length != 1 else '' }} Available
@@ -45,7 +45,7 @@
         
         <!-- Glow accent badge -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-md);">
-          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 999px; padding: 0.3rem 0.85rem;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 6px; padding: 0.3rem 0.75rem;">
             <span style="font-size: 0.8rem;">🔥</span>
             <span style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.06em;">
               Featured Current Opening &bull; Urgent Hiring
@@ -66,7 +66,7 @@
             </h2>
 
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: var(--space-md);">
-              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 999px; background: rgba(16,185,129,0.15); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.3);">
+              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 4px; background: rgba(16,185,129,0.15); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.3);">
                 {{ featured_job.department }}
               </span>
               <span style="font-size: 0.85rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 5px;">
@@ -76,12 +76,12 @@
                 {{ icon('clock', size=13) }} {{ featured_job.employment_type }}
               </span>
               {% if featured_job.duration_display %}
-                <span style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 999px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
+                <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
                   {{ icon('clock', size=12) }} {{ featured_job.duration_display }}
                 </span>
               {% endif %}
               {% if featured_job.fee_display %}
-                <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; background: rgba(16,185,129,0.12); padding: 0.25rem 0.75rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.3);">
+                <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; background: rgba(16,185,129,0.12); padding: 0.2rem 0.65rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3);">
                   {{ icon('credit-card', size=13) }} Fee: {{ featured_job.fee_display }}
                 </span>
               {% elif featured_job.salary %}
@@ -198,7 +198,7 @@
             type="text"
             id="job-search-input"
             placeholder="Search roles or skills..."
-            style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-full); padding: 0.45rem 1rem; font-size: 0.85rem; color: var(--color-white); width: 220px;"
+            style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 0.45rem 1rem; font-size: 0.85rem; color: var(--color-white); width: 220px;"
             oninput="filterJobsList()"
           />
         </div>
@@ -223,11 +223,11 @@
                 </div>
 
                 <div class="job-meta" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-                  <span style="font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">{{ job.department }}</span>
+                  <span style="font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 4px; background: rgba(16,185,129,0.1); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.25);">{{ job.department }}</span>
                   <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('map-pin', size=11) }} {{ job.location }}</span>
                   <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('clock', size=11) }} {{ job.employment_type }}</span>
                   {% if job.duration_display %}
-                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 4px; background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
                       {{ icon('clock', size=11) }} {{ job.duration_display }}
                     </span>
                   {% endif %}
