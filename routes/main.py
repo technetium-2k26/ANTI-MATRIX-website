@@ -379,7 +379,8 @@ def apply_job(job_id):
             application.duration = job.duration if is_internship else None
             application.application_fee = fee_inr
             application.payment_status = 'pending' if is_internship else 'exempt'
-            application.application_status = 'pending_payment' if is_internship else 'submitted'
+            application.application_status = 'pending_payment' if is_internship else 'APPLIED'
+            application.status = 'APPLIED' if not is_internship else 'New'
             if not application.application_code:
                 application.application_code = f"AM-APP-{application.id:06d}"
 
@@ -390,12 +391,6 @@ def apply_job(job_id):
             return redirect(url_for('main.job_apply_review', app_id=application.id))
         else:
             # Exempt/Free application submission
-            try:
-                from services.email_service import send_application_successful_email
-                send_application_successful_email(application)
-            except Exception as email_err:
-                current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
-
             flash(f"Application submitted successfully! Application reference: {application.formatted_code}.", 'success')
             return redirect(url_for('main.job_apply_success', app_id=application.id))
 
@@ -529,20 +524,13 @@ def job_apply_test_payment(app_id):
     # 3. Finalize Application Data
     application.application_fee = fee_inr
     application.payment_status = 'paid'
-    application.application_status = 'submitted'
-    application.status = 'New'
+    application.application_status = 'APPLIED'
+    application.status = 'APPLIED'
     if not application.application_code:
         application.application_code = f"AM-APP-{application.id:06d}"
 
     # Commit payment & application transaction
     db.session.commit()
-
-    # 4. Trigger Application Successful Email (Duplicate protected)
-    try:
-        from services.email_service import send_application_successful_email
-        send_application_successful_email(application)
-    except Exception as email_err:
-        current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
 
     flash("Test payment completed successfully! Your application has been submitted.", "success")
     return redirect(url_for('main.job_apply_success', app_id=application.id))
@@ -679,16 +667,9 @@ def cashfree_return():
             payment.gateway_response = json.dumps(pay_details)
         
         application.payment_status = 'paid'
-        application.application_status = 'submitted'
-        application.status = 'New'
+        application.application_status = 'APPLIED'
+        application.status = 'APPLIED'
         db.session.commit()
-
-        # Trigger Application Successful Email (Duplicate protected)
-        try:
-            from services.email_service import send_application_successful_email
-            send_application_successful_email(application)
-        except Exception as email_err:
-            current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
 
         flash("Payment verified successfully! Your application has been submitted.", "success")
         return redirect(url_for('main.job_apply_success', app_id=application.id))
@@ -747,16 +728,9 @@ def cashfree_webhook():
             payment.gateway_response = json.dumps(data)
             
             application.payment_status = 'paid'
-            application.application_status = 'submitted'
-            application.status = 'New'
+            application.application_status = 'APPLIED'
+            application.status = 'APPLIED'
             db.session.commit()
-
-            # Trigger Application Successful Email (Duplicate protected)
-            try:
-                from services.email_service import send_application_successful_email
-                send_application_successful_email(application)
-            except Exception as email_err:
-                current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
 
         elif payment_status in ['FAILED', 'CANCELLED', 'USER_DROPPED']:
             payment.payment_status = 'failed'

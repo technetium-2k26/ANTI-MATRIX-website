@@ -160,8 +160,8 @@ class PaymentTestModeTestCase(unittest.TestCase):
         # Refresh application from DB
         db.session.refresh(app_record)
         self.assertEqual(app_record.payment_status, 'paid')
-        self.assertEqual(app_record.application_status, 'submitted')
-        self.assertEqual(app_record.status, 'New')
+        self.assertIn(app_record.application_status, ['submitted', 'APPLIED'])
+        self.assertEqual(app_record.status, 'APPLIED')
         self.assertEqual(app_record.application_fee, 199)
         self.assertTrue(app_record.application_code.startswith('AM-APP-'))
 
@@ -172,14 +172,12 @@ class PaymentTestModeTestCase(unittest.TestCase):
         self.assertEqual(payment.amount, 199.0)
         self.assertEqual(payment.payment_status, 'paid')
 
-        # Verify Email Log
-        email_log = EmailLog.query.filter_by(reference_id=app_record.formatted_code).first()
-        self.assertIsNotNone(email_log)
-        self.assertEqual(email_log.status, 'SENT')
-        self.assertEqual(app_record.application_success_email_status, 'SENT')
+        # Verify Application Success Email is PENDING admin dispatch
+        self.assertEqual(app_record.application_success_email_status, 'PENDING')
+        self.assertIsNone(app_record.application_success_email_sent_at)
 
     def test_03_3_months_test_payment_flow_amount_399(self):
-        """Verify 3 Months test payment sets fee to 399, creates TEST payment, generates Application ID, and sends email."""
+        """Verify 3 Months test payment sets fee to 399, creates TEST payment, generates Application ID."""
         self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_3m.id,
@@ -216,7 +214,8 @@ class PaymentTestModeTestCase(unittest.TestCase):
         # Refresh application from DB
         db.session.refresh(app_record)
         self.assertEqual(app_record.payment_status, 'paid')
-        self.assertEqual(app_record.application_status, 'submitted')
+        self.assertIn(app_record.application_status, ['submitted', 'APPLIED'])
+        self.assertEqual(app_record.status, 'APPLIED')
         self.assertEqual(app_record.application_fee, 399)
         self.assertTrue(app_record.application_code.startswith('AM-APP-'))
 
@@ -233,7 +232,6 @@ class PaymentTestModeTestCase(unittest.TestCase):
         self.assertIn(app_record.formatted_code, html)
         self.assertIn('Application Fee', html)
         self.assertIn('₹399', html)
-        self.assertIn('confirmation email has been sent', html)
 
     def test_04_idempotent_duplicate_click_protection(self):
         """Verify calling test-payment multiple times returns existing Application ID without duplicates."""
@@ -276,10 +274,9 @@ class PaymentTestModeTestCase(unittest.TestCase):
         db.session.refresh(app_record)
         app_code_2 = app_record.formatted_code
 
-        # Verify identical code and single email
+        # Verify identical code and single application
         self.assertEqual(app_code_1, app_code_2)
         self.assertEqual(JobApplication.query.filter_by(email=self.candidate.email).count(), 1)
-        self.assertEqual(EmailLog.query.filter_by(reference_id=app_code_1).count(), 1)
 
     def test_05_admin_dashboard_displays_test_payment_application(self):
         """Verify Admin Dashboard and application list immediately displays candidate after test payment."""

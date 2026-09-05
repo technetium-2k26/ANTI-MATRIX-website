@@ -106,11 +106,68 @@ def create_app(config_name=None):
                     conn.commit()
 
             if 'employee_documents' in inspector.get_table_names():
-                emp_doc_cols = [c['name'] for c in inspector.get_columns('employee_documents')]
-                if 'template_id' not in emp_doc_cols:
+                emp_doc_col_objs = inspector.get_columns('employee_documents')
+                emp_doc_cols = [c['name'] for c in emp_doc_col_objs]
+                emp_id_col = next((c for c in emp_doc_col_objs if c['name'] == 'employee_id'), None)
+
+                # If employee_id is NOT NULL in SQLite table definition, migrate it non-destructively
+                if emp_id_col and not emp_id_col.get('nullable', True):
                     with db.engine.connect() as conn:
-                        conn.execute(text('ALTER TABLE employee_documents ADD COLUMN template_id INTEGER REFERENCES document_templates(id)'))
+                        conn.execute(text('''
+                            CREATE TABLE IF NOT EXISTS employee_documents_new (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                application_id INTEGER REFERENCES job_applications(id) ON DELETE CASCADE,
+                                employee_id INTEGER REFERENCES employees(id) ON DELETE CASCADE,
+                                template_id INTEGER REFERENCES document_templates(id) ON DELETE SET NULL,
+                                document_type VARCHAR(50) NOT NULL DEFAULT 'offer_letter',
+                                file_name VARCHAR(255) NOT NULL,
+                                file_path VARCHAR(500) NOT NULL,
+                                status VARCHAR(30) NOT NULL DEFAULT 'GENERATED',
+                                email_status VARCHAR(30) NOT NULL DEFAULT 'not_sent',
+                                email_error TEXT,
+                                generated_at DATETIME NOT NULL,
+                                verified_at DATETIME,
+                                sent_at DATETIME,
+                                created_at DATETIME NOT NULL,
+                                updated_at DATETIME NOT NULL
+                            )
+                        '''))
+                        existing_cols = set(emp_doc_cols)
+                        target_cols = [c for c in ['id', 'employee_id', 'document_type', 'file_name', 'file_path', 'status', 'email_status', 'email_error', 'generated_at', 'verified_at', 'sent_at', 'created_at', 'updated_at', 'template_id', 'application_id'] if c in existing_cols]
+                        cols_str = ', '.join(target_cols)
+                        conn.execute(text(f'INSERT INTO employee_documents_new ({cols_str}) SELECT {cols_str} FROM employee_documents'))
+                        conn.execute(text('DROP TABLE employee_documents'))
+                        conn.execute(text('ALTER TABLE employee_documents_new RENAME TO employee_documents'))
+                        try:
+                            conn.execute(text('CREATE INDEX IF NOT EXISTS ix_employee_documents_application_id ON employee_documents (application_id)'))
+                            conn.execute(text('CREATE INDEX IF NOT EXISTS ix_employee_documents_employee_id ON employee_documents (employee_id)'))
+                        except Exception:
+                            pass
                         conn.commit()
+                else:
+                    if 'template_id' not in emp_doc_cols:
+                        with db.engine.connect() as conn:
+                            conn.execute(text('ALTER TABLE employee_documents ADD COLUMN template_id INTEGER REFERENCES document_templates(id)'))
+                            conn.commit()
+                    if 'application_id' not in emp_doc_cols:
+                        with db.engine.connect() as conn:
+                            conn.execute(text('ALTER TABLE employee_documents ADD COLUMN application_id INTEGER REFERENCES job_applications(id)'))
+                            try:
+                                conn.execute(text('CREATE INDEX IF NOT EXISTS ix_employee_documents_application_id ON employee_documents (application_id)'))
+                            except Exception:
+                                pass
+                            conn.commit()
+
+                # Backfill application_id for existing employee_documents from employees table
+                with db.engine.connect() as conn:
+                    conn.execute(text('''
+                        UPDATE employee_documents
+                        SET application_id = (
+                            SELECT application_id FROM employees WHERE employees.id = employee_documents.employee_id LIMIT 1
+                        )
+                        WHERE application_id IS NULL AND employee_id IS NOT NULL
+                    '''))
+                    conn.commit()
         except Exception as e:
             app.logger.warning(f"Database auto-migration note: {str(e)}")
 

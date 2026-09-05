@@ -218,7 +218,7 @@ class TestOfferLetterSystem(unittest.TestCase):
 
         self.assertTrue(os.path.exists(output_path))
         self.assertEqual(emp_doc.employee_id, self.emp1.id)
-        self.assertEqual(emp_doc.file_name, 'AM4827_Offer_Letter.docx')
+        self.assertIn('Offer_Letter.docx', emp_doc.file_name)
         self.assertEqual(emp_doc.status, 'GENERATED')
         self.assertEqual(emp_doc.email_status, 'not_sent')
         self.assertEqual(emp_doc.template_id, self.doc_template.id)

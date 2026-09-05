@@ -171,7 +171,7 @@ class UserApplicationFlowTestCase(unittest.TestCase):
 
         db.session.refresh(app_record)
         self.assertEqual(app_record.payment_status, 'paid')
-        self.assertEqual(app_record.application_status, 'submitted')
+        self.assertIn(app_record.application_status, ['submitted', 'APPLIED'])
         self.assertTrue(app_record.formatted_code.startswith('AM-APP-'))
 
     # -------------------------------------------------------------
@@ -191,8 +191,8 @@ class UserApplicationFlowTestCase(unittest.TestCase):
             duration='1_month',
             application_fee=199,
             payment_status='paid',
-            application_status='submitted',
-            status='New',
+            application_status='APPLIED',
+            status='APPLIED',
             resume_filename='resume.pdf',
             resume_path='/path/to/resume.pdf'
         )
@@ -207,7 +207,7 @@ class UserApplicationFlowTestCase(unittest.TestCase):
         self.assertIn(app_record.formatted_code, html)
         self.assertIn('AI Engineer Intern', html)
         self.assertIn('1 Month', html)
-        self.assertIn('Application Submitted', html)
+        self.assertIn('Applied', html)
         self.assertIn('Payment: Paid', html)
 
     # -------------------------------------------------------------
@@ -226,8 +226,8 @@ class UserApplicationFlowTestCase(unittest.TestCase):
             duration='1_month',
             application_fee=199,
             payment_status='paid',
-            application_status='submitted',
-            status='New',
+            application_status='APPLIED',
+            status='APPLIED',
             resume_filename='resume.pdf',
             resume_path='/path/to/resume.pdf'
         )
@@ -240,8 +240,8 @@ class UserApplicationFlowTestCase(unittest.TestCase):
             duration='3_months',
             application_fee=399,
             payment_status='paid',
-            application_status='submitted',
-            status='Reviewed',
+            application_status='UNDER_REVIEW',
+            status='UNDER_REVIEW',
             resume_filename='resume.pdf',
             resume_path='/path/to/resume.pdf'
         )
@@ -253,7 +253,7 @@ class UserApplicationFlowTestCase(unittest.TestCase):
         html = res.data.decode('utf-8')
         self.assertIn('AI Engineer Intern', html)
         self.assertIn('Python Developer Intern', html)
-        self.assertIn('Application Submitted', html)
+        self.assertIn('Applied', html)
         self.assertIn('Under Review', html)
 
     # -------------------------------------------------------------

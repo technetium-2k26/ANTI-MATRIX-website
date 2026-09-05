@@ -176,13 +176,28 @@ class JobApplication(db.Model):
         return None
 
     @property
+    def offer_letter_doc(self):
+        """Returns the generated Offer Letter EmployeeDocument for this application if any."""
+        if hasattr(self, 'employee_documents') and self.employee_documents:
+            for doc in self.employee_documents:
+                if doc.document_type == 'offer_letter':
+                    return doc
+        if self.employee and hasattr(self.employee, 'documents'):
+            for doc in self.employee.documents:
+                if doc.document_type == 'offer_letter':
+                    return doc
+        return None
+
+    @property
     def status_display(self):
-        """Map internal database recruitment status to clean human-friendly label."""
-        st = (self.status or self.application_status or 'New').strip()
+        """Map internal database recruitment status to clean human-friendly label (Applied, Under Review, Shortlisted)."""
+        st = (self.status or self.application_status or 'APPLIED').strip()
         mapping = {
-            'New': 'Application Submitted',
-            'SUBMITTED': 'Application Submitted',
-            'submitted': 'Application Submitted',
+            'APPLIED': 'Applied',
+            'applied': 'Applied',
+            'New': 'Applied',
+            'SUBMITTED': 'Applied',
+            'submitted': 'Applied',
             'Reviewed': 'Under Review',
             'UNDER_REVIEW': 'Under Review',
             'reviewed': 'Under Review',
@@ -203,14 +218,14 @@ class JobApplication(db.Model):
 
     @property
     def status_badge_class(self):
-        st = (self.status or self.application_status or 'New').strip().lower()
+        st = (self.status or self.application_status or 'APPLIED').strip().lower()
         if st in ['shortlisted', 'hired']:
             return 'shortlisted'
         elif st in ['reviewed', 'under_review']:
             return 'reviewed'
         elif st in ['rejected', 'not selected']:
             return 'rejected'
-        elif st in ['new', 'submitted']:
+        elif st in ['new', 'submitted', 'applied']:
             return 'new'
         return 'new'
 

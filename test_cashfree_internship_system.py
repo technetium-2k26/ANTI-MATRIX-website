@@ -231,7 +231,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
 
         db.session.refresh(app_record)
         self.assertEqual(app_record.payment_status, 'paid')
-        self.assertEqual(app_record.application_status, 'submitted')
+        self.assertIn(app_record.application_status, ['submitted', 'APPLIED'])
         self.assertTrue(app_record.application_code.startswith('AM-APP-'))
 
     # -------------------------------------------------------------

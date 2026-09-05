@@ -88,36 +88,48 @@ def get_active_offer_letter_template():
     return active_template
 
 
-def generate_offer_letter_docx(employee, custom_params=None):
+def generate_offer_letter_docx(application_or_employee, custom_params=None, force_regenerate=False):
     """
-    Generates a personalized Offer Letter DOCX for the given Employee by cloning the master template.
+    Generates a personalized Offer Letter DOCX for the given JobApplication or Employee by cloning the master template.
     Replaces all placeholders while strictly preserving typography, borders, logos, and layout.
+    Reuses existing generated file if already generated (idempotent) unless force_regenerate=True.
     """
-    if not employee or not employee.application:
-        raise ValueError("Invalid employee record or missing associated application.")
+    if isinstance(application_or_employee, Employee):
+        employee = application_or_employee
+        app = employee.application
+    elif isinstance(application_or_employee, JobApplication):
+        app = application_or_employee
+        employee = app.employee
+    else:
+        raise ValueError("Invalid application or employee record provided.")
 
-    app = employee.application
-    job = employee.job
+    if not app:
+        raise ValueError("Candidate application record is missing.")
 
+    job = app.job
     if not job:
         raise ValueError(f"Application {app.formatted_code} is missing associated Job Posting.")
 
-    custom_params = custom_params or {}
+    # Idempotency check: If document already exists and file exists, return it
+    existing_doc = app.offer_letter_doc
+    if existing_doc and existing_doc.file_path and os.path.exists(existing_doc.file_path) and not force_regenerate:
+        return existing_doc, existing_doc.file_path
 
+    custom_params = custom_params or {}
     now_utc = datetime.now(timezone.utc)
     current_date_str = now_utc.strftime("%d/%m/%Y")
-    current_date_formatted = now_utc.strftime("%d %B %Y")
     
     # Calculate 7-day acceptance deadline
     default_deadline_dt = now_utc + timedelta(days=7)
     default_deadline_str = default_deadline_dt.strftime("%d %B %Y")
 
     # Format data from DB models
-    employee_name = employee.candidate_name or app.full_name or "Candidate"
+    candidate_name = app.full_name or (employee.candidate_name if employee else "Candidate")
     reference_number = app.formatted_code
     job_title = job.title or "Intern"
     department = job.department or "Engineering"
     internship_duration = app.duration_display or (f"{job.duration.replace('_', ' ').title()}" if job.duration else "Internship")
+    emp_id_str = employee.employee_id if employee else app.formatted_code
 
     # Responsibilities description
     responsibilities = custom_params.get(
@@ -132,7 +144,7 @@ def generate_offer_letter_docx(employee, custom_params=None):
     )
 
     # Joining date
-    joining_date = custom_params.get('joining_date', "Immediate / As mutually agreed")
+    joining_date = custom_params.get('joining_date') or custom_params.get('start_date') or "Immediate / As mutually agreed"
 
     # Work mode
     work_mode = custom_params.get('work_mode', job.location if job.location else "Remote")
@@ -150,10 +162,11 @@ def generate_offer_letter_docx(employee, custom_params=None):
     mapping = {
         '[DD/MM/YYYY]': current_date_str,
         '{{offer_date}}': current_date_str,
-        '[Candidate Name]': employee_name,
-        '{{employee_name}}': employee_name,
+        '[Candidate Name]': candidate_name,
+        '{{employee_name}}': candidate_name,
         '[Reference Number]': reference_number,
         '{{reference_number}}': reference_number,
+        '{{application_id}}': reference_number,
         '[Job Title]': job_title,
         '{{job_title}}': job_title,
         '[brief description of responsibilities]': responsibilities,
@@ -162,13 +175,14 @@ def generate_offer_letter_docx(employee, custom_params=None):
         '{{key_tasks}}': key_tasks,
         '[Joining Date]': joining_date,
         '{{joining_date}}': joining_date,
+        '{{start_date}}': joining_date,
         '[remote / hybrid / on-site]': work_mode,
         '{{work_mode}}': work_mode,
         '[background verification / document submission / any other condition]': conditions,
         '{{conditions}}': conditions,
         '[Acceptance Deadline]': acceptance_deadline,
         '{{acceptance_deadline}}': acceptance_deadline,
-        '{{employee_id}}': employee.employee_id,
+        '{{employee_id}}': emp_id_str,
         '{{department}}': department,
         '{{internship_duration}}': internship_duration
     }
@@ -201,20 +215,27 @@ def generate_offer_letter_docx(employee, custom_params=None):
     gen_dir = os.path.join(current_app.root_path, 'uploads', 'generated_documents')
     os.makedirs(gen_dir, exist_ok=True)
 
-    output_filename = f"{employee.employee_id}_Offer_Letter.docx"
+    output_filename = f"{app.formatted_code}_Offer_Letter.docx"
     output_filepath = os.path.join(gen_dir, output_filename)
 
     doc.save(output_filepath)
 
     # Create or update EmployeeDocument record in DB
     emp_doc = EmployeeDocument.query.filter_by(
-        employee_id=employee.id,
+        application_id=app.id,
         document_type='offer_letter'
     ).first()
 
+    if not emp_doc and employee:
+        emp_doc = EmployeeDocument.query.filter_by(
+            employee_id=employee.id,
+            document_type='offer_letter'
+        ).first()
+
     if not emp_doc:
         emp_doc = EmployeeDocument(
-            employee_id=employee.id,
+            application_id=app.id,
+            employee_id=employee.id if employee else None,
             template_id=active_template.id,
             document_type='offer_letter',
             file_name=output_filename,
@@ -225,6 +246,9 @@ def generate_offer_letter_docx(employee, custom_params=None):
         )
         db.session.add(emp_doc)
     else:
+        emp_doc.application_id = app.id
+        if employee:
+            emp_doc.employee_id = employee.id
         emp_doc.template_id = active_template.id
         emp_doc.file_name = output_filename
         emp_doc.file_path = output_filepath
@@ -234,14 +258,11 @@ def generate_offer_letter_docx(employee, custom_params=None):
     db.session.commit()
     return emp_doc, output_filepath
 
-    db.session.commit()
-    return emp_doc, output_filepath
 
-
-def send_offer_letter_email(employee, start_date=None):
+def send_offer_letter_email(application_or_employee, start_date=None):
     """
-    Sends the generated Offer Letter to the employee's registered email with attachment.
+    Sends the generated Offer Letter to the candidate's registered email with attachment.
     Enforces strict ONE-TIME send protection, Markdown-to-HTML rendering, and audit logging.
     """
     from services.email_service import send_offer_letter_shortlisted_email
-    return send_offer_letter_shortlisted_email(employee, start_date=start_date)
+    return send_offer_letter_shortlisted_email(application_or_employee, start_date=start_date)

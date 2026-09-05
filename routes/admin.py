@@ -4,7 +4,7 @@ import time
 from functools import wraps
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash,
-    abort, current_app, send_from_directory, jsonify
+    abort, current_app, send_from_directory, jsonify, session
 )
 from flask_login import current_user
 from werkzeug.utils import secure_filename
@@ -327,7 +327,197 @@ def applications():
 @admin_required
 def application_detail(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
-    return render_template('admin/application_detail.html', app=application, job=application.job)
+    job = application.job
+
+    # Normalize application stage to one of: 'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED'
+    st_raw = (application.status or application.application_status or 'APPLIED').strip().upper()
+    if st_raw in ['SHORTLISTED', 'HIRED']:
+        current_stage = 'SHORTLISTED'
+    elif st_raw in ['UNDER_REVIEW', 'REVIEWED']:
+        current_stage = 'UNDER_REVIEW'
+    else:
+        current_stage = 'APPLIED'
+
+    app_email_preview = None
+    shortlist_email_preview = None
+    offer_doc = application.offer_letter_doc
+    new_employee_creds = None
+    template_missing_error = None
+
+    # Retrieve one-time plaintext temporary password from session if generated in this session
+    session_creds = session.get('new_employee_credentials')
+    if session_creds and session_creds.get('app_id') == application.id:
+        new_employee_creds = session_creds
+
+    # If stage is UNDER_REVIEW: prepare Application Successful email preview with real candidate data
+    if current_stage == 'UNDER_REVIEW':
+        from services.email_service import render_application_successful_email
+        app_email_preview = render_application_successful_email(application)
+
+    # If stage is SHORTLISTED: auto-prepare Offer Letter and Shortlist email preview with real candidate data
+    if current_stage == 'SHORTLISTED':
+        from services.email_service import render_shortlisted_offer_email
+        shortlist_email_preview = render_shortlisted_offer_email(application)
+
+        # Auto-generate Offer Letter DOCX if missing or not generated
+        if not offer_doc or not offer_doc.file_path or not os.path.exists(offer_doc.file_path):
+            try:
+                offer_doc, _ = generate_offer_letter_docx(application)
+            except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError) as tmpl_err:
+                template_missing_error = str(tmpl_err)
+            except Exception as gen_err:
+                template_missing_error = f"Error generating Offer Letter: {str(gen_err)}"
+
+    return render_template(
+        'admin/application_detail.html',
+        app=application,
+        job=job,
+        current_stage=current_stage,
+        app_email_preview=app_email_preview,
+        shortlist_email_preview=shortlist_email_preview,
+        offer_doc=offer_doc,
+        new_employee_creds=new_employee_creds,
+        template_missing_error=template_missing_error
+    )
+
+
+@admin_bp.route('/applications/<int:app_id>/mark-under-review', methods=['POST'])
+@admin_required
+def mark_application_under_review(app_id):
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    application.status = 'UNDER_REVIEW'
+    application.application_status = 'UNDER_REVIEW'
+    db.session.commit()
+    flash(f"Application for candidate {application.full_name} is now Under Review.", 'success')
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/send-application-email', methods=['POST'])
+@admin_required
+def send_application_success_email_action(app_id):
+    application = db.session.get(JobApplication, app_id) or abort(404)
+
+    if application.application_success_email_status == 'SENT':
+        flash('Application Successful email has already been sent to this candidate.', 'warning')
+        return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    from services.email_service import send_application_successful_email
+    success, msg = send_application_successful_email(application)
+    if success:
+        flash(f"Application Successful email sent to {application.email} successfully via Brevo.", 'success')
+    else:
+        flash(f"Failed to send email: {msg}", 'danger')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/mark-shortlisted', methods=['POST'])
+@admin_required
+def mark_application_shortlisted(app_id):
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    application.status = 'SHORTLISTED'
+    application.application_status = 'SHORTLISTED'
+    db.session.commit()
+
+    # Automatically generate Offer Letter DOCX
+    try:
+        generate_offer_letter_docx(application)
+        flash(f"Candidate {application.full_name} marked as Shortlisted and Offer Letter generated automatically.", 'success')
+    except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError) as tmpl_err:
+        flash(f"Candidate marked as Shortlisted. Notice: {str(tmpl_err)}", 'warning')
+    except Exception as e:
+        flash(f"Candidate marked as Shortlisted. Error generating Offer Letter: {str(e)}", 'danger')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/send-shortlist-offer', methods=['POST'])
+@admin_required
+def send_shortlist_offer_action(app_id):
+    application = db.session.get(JobApplication, app_id) or abort(404)
+
+    # Ensure status is SHORTLISTED
+    st = (application.status or application.application_status or '').upper()
+    if st not in ['SHORTLISTED', 'HIRED']:
+        flash('Application must be Shortlisted before sending the Offer Letter.', 'danger')
+        return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    # Ensure Offer Letter is generated
+    offer_doc = application.offer_letter_doc
+    if not offer_doc or not offer_doc.file_path or not os.path.exists(offer_doc.file_path):
+        try:
+            offer_doc, _ = generate_offer_letter_docx(application)
+        except Exception as e:
+            flash(f"Cannot send Offer Letter: {str(e)}", 'danger')
+            return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    # Check duplicate send
+    if offer_doc.email_status == 'sent':
+        flash('Offer Letter email has already been sent to this candidate.', 'warning')
+        return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    # Send Shortlisted email + Offer Letter attachment via Brevo
+    from services.offer_letter_service import send_offer_letter_email
+    success, msg = send_offer_letter_email(application)
+
+    if not success:
+        flash(f"Failed to send Offer Letter email: {msg}", 'danger')
+        return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    # On confirmed successful send, auto-generate Employee credentials if not already existing
+    if not application.employee:
+        try:
+            emp_id = Employee.generate_unique_employee_id()
+            plaintext_password = Employee.generate_secure_password(12)
+
+            employee = Employee(
+                employee_id=emp_id,
+                application_id=application.id,
+                account_status='active'
+            )
+            employee.set_password(plaintext_password)
+            db.session.add(employee)
+            db.session.flush()
+
+            # Link Offer Letter doc to employee
+            if offer_doc:
+                offer_doc.employee_id = employee.id
+
+            db.session.commit()
+
+            # Save temporary credentials in session for immediate display to admin
+            session['new_employee_credentials'] = {
+                'app_id': application.id,
+                'employee_id': employee.employee_id,
+                'temp_password': plaintext_password
+            }
+            flash(f"Offer Letter sent successfully! Employee account ({employee.employee_id}) created automatically.", 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Offer Letter sent, but error creating employee account: {str(e)}", 'warning')
+    else:
+        flash(f"Offer Letter sent successfully to candidate {application.full_name}.", 'success')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/offer-letter/download', methods=['GET'])
+@admin_required
+def download_application_offer_letter(app_id):
+    """Download / preview candidate-specific generated Offer Letter DOCX."""
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    offer_doc = application.offer_letter_doc
+
+    if not offer_doc or not offer_doc.file_path or not os.path.exists(offer_doc.file_path):
+        flash('Offer Letter has not been generated yet.', 'warning')
+        return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    return send_from_directory(
+        os.path.dirname(offer_doc.file_path),
+        os.path.basename(offer_doc.file_path),
+        as_attachment=True,
+        download_name=offer_doc.file_name
+    )
 
 
 @admin_bp.route('/applications/<int:app_id>/status', methods=['POST'])
@@ -335,20 +525,24 @@ def application_detail(app_id):
 def update_application_status(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
     new_status = request.form.get('status', '').strip()
-    valid_statuses = ['New', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired']
+    valid_statuses = ['New', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired', 'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED']
 
     if new_status in valid_statuses:
-        application.status = new_status
         status_map = {
-            'New': 'submitted',
-            'Reviewed': 'reviewed',
-            'Shortlisted': 'shortlisted',
-            'Rejected': 'rejected',
-            'Hired': 'hired'
+            'New': 'APPLIED',
+            'APPLIED': 'APPLIED',
+            'Reviewed': 'UNDER_REVIEW',
+            'UNDER_REVIEW': 'UNDER_REVIEW',
+            'Shortlisted': 'SHORTLISTED',
+            'SHORTLISTED': 'SHORTLISTED',
+            'Rejected': 'REJECTED',
+            'Hired': 'HIRED'
         }
-        application.application_status = status_map.get(new_status, new_status.lower())
+        mapped_status = status_map.get(new_status, new_status.upper())
+        application.status = mapped_status
+        application.application_status = mapped_status
         db.session.commit()
-        flash(f"Status for candidate {application.full_name} updated to '{new_status}'.", 'success')
+        flash(f"Status for candidate {application.full_name} updated to '{application.status_display}'.", 'success')
     else:
         flash('Invalid status provided.', 'danger')
 

@@ -257,6 +257,84 @@ def replace_variables(template_str, variable_dict):
 # CORE EMAIL TRANSMISSION
 # =====================================================================
 
+# =====================================================================
+# CORE EMAIL TRANSMISSION (BREVO API & MIME FALLBACK)
+# =====================================================================
+
+def send_brevo_email(recipient_email, recipient_name, subject, body_text, body_html=None, attachment_path=None, attachment_name=None):
+    """
+    Sends transactional email using Brevo (Sendinblue) API v3.
+    Endpoint: https://api.brevo.com/v3/smtp/email
+    Header: api-key
+    Falls back to SMTP/Simulation if BREVO_API_KEY is not configured.
+    """
+    api_key = os.environ.get('BREVO_API_KEY') or (current_app.config.get('BREVO_API_KEY') if current_app else None)
+    sender_email = os.environ.get('BREVO_SENDER_EMAIL') or os.environ.get('SENDER_EMAIL') or (current_app.config.get('BREVO_SENDER_EMAIL') if current_app else 'info@antimatrix.co.in')
+    sender_name = os.environ.get('BREVO_SENDER_NAME') or (current_app.config.get('BREVO_SENDER_NAME') if current_app else 'Anti Matrix')
+
+    # If Brevo API key is not present, fall back cleanly to MIME / SMTP / Simulation
+    if not api_key:
+        return send_mime_email(recipient_email, subject, body_text, body_html, attachment_path, attachment_name)
+
+    import base64
+    import requests
+
+    headers = {
+        "api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    payload = {
+        "sender": {
+            "name": sender_name,
+            "email": sender_email
+        },
+        "to": [
+            {
+                "email": recipient_email,
+                "name": recipient_name or recipient_email
+            }
+        ],
+        "subject": subject,
+        "textContent": body_text,
+        "htmlContent": body_html or markdown_to_html_email(body_text, title=subject)
+    }
+
+    if attachment_path and os.path.exists(attachment_path):
+        att_name = attachment_name or os.path.basename(attachment_path)
+        with open(attachment_path, "rb") as f:
+            encoded_content = base64.b64encode(f.read()).decode('utf-8')
+        payload["attachment"] = [
+            {
+                "name": att_name,
+                "content": encoded_content
+            }
+        ]
+
+    try:
+        response = requests.post("https://api.brevo.com/v3/smtp/email", headers=headers, json=payload, timeout=25)
+        if response.status_code in [200, 201, 202]:
+            resp_data = response.json() if response.text else {}
+            provider_id = resp_data.get('messageId') or f"brevo_{int(datetime.now(timezone.utc).timestamp())}"
+            return True, "Email successfully sent via Brevo", provider_id
+        else:
+            if current_app:
+                current_app.logger.error(f"Brevo API error ({response.status_code}): {response.text}")
+            err_msg = f"Brevo API error ({response.status_code})"
+            try:
+                err_data = response.json()
+                if 'message' in err_data:
+                    err_msg += f": {err_data['message']}"
+            except Exception:
+                pass
+            return False, err_msg, None
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Brevo request exception: {str(e)}")
+        return False, f"Email delivery failed: {str(e)}", None
+
+
 def send_mime_email(recipient_email, subject, body_text, body_html=None, attachment_path=None, attachment_name=None):
     """
     Dispatches a multipart MIME email (HTML + Plain Text + Optional Attachment).
@@ -311,32 +389,23 @@ def send_mime_email(recipient_email, subject, body_text, body_html=None, attachm
 
 
 # =====================================================================
-# 1. APPLICATION SUCCESSFUL EMAIL DISPATCH
+# 1. APPLICATION SUCCESSFUL EMAIL PREVIEW & DISPATCH
 # =====================================================================
 
-def send_application_successful_email(application):
+def render_application_successful_email(application):
     """
-    Sends the official Application Successful confirmation email.
-    Enforces strict duplicate sending protection.
+    Renders the official Application Successful confirmation email with real applicant data.
+    Returns dictionary with rendered subject, plain text body, and responsive HTML body.
     """
     if not application:
-        return False, "Invalid application record."
-
-    recipient_email = application.email
-    if not recipient_email:
-        return False, "Candidate does not have a registered email address."
-
-    # Duplicate send check
-    if application.application_success_email_status == 'SENT':
-        return False, f"Application Successful email already sent on {application.application_success_email_sent_at}."
+        return {'subject': '', 'body_text': '', 'body_html': ''}
 
     job = application.job
     job_title = job.title if job else "Internship Position"
     app_date = application.created_at.strftime("%d/%m/%Y") if application.created_at else datetime.now(timezone.utc).strftime("%d/%m/%Y")
-    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in')
+    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in') if current_app else 'info@antimatrix.co.in'
     website = "www.antimatrix.co.in"
 
-    # Context dictionary
     variables = {
         'Student Name': application.full_name,
         'Internship Role': job_title,
@@ -352,7 +421,6 @@ def send_application_successful_email(application):
         'website': website
     }
 
-    # Load active email template
     tmpl = EmailTemplate.query.filter_by(template_type='application_successful').first()
     raw_subject = tmpl.subject if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
     raw_body = tmpl.body if tmpl else DEFAULT_APPLICATION_SUCCESSFUL_BODY
@@ -361,8 +429,39 @@ def send_application_successful_email(application):
     body_text = replace_variables(raw_body, variables)
     body_html = markdown_to_html_email(body_text, title=subject)
 
-    success, msg, provider_id = send_mime_email(
+    return {
+        'to': application.email,
+        'subject': subject,
+        'body_text': body_text,
+        'body_html': body_html
+    }
+
+
+def send_application_successful_email(application):
+    """
+    Sends the official Application Successful confirmation email via Brevo.
+    Enforces strict duplicate sending protection.
+    """
+    if not application:
+        return False, "Invalid application record."
+
+    recipient_email = application.email
+    if not recipient_email:
+        return False, "Candidate does not have a registered email address."
+
+    # Duplicate send check
+    if application.application_success_email_status == 'SENT':
+        sent_time = application.application_success_email_sent_at.strftime('%b %d, %Y') if application.application_success_email_sent_at else 'earlier'
+        return False, f"Application Successful email already sent on {sent_time}."
+
+    rendered = render_application_successful_email(application)
+    subject = rendered['subject']
+    body_text = rendered['body_text']
+    body_html = rendered['body_html']
+
+    success, msg, provider_id = send_brevo_email(
         recipient_email=recipient_email,
+        recipient_name=application.full_name,
         subject=subject,
         body_text=body_text,
         body_html=body_html
@@ -399,57 +498,44 @@ def send_application_successful_email(application):
 
 
 # =====================================================================
-# 2. OFFER LETTER / SHORTLISTED EMAIL DISPATCH
+# 2. SHORTLISTED / OFFER LETTER EMAIL PREVIEW & DISPATCH
 # =====================================================================
 
-def send_offer_letter_shortlisted_email(employee, start_date=None):
+def render_shortlisted_offer_email(application, custom_params=None):
     """
-    Sends the official Offer Letter / Shortlisted email with the generated employee DOCX attached.
-    Enforces strict ONE-TIME send protection.
+    Renders the official Shortlisted / Offer Letter email with real applicant data.
+    Returns dictionary with rendered subject, plain text body, and responsive HTML body.
     """
-    if not employee or not employee.application:
-        return False, "Invalid employee or missing application record."
+    if not application:
+        return {'subject': '', 'body_text': '', 'body_html': ''}
 
-    recipient_email = employee.candidate_email
-    if not recipient_email:
-        return False, "Candidate does not have a registered email address."
-
-    emp_doc = employee.offer_letter_doc
-    if not emp_doc or not os.path.exists(emp_doc.file_path):
-        return False, "Offer Letter DOCX has not been generated yet. Please generate it first."
-
-    # ONE-TIME SEND PROTECTION
-    if emp_doc.email_status == 'sent':
-        sent_time = emp_doc.sent_at.strftime('%b %d, %Y') if emp_doc.sent_at else 'earlier'
-        return False, f"Offer Letter already sent on {sent_time}. Duplicate sending is prevented."
-
-    app = employee.application
-    job = employee.job
+    custom_params = custom_params or {}
+    job = application.job
     job_title = job.title if job else "Internship Position"
-    duration = app.duration_display if app and app.duration_display else (f"{job.duration.replace('_', ' ').title()}" if job and job.duration else "3 Months")
-    joining_date = start_date or "Immediate / As mutually agreed"
-    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in')
+    duration = application.duration_display if application.duration_display else (f"{job.duration.replace('_', ' ').title()}" if job and job.duration else "3 Months")
+    joining_date = custom_params.get('start_date') or custom_params.get('joining_date') or "Immediate / As mutually agreed"
+    company_email = current_app.config.get('CONTACT_EMAIL', 'info@antimatrix.co.in') if current_app else 'info@antimatrix.co.in'
     website = "www.antimatrix.co.in"
 
     variables = {
-        'Student Name': employee.candidate_name,
+        'Student Name': application.full_name,
         'Internship Role': job_title,
-        'Application ID': app.formatted_code,
+        'Application ID': application.formatted_code,
         'Internship Duration': duration,
         'Start Date': joining_date,
         'Company Email': company_email,
         'Website': website,
-        'employee_name': employee.candidate_name,
-        'employee_id': employee.employee_id,
+        'employee_name': application.full_name,
+        'employee_id': application.employee.employee_id if application.employee else application.formatted_code,
         'job_title': job_title,
-        'application_id': app.formatted_code,
+        'department': job.department if job else 'Engineering',
+        'application_id': application.formatted_code,
         'internship_duration': duration,
         'start_date': joining_date,
         'company_email': company_email,
         'website': website
     }
 
-    # Load active email template
     tmpl = EmailTemplate.query.filter_by(template_type='offer_letter').first()
     raw_subject = tmpl.subject if tmpl else DEFAULT_OFFER_LETTER_SUBJECT
     raw_body = tmpl.body if tmpl else DEFAULT_OFFER_LETTER_BODY
@@ -458,8 +544,54 @@ def send_offer_letter_shortlisted_email(employee, start_date=None):
     body_text = replace_variables(raw_body, variables)
     body_html = markdown_to_html_email(body_text, title=subject)
 
-    success, msg, provider_id = send_mime_email(
+    return {
+        'to': application.email,
+        'subject': subject,
+        'body_text': body_text,
+        'body_html': body_html
+    }
+
+
+def send_offer_letter_shortlisted_email(application_or_employee, start_date=None):
+    """
+    Sends the official Offer Letter / Shortlisted email with the generated employee DOCX attached via Brevo.
+    Enforces strict ONE-TIME send protection.
+    """
+    # Normalize input
+    if isinstance(application_or_employee, Employee):
+        employee = application_or_employee
+        app = employee.application
+    elif isinstance(application_or_employee, JobApplication):
+        app = application_or_employee
+        employee = app.employee
+    else:
+        return False, "Invalid application or employee record."
+
+    if not app:
+        return False, "Missing associated candidate application record."
+
+    recipient_email = app.email
+    if not recipient_email:
+        return False, "Candidate does not have a registered email address."
+
+    # Retrieve candidate-specific Offer Letter document
+    emp_doc = app.offer_letter_doc
+    if not emp_doc or not emp_doc.file_path or not os.path.exists(emp_doc.file_path):
+        return False, "Offer Letter DOCX has not been generated yet. Please generate it first."
+
+    # ONE-TIME SEND PROTECTION
+    if emp_doc.email_status == 'sent':
+        sent_time = emp_doc.sent_at.strftime('%b %d, %Y') if emp_doc.sent_at else 'earlier'
+        return False, f"Offer Letter already sent on {sent_time}. Duplicate sending is prevented."
+
+    rendered = render_shortlisted_offer_email(app, custom_params={'start_date': start_date})
+    subject = rendered['subject']
+    body_text = rendered['body_text']
+    body_html = rendered['body_html']
+
+    success, msg, provider_id = send_brevo_email(
         recipient_email=recipient_email,
+        recipient_name=app.full_name,
         subject=subject,
         body_text=body_text,
         body_html=body_html,
@@ -486,7 +618,7 @@ def send_offer_letter_shortlisted_email(employee, start_date=None):
     email_log = EmailLog(
         recipient_email=recipient_email,
         template_type='offer_letter',
-        reference_id=employee.employee_id,
+        reference_id=employee.employee_id if employee else app.formatted_code,
         subject=subject,
         body_preview=body_text[:200],
         status=log_status,

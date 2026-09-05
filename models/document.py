@@ -51,10 +51,16 @@ class EmployeeDocument(db.Model):
     __tablename__ = 'employee_documents'
 
     id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(
+        db.Integer,
+        db.ForeignKey('job_applications.id', ondelete='CASCADE'),
+        nullable=True,
+        index=True
+    )
     employee_id = db.Column(
         db.Integer,
         db.ForeignKey('employees.id', ondelete='CASCADE'),
-        nullable=False,
+        nullable=True,
         index=True
     )
     template_id = db.Column(
@@ -86,17 +92,21 @@ class EmployeeDocument(db.Model):
         nullable=False
     )
 
-    # Relationship to Employee (Many Documents to One Employee)
+    # Relationships
     employee = db.relationship(
         'Employee',
         backref=db.backref('documents', cascade='all, delete-orphan', lazy=True)
+    )
+    application = db.relationship(
+        'JobApplication',
+        backref=db.backref('employee_documents', cascade='all, delete-orphan', lazy=True)
     )
 
     # Relationship to DocumentTemplate
     template = db.relationship('DocumentTemplate', backref=db.backref('generated_documents', lazy=True))
 
     def __repr__(self):
-        return f"<EmployeeDocument id={self.id} emp_id={self.employee_id} type='{self.document_type}' status='{self.status}' email='{self.email_status}'>"
+        return f"<EmployeeDocument id={self.id} app_id={self.application_id} emp_id={self.employee_id} type='{self.document_type}' status='{self.status}' email='{self.email_status}'>"
 
 
 class EmailLog(db.Model):

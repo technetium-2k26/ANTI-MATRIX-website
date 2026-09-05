@@ -93,10 +93,10 @@
 
           <select name="status" class="admin-select" onchange="this.form.submit();">
             <option value="all" {{ 'selected' if selected_status == 'all' else '' }}>All Stages</option>
-            <option value="New" {{ 'selected' if selected_status == 'New' else '' }}>New</option>
-            <option value="Reviewed" {{ 'selected' if selected_status == 'Reviewed' else '' }}>Reviewed</option>
-            <option value="Shortlisted" {{ 'selected' if selected_status == 'Shortlisted' else '' }}>Shortlisted</option>
-            <option value="Rejected" {{ 'selected' if selected_status == 'Rejected' else '' }}>Rejected</option>
+            <option value="APPLIED" {{ 'selected' if selected_status in ['APPLIED', 'New'] else '' }}>Applied</option>
+            <option value="UNDER_REVIEW" {{ 'selected' if selected_status in ['UNDER_REVIEW', 'Reviewed'] else '' }}>Under Review</option>
+            <option value="SHORTLISTED" {{ 'selected' if selected_status == 'SHORTLISTED' or selected_status == 'Shortlisted' else '' }}>Shortlisted</option>
+            <option value="Rejected" {{ 'selected' if selected_status == 'Rejected' else '' }}>Not Selected</option>
             <option value="Hired" {{ 'selected' if selected_status == 'Hired' else '' }}>Hired</option>
           </select>
 
@@ -152,15 +152,8 @@
                     <a href="{{ url_for('admin.view_employee', employee_id=app.employee.employee_id) }}" style="font-size: 0.825rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace); background: rgba(16,185,129,0.12); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.25); text-decoration: none; display: inline-block;">
                       {{ app.employee.employee_id }}
                     </a>
-                  {% elif app.payment_status == 'paid' %}
-                    <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start;">
-                      <span style="color: var(--color-text-muted); font-size: 0.75rem;">Not Created</span>
-                      <a href="{{ url_for('admin.create_employee', application_id=app.id) }}" class="btn btn-outline btn-sm" style="font-size: 0.7rem; padding: 0.15rem 0.45rem; gap: 4px;">
-                        {{ icon('plus', size=10) }} Create ID
-                      </a>
-                    </div>
                   {% else %}
-                    <span style="color: var(--color-text-muted); font-size: 0.75rem;">Not Created</span>
+                    <span style="color: var(--color-text-muted); font-size: 0.75rem;">Not Generated</span>
                   {% endif %}
                 </td>
                 <td>
@@ -184,7 +177,7 @@
                   {% endif %}
                 </td>
                 <td>
-                  <span class="badge-status {{ app.status.lower() }}">{{ app.status }}</span>
+                  <span class="badge-status {{ app.status_badge_class }}">{{ app.status_display }}</span>
                 </td>
                 <td style="font-size: 0.825rem; color: var(--color-text-dim);">
                   {{ app.created_at.strftime('%b %d, %Y') }}
