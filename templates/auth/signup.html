@@ -60,6 +60,9 @@
     {# Signup Form #}
     <form id="signup-form" class="auth-form" action="{{ url_for('auth.signup') }}" method="POST" noValidate aria-label="Sign up form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      {% if redirect_target %}
+        <input type="hidden" name="redirect" value="{{ redirect_target }}"/>
+      {% endif %}
 
       <div class="form-group">
         <label for="signup-name">Full Name</label>
@@ -177,7 +180,7 @@
 
     <p class="auth-switch">
       Already have an account?
-      <a href="{{ url_for('auth.login') }}" class="auth-link"> Sign in</a>
+      <a href="{{ url_for('auth.login', next=redirect_target) if redirect_target else url_for('auth.login') }}" class="auth-link"> Sign in</a>
     </p>
   </div>
 </div>

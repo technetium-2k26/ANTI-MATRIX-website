@@ -77,6 +77,36 @@ def create_app(config_name=None):
     with app.app_context():
         db.create_all()
 
+        # Ensure database schema is updated for user_id on job_applications
+        try:
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            if 'job_applications' in inspector.get_table_names():
+                cols = [c['name'] for c in inspector.get_columns('job_applications')]
+                if 'user_id' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text('ALTER TABLE job_applications ADD COLUMN user_id INTEGER REFERENCES users(id)'))
+                        try:
+                            conn.execute(text('CREATE INDEX IF NOT EXISTS ix_job_applications_user_id ON job_applications (user_id)'))
+                        except Exception:
+                            pass
+                        conn.commit()
+                
+                # Auto-link existing applications where user email matches
+                with db.engine.connect() as conn:
+                    conn.execute(text('''
+                        UPDATE job_applications
+                        SET user_id = (
+                            SELECT id FROM users WHERE LOWER(users.email) = LOWER(job_applications.email) LIMIT 1
+                        )
+                        WHERE user_id IS NULL AND EXISTS (
+                            SELECT 1 FROM users WHERE LOWER(users.email) = LOWER(job_applications.email)
+                        )
+                    '''))
+                    conn.commit()
+        except Exception as e:
+            app.logger.warning(f"Database auto-migration note: {str(e)}")
+
         # Seed default admin user if none exists
         admin_user = User.query.filter_by(role='admin').first()
         if not admin_user:

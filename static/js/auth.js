@@ -80,6 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Signing in…';
 
+      const redirectInput = loginForm.querySelector('input[name="redirect"]');
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTarget = redirectInput ? redirectInput.value : (urlParams.get('next') || urlParams.get('redirect') || '');
+
       try {
         const res = await fetch('/login', {
           method: 'POST',
@@ -87,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
           },
-          body: JSON.stringify({ email, password, remember })
+          body: JSON.stringify({ email, password, remember, redirect: redirectTarget })
         });
 
         const data = await res.json();
@@ -101,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginSuccessCard.style.display = 'block';
           }
           setTimeout(() => {
-            window.location.href = data.redirect || '/';
+            window.location.href = data.redirect || redirectTarget || '/';
           }, 900);
         } else {
           submitBtn.disabled = false;
@@ -190,6 +194,10 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Creating account…';
 
+      const redirectInput = signupForm.querySelector('input[name="redirect"]');
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTarget = redirectInput ? redirectInput.value : (urlParams.get('next') || urlParams.get('redirect') || '');
+
       try {
         const res = await fetch('/signup', {
           method: 'POST',
@@ -197,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken
           },
-          body: JSON.stringify({ name, email, password, confirm, terms })
+          body: JSON.stringify({ name, email, password, confirm, terms, redirect: redirectTarget })
         });
 
         const data = await res.json();
@@ -212,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             signupSuccessCard.style.display = 'block';
           }
           setTimeout(() => {
-            window.location.href = data.redirect || '/';
+            window.location.href = data.redirect || redirectTarget || '/';
           }, 1200);
         } else {
           submitBtn.disabled = false;

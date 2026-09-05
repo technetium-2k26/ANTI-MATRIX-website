@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlparse
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User
@@ -8,9 +9,36 @@ auth_bp = Blueprint('auth', __name__)
 EMAIL_REGEX = re.compile(r'^\S+@\S+\.\S+$')
 
 
+def get_safe_redirect(target_url, default='/'):
+    """
+    Validate redirect URL to prevent Open Redirect vulnerabilities.
+    Only allows internal, relative application paths.
+    """
+    if not default:
+        default = '/'
+    if not target_url or not isinstance(target_url, str):
+        return default
+    target_url = target_url.strip()
+    if not target_url.startswith('/') or target_url.startswith('//') or '\\' in target_url:
+        return default
+    try:
+        parsed = urlparse(target_url)
+        if parsed.netloc or parsed.scheme:
+            return default
+        return target_url
+    except Exception:
+        return default
+
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    redirect_target = request.args.get('redirect') or request.form.get('redirect') or url_for('main.home')
+    raw_target = (
+        request.args.get('next') or
+        request.args.get('redirect') or
+        request.form.get('redirect') or
+        request.form.get('next')
+    )
+    redirect_target = get_safe_redirect(raw_target)
     
     if current_user.is_authenticated:
         return redirect(redirect_target)
@@ -24,6 +52,10 @@ def login():
         remember = bool(data.get('remember', False))
         if isinstance(data.get('remember'), str):
             remember = data.get('remember') in ('true', '1', 'on', 'yes')
+
+        # Check for redirect inside POST payload
+        post_target = data.get('redirect') or data.get('next') or raw_target
+        redirect_target = get_safe_redirect(post_target)
 
         errors = {}
         if not email:
@@ -57,7 +89,6 @@ def login():
         else:
             # If user exists, verify password
             if not user.check_password(password):
-                # For demo flexibility, if user was created with a placeholder, re-set or validate
                 errors['password'] = 'Invalid email or password'
                 if is_json:
                     return jsonify({'status': 'error', 'errors': errors}), 401
@@ -81,8 +112,16 @@ def login():
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
+    raw_target = (
+        request.args.get('next') or
+        request.args.get('redirect') or
+        request.form.get('redirect') or
+        request.form.get('next')
+    )
+    redirect_target = get_safe_redirect(raw_target)
+
     if current_user.is_authenticated:
-        return redirect(url_for('main.home'))
+        return redirect(redirect_target)
 
     if request.method == 'POST':
         is_json = request.is_json
@@ -95,6 +134,9 @@ def signup():
         terms = bool(data.get('terms', False))
         if isinstance(data.get('terms'), str):
             terms = data.get('terms') in ('true', '1', 'on', 'yes')
+
+        post_target = data.get('redirect') or data.get('next') or raw_target
+        redirect_target = get_safe_redirect(post_target)
 
         errors = {}
         if not name:
@@ -123,7 +165,7 @@ def signup():
                 return jsonify({'status': 'error', 'errors': errors}), 400
             for field, err in errors.items():
                 flash(err, 'error')
-            return render_template('auth/signup.html', errors=errors, name=name, email=email)
+            return render_template('auth/signup.html', errors=errors, name=name, email=email, redirect_target=redirect_target)
 
         # Check existing user
         user = User.query.filter_by(email=email.lower()).first()
@@ -145,13 +187,13 @@ def signup():
             return jsonify({
                 'status': 'success',
                 'message': 'Account created successfully!',
-                'redirect': url_for('main.home'),
+                'redirect': redirect_target,
                 'user': user.to_dict()
             })
 
-        return redirect(url_for('main.home'))
+        return redirect(redirect_target)
 
-    return render_template('auth/signup.html', errors={})
+    return render_template('auth/signup.html', redirect_target=redirect_target, errors={})
 
 
 @auth_bp.route('/logout', methods=['GET', 'POST'])
@@ -159,3 +201,4 @@ def logout():
     if current_user.is_authenticated:
         logout_user()
     return redirect(url_for('main.home'))
+

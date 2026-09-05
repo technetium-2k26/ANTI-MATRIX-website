@@ -333,6 +333,14 @@ def update_application_status(app_id):
 
     if new_status in valid_statuses:
         application.status = new_status
+        status_map = {
+            'New': 'submitted',
+            'Reviewed': 'reviewed',
+            'Shortlisted': 'shortlisted',
+            'Rejected': 'rejected',
+            'Hired': 'hired'
+        }
+        application.application_status = status_map.get(new_status, new_status.lower())
         db.session.commit()
         flash(f"Status for candidate {application.full_name} updated to '{new_status}'.", 'success')
     else:

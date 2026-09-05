@@ -3,8 +3,8 @@ import re
 import time
 import uuid
 import json
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app, abort
-from flask_login import current_user
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app, abort, send_from_directory
+from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from models import db, ContactInquiry, JobPosting, JobApplication, Payment
 from services.cashfree_service import CashfreeService
@@ -96,10 +96,25 @@ def careers():
 
 @main_bp.route('/careers/apply/<int:job_id>', methods=['GET', 'POST'])
 def apply_job(job_id):
+    # Server-Side Authentication Enforcement
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=request.path))
+
     job = db.session.get(JobPosting, job_id) or abort(404)
     if not job.is_active:
         flash('This position is currently not accepting new applications.', 'warning')
         return redirect(url_for('main.careers'))
+
+    # Duplicate Application Protection for Authenticated User
+    existing_paid = JobApplication.query.filter(
+        JobApplication.job_id == job.id,
+        ((JobApplication.user_id == current_user.id) | (JobApplication.email == current_user.email.lower())),
+        (JobApplication.payment_status == 'paid') | (JobApplication.application_status == 'submitted')
+    ).first()
+
+    if existing_paid:
+        flash(f"You have already applied for this position ({job.title}). Application ID: {existing_paid.formatted_code}.", 'info')
+        return redirect(url_for('main.my_applications'))
 
     if request.method == 'POST':
         # 1. Personal Details
@@ -211,19 +226,6 @@ def apply_job(job_id):
         if github_url and not URL_REGEX.match(github_url):
             errors.append('GitHub URL must start with http:// or https://')
 
-        # Check for existing submitted & paid application
-        existing_paid = JobApplication.query.filter_by(
-            job_id=job.id,
-            email=email
-        ).filter(
-            (JobApplication.payment_status == 'paid') | 
-            (JobApplication.application_status == 'submitted')
-        ).first()
-
-        if existing_paid:
-            flash(f"You have already applied for this position ({job.title}). Your application reference is {existing_paid.formatted_code}.", 'info')
-            return redirect(url_for('main.careers'))
-
         # Document Folders
         resumes_folder = current_app.config.get('UPLOAD_FOLDER_RESUMES', os.path.join(current_app.root_path, 'uploads', 'resumes'))
         docs_folder = current_app.config.get('UPLOAD_FOLDER_DOCUMENTS', os.path.join(current_app.root_path, 'uploads', 'documents'))
@@ -283,9 +285,9 @@ def apply_job(job_id):
             )
 
         # Check for existing unpaid draft application to reuse/update
-        application = JobApplication.query.filter_by(
-            job_id=job.id,
-            email=email
+        application = JobApplication.query.filter(
+            JobApplication.job_id == job.id,
+            ((JobApplication.user_id == current_user.id) | (JobApplication.email == email))
         ).filter(JobApplication.payment_status != 'paid').first()
 
         is_internship = job.is_internship
@@ -294,6 +296,7 @@ def apply_job(job_id):
         if not application:
             application = JobApplication(
                 job_id=job.id,
+                user_id=current_user.id,
                 first_name=first_name,
                 last_name=last_name,
                 full_name=full_name,
@@ -337,6 +340,7 @@ def apply_job(job_id):
             application.application_code = f"AM-APP-{application.id:06d}"
         else:
             # Update existing draft application
+            application.user_id = current_user.id
             application.first_name = first_name
             application.last_name = last_name
             application.full_name = full_name
@@ -395,10 +399,18 @@ def apply_job(job_id):
             flash(f"Application submitted successfully! Application reference: {application.formatted_code}.", 'success')
             return redirect(url_for('main.job_apply_success', app_id=application.id))
 
+    # Pre-fill name and email for authenticated candidate
+    name_parts = (current_user.name or '').strip().split(' ', 1)
+    prefilled_form = {
+        'first_name': name_parts[0] if name_parts else '',
+        'last_name': name_parts[1] if len(name_parts) > 1 else '',
+        'email': current_user.email
+    }
+
     return render_template(
         'pages/job_apply.html',
         job=job,
-        form_data={},
+        form_data=prefilled_form,
         states_and_cities=INDIA_STATES_AND_CITIES,
         education_levels=EDUCATION_LEVELS,
         common_degrees=COMMON_DEGREES,
@@ -409,7 +421,13 @@ def apply_job(job_id):
 @main_bp.route('/careers/apply/review/<int:app_id>')
 def job_apply_review(app_id):
     """Candidate Review Step before initiating Cashfree Payment or Simulated Test Payment."""
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=request.path))
+
     application = db.session.get(JobApplication, app_id) or abort(404)
+    if application.user_id and application.user_id != current_user.id and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
     job = application.job
     
     # If already paid, redirect straight to success
@@ -438,12 +456,20 @@ def job_apply_test_payment(app_id):
     Simulated Successful Payment Endpoint for Development and Testing.
     Strictly server-side controlled; performs full application finalization and email dispatch.
     """
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=url_for('main.job_apply_review', app_id=app_id)))
+
     # Verify test mode is active
     if not current_app.config.get('PAYMENT_TEST_MODE', False) and current_app.config.get('ENV') == 'production':
         flash('Test payment mode is disabled in production.', 'danger')
         return redirect(url_for('main.job_apply_review', app_id=app_id))
 
     application = db.session.get(JobApplication, app_id) or abort(404)
+    if application.user_id and application.user_id != current_user.id and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
+    if application.user_id is None:
+        application.user_id = current_user.id
     job = application.job
     if not job or not job.is_active:
         flash('This position is no longer accepting applications.', 'danger')
@@ -529,11 +555,19 @@ def job_apply_checkout(app_id):
     Fee is strictly calculated on server from job duration.
     If PAYMENT_TEST_MODE is enabled, smoothly delegates to job_apply_test_payment.
     """
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=url_for('main.job_apply_review', app_id=app_id)))
+
     # Check if Test Mode is active
     if current_app.config.get('PAYMENT_TEST_MODE', False):
         return job_apply_test_payment(app_id)
 
     application = db.session.get(JobApplication, app_id) or abort(404)
+    if application.user_id and application.user_id != current_user.id and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
+    if application.user_id is None:
+        application.user_id = current_user.id
     job = application.job
     if not job or not job.is_active:
         flash('This position is no longer accepting applications.', 'danger')
@@ -769,8 +803,81 @@ def payment_pending_page(payment_id):
 
 @main_bp.route('/careers/apply/success/<int:app_id>')
 def job_apply_success(app_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=request.path))
+
     application = db.session.get(JobApplication, app_id) or abort(404)
+    if application.user_id and application.user_id != current_user.id and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
     return render_template('pages/job_apply_success.html', app=application, job=application.job)
+
+
+@main_bp.route('/my-applications')
+@login_required
+def my_applications():
+    """Display all submitted and in-progress applications for the authenticated candidate."""
+    user_applications = JobApplication.query.filter(
+        (JobApplication.user_id == current_user.id) |
+        ((JobApplication.user_id.is_(None)) & (JobApplication.email == current_user.email.lower()))
+    ).order_by(JobApplication.created_at.desc()).all()
+
+    # Auto-link user_id if any older matching applications existed
+    needs_commit = False
+    for app in user_applications:
+        if app.user_id is None:
+            app.user_id = current_user.id
+            needs_commit = True
+    if needs_commit:
+        db.session.commit()
+
+    return render_template('pages/my_applications.html', applications=user_applications)
+
+
+@main_bp.route('/my-applications/<int:app_id>')
+@login_required
+def my_application_detail(app_id):
+    """View detailed candidate application status, submission dossier, and documents."""
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    
+    # Strictly enforce candidate authorization
+    if application.user_id != current_user.id and application.email.lower() != current_user.email.lower() and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
+    return render_template('pages/my_application_detail.html', app=application, job=application.job)
+
+
+@main_bp.route('/my-applications/<int:app_id>/document/<string:doc_type>')
+@login_required
+def my_application_document(app_id, doc_type):
+    """Securely serve candidate's own uploaded documents."""
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    
+    # Strictly enforce document ownership
+    if application.user_id != current_user.id and application.email.lower() != current_user.email.lower() and getattr(current_user, 'role', '') != 'admin':
+        abort(404)
+
+    if doc_type == 'resume':
+        folder = current_app.config.get('UPLOAD_FOLDER_RESUMES', os.path.join(current_app.root_path, 'uploads', 'resumes'))
+        filename = application.resume_filename
+    elif doc_type == 'aadhaar':
+        folder = current_app.config.get('UPLOAD_FOLDER_DOCUMENTS', os.path.join(current_app.root_path, 'uploads', 'documents'))
+        filename = application.aadhaar_filename
+    elif doc_type == 'pan':
+        folder = current_app.config.get('UPLOAD_FOLDER_DOCUMENTS', os.path.join(current_app.root_path, 'uploads', 'documents'))
+        filename = application.pan_filename
+    elif doc_type == 'college_id':
+        folder = current_app.config.get('UPLOAD_FOLDER_DOCUMENTS', os.path.join(current_app.root_path, 'uploads', 'documents'))
+        filename = application.college_id_filename
+    else:
+        abort(404)
+
+    if not filename:
+        flash(f"No {doc_type} document found for this application.", 'warning')
+        return redirect(url_for('main.my_application_detail', app_id=application.id))
+
+    safe_filename = os.path.basename(filename)
+    return send_from_directory(folder, safe_filename)
 
 
 @main_bp.route('/contact', methods=['GET', 'POST'])

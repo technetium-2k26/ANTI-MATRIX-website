@@ -42,13 +42,18 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
             db.session.add(self.member)
             db.session.commit()
 
+        # By default authenticate client as member for candidate endpoints
+        self.login_member()
+
     def tearDown(self):
         self.app_context.pop()
 
     def login_admin(self):
+        self.logout_user()
         return self.client.post('/login', data={'email': 'admin@antimatrix.ai', 'password': 'Admin@AntiMatrix2026!'})
 
     def login_member(self):
+        self.logout_user()
         return self.client.post('/login', data={'email': 'member@example.com', 'password': 'Member@2026!'})
 
     def logout_user(self):
@@ -91,6 +96,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
         last_name = parts[1] if len(parts) > 1 else 'Kumar'
 
         app_record = JobApplication(
+            user_id=self.member.id,
             job_id=job.id,
             first_name=first_name,
             last_name=last_name,
@@ -156,7 +162,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
         }
         res = self.client.post('/admin/jobs/create', data=job_data, follow_redirects=True)
         self.assertEqual(res.status_code, 200)
-        self.logout_user()
+        self.login_member()
 
         job = JobPosting.query.filter_by(title='Web Engineering Intern (1M)').first()
         self.assertEqual(job.duration, '1_month')
@@ -255,7 +261,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
             'is_active': 'true'
         }
         self.client.post('/admin/jobs/create', data=job_data, follow_redirects=True)
-        self.logout_user()
+        self.login_member()
 
         job = JobPosting.query.filter_by(title='AI Engineer Intern (3M)').first()
         self.assertEqual(job.duration, '3_months')
@@ -599,6 +605,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
         db.session.commit()
 
         # Admin Dossier
+        self.login_admin()
         res_dossier = self.client.get(f'/admin/applications/{app_record.id}')
         self.assertEqual(res_dossier.status_code, 200)
         html = res_dossier.data.decode('utf-8')

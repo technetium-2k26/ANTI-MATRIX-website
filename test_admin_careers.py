@@ -173,6 +173,9 @@ class AdminCareersTestCase(unittest.TestCase):
         """Test candidate applying for a job, file upload, duplicate prevention, and success page."""
         job = self.get_or_create_test_job()
         
+        # Log in candidate
+        self.login_user('member@example.com', 'Member@2026!')
+
         # Clean previous application with this test email
         JobApplication.query.filter_by(job_id=job.id, email='priya.sharma@example.com').delete()
         db.session.commit()

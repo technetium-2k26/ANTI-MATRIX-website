@@ -16,6 +16,8 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
+    applications = db.relationship('JobApplication', backref='user', lazy=True)
+
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 

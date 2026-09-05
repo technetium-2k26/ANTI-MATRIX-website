@@ -33,6 +33,14 @@ class PaymentTestModeTestCase(unittest.TestCase):
             db.session.add(self.admin)
             db.session.commit()
 
+        # Create Candidate User
+        self.candidate = User.query.filter_by(email='candidate@example.com').first()
+        if not self.candidate:
+            self.candidate = User(name='Test Candidate', email='candidate@example.com', role='member', is_active=True)
+            self.candidate.set_password('Candidate@2026!')
+            db.session.add(self.candidate)
+            db.session.commit()
+
         # Create 1 Month Job
         self.job_1m = JobPosting(
             title='Frontend Engineer Intern',
@@ -70,14 +78,24 @@ class PaymentTestModeTestCase(unittest.TestCase):
     def login_admin(self):
         return self.client.post('/login', data={'email': 'admin@antimatrix.ai', 'password': 'Admin@AntiMatrix2026!'})
 
+    def login_candidate(self, email=None, password=None):
+        e = email or self.candidate.email
+        p = password or 'Candidate@2026!'
+        return self.client.post('/login', data={'email': e, 'password': p})
+
+    def logout_user(self):
+        return self.client.get('/logout')
+
     def test_01_review_page_renders_test_payment_button_when_test_mode_enabled(self):
         """Verify job_apply_review renders 'Complete Test Payment' button when PAYMENT_TEST_MODE is True."""
+        self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_1m.id,
+            user_id=self.candidate.id,
             first_name='Rohan',
             last_name='Mehta',
             full_name='Rohan Mehta',
-            email='rohan.mehta@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='123 Tech Park',
             state='Tamil Nadu',
@@ -108,12 +126,14 @@ class PaymentTestModeTestCase(unittest.TestCase):
 
     def test_02_1_month_test_payment_flow_amount_199(self):
         """Verify 1 Month test payment sets fee to 199, creates TEST payment, generates Application ID, and sends email."""
+        self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_1m.id,
+            user_id=self.candidate.id,
             first_name='Vikram',
             last_name='Aditya',
             full_name='Vikram Aditya',
-            email='vikram.aditya@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='45 Anna Nagar',
             state='Tamil Nadu',
@@ -160,12 +180,14 @@ class PaymentTestModeTestCase(unittest.TestCase):
 
     def test_03_3_months_test_payment_flow_amount_399(self):
         """Verify 3 Months test payment sets fee to 399, creates TEST payment, generates Application ID, and sends email."""
+        self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_3m.id,
+            user_id=self.candidate.id,
             first_name='Ananya',
             last_name='Deshmukh',
             full_name='Ananya Deshmukh',
-            email='ananya.deshmukh@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='78 MG Road',
             state='Maharashtra',
@@ -215,12 +237,14 @@ class PaymentTestModeTestCase(unittest.TestCase):
 
     def test_04_idempotent_duplicate_click_protection(self):
         """Verify calling test-payment multiple times returns existing Application ID without duplicates."""
+        self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_1m.id,
+            user_id=self.candidate.id,
             first_name='Karthik',
             last_name='Natarajan',
             full_name='Karthik Natarajan',
-            email='karthik.n@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='12 OMR Road',
             state='Tamil Nadu',
@@ -254,17 +278,19 @@ class PaymentTestModeTestCase(unittest.TestCase):
 
         # Verify identical code and single email
         self.assertEqual(app_code_1, app_code_2)
-        self.assertEqual(JobApplication.query.filter_by(email='karthik.n@example.com').count(), 1)
+        self.assertEqual(JobApplication.query.filter_by(email=self.candidate.email).count(), 1)
         self.assertEqual(EmailLog.query.filter_by(reference_id=app_code_1).count(), 1)
 
     def test_05_admin_dashboard_displays_test_payment_application(self):
         """Verify Admin Dashboard and application list immediately displays candidate after test payment."""
+        self.login_candidate()
         app_record = JobApplication(
             job_id=self.job_3m.id,
+            user_id=self.candidate.id,
             first_name='Sneha',
             last_name='Kapoor',
             full_name='Sneha Kapoor',
-            email='sneha.kapoor@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='88 Indiranagar',
             state='Karnataka',
@@ -289,6 +315,7 @@ class PaymentTestModeTestCase(unittest.TestCase):
         db.session.refresh(app_record)
 
         # Login admin and view applications
+        self.logout_user()
         self.login_admin()
         resp = self.client.get('/admin/applications')
         self.assertEqual(resp.status_code, 200)
@@ -301,13 +328,15 @@ class PaymentTestModeTestCase(unittest.TestCase):
     def test_06_real_cashfree_preserved_when_test_mode_is_false(self):
         """Verify that when PAYMENT_TEST_MODE is False, job_apply_review renders Cashfree pay button."""
         self.app.config['PAYMENT_TEST_MODE'] = False
+        self.login_candidate()
 
         app_record = JobApplication(
             job_id=self.job_1m.id,
+            user_id=self.candidate.id,
             first_name='Pooja',
             last_name='Nair',
             full_name='Pooja Nair',
-            email='pooja.nair@example.com',
+            email=self.candidate.email,
             phone='9876543210',
             address='12 MG Road',
             state='Kerala',

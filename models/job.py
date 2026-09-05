@@ -89,6 +89,7 @@ class JobApplication(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer, db.ForeignKey('job_postings.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
     application_code = db.Column(db.String(50), unique=True, nullable=True, index=True)
     
     # Personal Details
@@ -174,13 +175,52 @@ class JobApplication(db.Model):
             return self.payments[0]
         return None
 
+    @property
+    def status_display(self):
+        """Map internal database recruitment status to clean human-friendly label."""
+        st = (self.status or self.application_status or 'New').strip()
+        mapping = {
+            'New': 'Application Submitted',
+            'SUBMITTED': 'Application Submitted',
+            'submitted': 'Application Submitted',
+            'Reviewed': 'Under Review',
+            'UNDER_REVIEW': 'Under Review',
+            'reviewed': 'Under Review',
+            'under_review': 'Under Review',
+            'Shortlisted': 'Shortlisted',
+            'SHORTLISTED': 'Shortlisted',
+            'shortlisted': 'Shortlisted',
+            'Rejected': 'Not Selected',
+            'REJECTED': 'Not Selected',
+            'rejected': 'Not Selected',
+            'Hired': 'Hired',
+            'HIRED': 'Hired',
+            'hired': 'Hired',
+            'pending_payment': 'Pending Payment',
+            'PENDING_PAYMENT': 'Pending Payment'
+        }
+        return mapping.get(st, st)
+
+    @property
+    def status_badge_class(self):
+        st = (self.status or self.application_status or 'New').strip().lower()
+        if st in ['shortlisted', 'hired']:
+            return 'shortlisted'
+        elif st in ['reviewed', 'under_review']:
+            return 'reviewed'
+        elif st in ['rejected', 'not selected']:
+            return 'rejected'
+        elif st in ['new', 'submitted']:
+            return 'new'
+        return 'new'
+
     def get_skills_list(self):
         if not self.skills:
             return []
         return [s.strip() for s in self.skills.split(',') if s.strip()]
 
     def __repr__(self):
-        return f"<JobApplication id={self.id} code='{self.formatted_code}' name='{self.full_name}' payment='{self.payment_status}' app_status='{self.application_status}'>"
+        return f"<JobApplication id={self.id} code='{self.formatted_code}' name='{self.full_name}' user_id={self.user_id} payment='{self.payment_status}' app_status='{self.application_status}'>"
 
 
 class Payment(db.Model):

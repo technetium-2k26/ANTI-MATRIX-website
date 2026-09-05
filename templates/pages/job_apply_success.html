@@ -69,10 +69,13 @@
 
       <!-- Action Buttons -->
       <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
-        <a href="{{ url_for('main.careers') }}" class="btn btn-primary btn-lg" style="gap: 8px;">
+        <a href="{{ url_for('main.my_applications') }}" class="btn btn-primary btn-lg" style="gap: 8px;">
+          {{ icon('briefcase', size=16) }} View My Applications
+        </a>
+        <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-lg" style="gap: 8px;">
           {{ icon('arrow-left', size=16) }} Back to Careers
         </a>
-        <a href="{{ url_for('main.home') }}" class="btn btn-outline btn-lg">
+        <a href="{{ url_for('main.home') }}" class="btn btn-ghost btn-lg">
           Return Home
         </a>
       </div>
