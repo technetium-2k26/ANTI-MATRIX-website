@@ -84,8 +84,8 @@
             <label for="duration" class="form-label">Internship Duration</label>
             <select id="duration" name="duration" class="form-input" style="appearance: auto;">
               <option value="" {{ 'selected' if not form_data.get('duration') else '' }}>-- Optional (For Internships) --</option>
-              <option value="1_month" {{ 'selected' if form_data.get('duration') == '1_month' else '' }}>1 Month (₹199 Fee)</option>
-              <option value="3_months" {{ 'selected' if form_data.get('duration') == '3_months' else '' }}>3 Months (₹399 Fee)</option>
+              <option value="1_month" {{ 'selected' if form_data.get('duration') == '1_month' else '' }}>1 Month (₹199 Application Fee)</option>
+              <option value="3_months" {{ 'selected' if form_data.get('duration') == '3_months' else '' }}>3 Months (₹399 Application Fee)</option>
             </select>
           </div>
         </div>

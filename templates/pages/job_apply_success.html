@@ -23,6 +23,10 @@
       
       <p style="color: var(--color-text-dim); font-size: 1rem; margin-bottom: var(--space-xl); line-height: 1.6;">
         Thank you for applying to Anti-Matrix, <strong style="color: #000000;">{{ app.full_name }}</strong>. We have received your application for the <strong style="color: var(--color-primary-light);">{{ job.title }}</strong> role and our talent acquisition team will review your qualifications.
+        <br />
+        <span style="font-size: 0.9rem; color: var(--color-primary-light); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-top: 0.5rem;">
+          {{ icon('mail', size=14) }} A confirmation email has been sent to your registered email address ({{ app.email }}).
+        </span>
       </p>
 
       <!-- Application Details Dossier Card -->
@@ -48,7 +52,7 @@
           {% endif %}
           {% if app.application_fee and app.application_fee > 0 %}
             <div>
-              <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Payment Amount</div>
+              <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Application Fee</div>
               <div style="font-size: 0.95rem; color: var(--color-primary-light); font-weight: 800; font-family: var(--font-mono, monospace);">₹{{ app.application_fee }}</div>
             </div>
             <div>

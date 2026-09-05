@@ -5,7 +5,7 @@ load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Centralized Server-Side Internship Fee Mapping (Enforced strictly on server)
+# Centralized Server-Side Application Fee Mapping (Enforced strictly on server)
 INTERNSHIP_FEES = {
     '1_month': 199,
     '3_months': 399
@@ -142,16 +142,21 @@ class Config:
     CASHFREE_RETURN_URL = os.environ.get('CASHFREE_RETURN_URL', '')
     CASHFREE_WEBHOOK_URL = os.environ.get('CASHFREE_WEBHOOK_URL', '')
 
+    # Payment Test Mode Switch (Bypasses Cashfree for local testing when True)
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
+
 
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
 
 
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1')
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
 
 class TestingConfig(Config):
@@ -160,6 +165,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     DEBUG = True
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
 
 
 config = {

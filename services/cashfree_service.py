@@ -96,7 +96,7 @@ class CashfreeService:
             "order_meta": {
                 "return_url": return_url.replace('{order_id}', order_id) if '{order_id}' in return_url else f"{return_url}?order_id={order_id}"
             },
-            "order_note": f"Anti-Matrix Internship Application - {job.title} ({job.duration_display})"
+            "order_note": f"Anti-Matrix Application Fee - {job.title} ({job.duration_display})"
         }
 
         if notify_url:

@@ -22,7 +22,7 @@
       {% endif %}
       {% if job.fee_display %}
         <span style="font-size: 0.8rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.1); padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.25);">
-          {{ icon('credit-card', size=11) }} Internship Fee: {{ job.fee_display }}
+          {{ icon('credit-card', size=11) }} Application Fee: {{ job.fee_display }}
         </span>
       {% elif job.salary %}
         <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 4px;">{{ icon('credit-card', size=11) }} {{ job.salary }}</span>
@@ -347,7 +347,7 @@
             <div>
               <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Mandatory Next Step</div>
               <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-white); margin-top: 2px;">
-                Review Application & Pay Internship Fee (<span style="color: var(--color-primary-light);">{{ job.fee_display }}</span>)
+                Review Application & Pay Application Fee (<span style="color: var(--color-primary-light);">{{ job.fee_display }}</span>)
               </div>
               <div style="font-size: 0.8125rem; color: var(--color-text-dim); margin-top: 2px;">
                 Duration: <strong>{{ job.duration_display }}</strong> &bull; Secure checkout powered by Cashfree Payments.

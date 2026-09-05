@@ -18,7 +18,7 @@
       Application Review
     </h1>
     <p style="color: var(--color-text-dim); font-size: 0.95rem;">
-      Please review your submitted details carefully. Complete the internship fee payment via Cashfree to finalize your application.
+      Please review your submitted details carefully. Complete the application fee payment via Cashfree to finalize your application.
     </p>
   </div>
 </section>
@@ -144,29 +144,43 @@
         </div>
       </div>
 
-      <!-- Fee Calculation Breakdown & Payment Action -->
+      <!-- Application Fee Calculation Breakdown & Payment Action -->
       <div style="background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.12) 0%, rgba(0, 0, 0, 0.4) 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center;">
         <div style="font-size: 0.85rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 0.25rem;">
-          Internship Fee
+          Application Fee
         </div>
         <div style="font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 900; color: var(--color-primary-light); font-family: var(--font-mono, monospace); margin-bottom: 0.25rem;">
           ₹{{ fee_inr }}
         </div>
         <p style="font-size: 0.85rem; color: var(--color-text-dim); max-width: 480px; margin: 0 auto var(--space-lg);">
-          One-time non-refundable fee for <strong>{{ duration_label }}</strong> internship program.
+          One-time non-refundable application fee for <strong>{{ duration_label }}</strong> internship program.
         </p>
 
-        <form method="POST" action="{{ url_for('main.job_apply_checkout', app_id=app.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          
-          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
-            {{ icon('credit-card', size=18) }} Pay ₹{{ fee_inr }}
-          </button>
-        </form>
+        {% if is_test_mode %}
+          <form method="POST" action="{{ url_for('main.job_apply_test_payment', app_id=app.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            
+            <button type="submit" class="btn btn-primary btn-lg" id="complete-test-payment-btn" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
+              {{ icon('check-circle', size=18) }} Complete Test Payment
+            </button>
+          </form>
 
-        <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: var(--space-md); font-size: 0.775rem; color: var(--color-text-muted);">
-          {{ icon('lock', size=12) }} Secured with 256-bit encryption via Cashfree Payments
-        </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: var(--space-md); font-size: 0.775rem; color: #60a5fa;">
+            {{ icon('zap', size=12) }} Temporary Payment Test Mode Active &bull; No actual card/UPI required
+          </div>
+        {% else %}
+          <form method="POST" action="{{ url_for('main.job_apply_checkout', app_id=app.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
+              {{ icon('credit-card', size=18) }} Pay ₹{{ fee_inr }}
+            </button>
+          </form>
+
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: var(--space-md); font-size: 0.775rem; color: var(--color-text-muted);">
+            {{ icon('lock', size=12) }} Secured with 256-bit encryption via Cashfree Payments
+          </div>
+        {% endif %}
       </div>
 
     </div>

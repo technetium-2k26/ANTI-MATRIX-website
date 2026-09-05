@@ -15,6 +15,7 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
         self.app.config['TESTING'] = True
         self.app.config['WTF_CSRF_ENABLED'] = False
         self.app.config['CASHFREE_ENVIRONMENT'] = 'test'
+        self.app.config['PAYMENT_TEST_MODE'] = False
         self.client = self.app.test_client()
 
         self.app_context = self.app.app_context()

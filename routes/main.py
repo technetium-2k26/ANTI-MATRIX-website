@@ -408,7 +408,7 @@ def apply_job(job_id):
 
 @main_bp.route('/careers/apply/review/<int:app_id>')
 def job_apply_review(app_id):
-    """Candidate Review Step before initiating Cashfree Payment."""
+    """Candidate Review Step before initiating Cashfree Payment or Simulated Test Payment."""
     application = db.session.get(JobApplication, app_id) or abort(404)
     job = application.job
     
@@ -419,14 +419,107 @@ def job_apply_review(app_id):
     # Calculate exact server fee
     fee_inr = job.fee_inr if job else INTERNSHIP_FEES.get(application.duration, 199)
     duration_label = job.duration_display if job else application.duration_display
+    is_test_mode = current_app.config.get('PAYMENT_TEST_MODE', False)
 
     return render_template(
         'pages/job_apply_review.html',
         app=application,
         job=job,
         fee_inr=fee_inr,
-        duration_label=duration_label
+        duration_label=duration_label,
+        is_test_mode=is_test_mode
     )
+
+
+@main_bp.route('/careers/apply/test-payment/<int:app_id>', methods=['POST'])
+@main_bp.route('/application/test-payment/<int:app_id>', methods=['POST'])
+def job_apply_test_payment(app_id):
+    """
+    Simulated Successful Payment Endpoint for Development and Testing.
+    Strictly server-side controlled; performs full application finalization and email dispatch.
+    """
+    # Verify test mode is active
+    if not current_app.config.get('PAYMENT_TEST_MODE', False) and current_app.config.get('ENV') == 'production':
+        flash('Test payment mode is disabled in production.', 'danger')
+        return redirect(url_for('main.job_apply_review', app_id=app_id))
+
+    application = db.session.get(JobApplication, app_id) or abort(404)
+    job = application.job
+    if not job or not job.is_active:
+        flash('This position is no longer accepting applications.', 'danger')
+        return redirect(url_for('main.careers'))
+
+    # Idempotency / Duplicate submission check
+    if application.payment_status == 'paid':
+        if not application.application_code:
+            application.application_code = f"AM-APP-{application.id:06d}"
+            db.session.commit()
+        return redirect(url_for('main.job_apply_success', app_id=application.id))
+
+    # 1. Determine server-side Application Fee
+    duration = job.duration or application.duration or '1_month'
+    fee_inr = INTERNSHIP_FEES.get(duration, 199)
+
+    # 2. Record simulated payment with unique reference
+    test_order_id = f"TEST-APP-{application.id:06d}-PAY-{int(time.time())}-{uuid.uuid4().hex[:5].upper()}"
+    test_payment_id = f"test_sim_{uuid.uuid4().hex[:10]}"
+    
+    payment = Payment.query.filter_by(application_id=application.id).order_by(Payment.created_at.desc()).first()
+    if not payment or payment.payment_status == 'paid':
+        payment = Payment(
+            application_id=application.id,
+            cashfree_order_id=test_order_id,
+            cashfree_payment_session_id=f"test_session_{uuid.uuid4().hex[:8]}",
+            amount=float(fee_inr),
+            currency='INR',
+            payment_status='paid',
+            gateway='TEST',
+            cf_payment_id=test_payment_id,
+            gateway_response=json.dumps({
+                "provider": "test",
+                "status": "SUCCESS",
+                "amount": fee_inr,
+                "order_id": test_order_id,
+                "cf_payment_id": test_payment_id,
+                "mode": "SIMULATED_TEST_PAYMENT"
+            })
+        )
+        db.session.add(payment)
+    else:
+        payment.cashfree_order_id = test_order_id
+        payment.amount = float(fee_inr)
+        payment.payment_status = 'paid'
+        payment.gateway = 'TEST'
+        payment.cf_payment_id = test_payment_id
+        payment.gateway_response = json.dumps({
+            "provider": "test",
+            "status": "SUCCESS",
+            "amount": fee_inr,
+            "order_id": test_order_id,
+            "cf_payment_id": test_payment_id,
+            "mode": "SIMULATED_TEST_PAYMENT"
+        })
+
+    # 3. Finalize Application Data
+    application.application_fee = fee_inr
+    application.payment_status = 'paid'
+    application.application_status = 'submitted'
+    application.status = 'New'
+    if not application.application_code:
+        application.application_code = f"AM-APP-{application.id:06d}"
+
+    # Commit payment & application transaction
+    db.session.commit()
+
+    # 4. Trigger Application Successful Email (Duplicate protected)
+    try:
+        from services.email_service import send_application_successful_email
+        send_application_successful_email(application)
+    except Exception as email_err:
+        current_app.logger.error(f"Failed to send application success email: {str(email_err)}")
+
+    flash("Test payment completed successfully! Your application has been submitted.", "success")
+    return redirect(url_for('main.job_apply_success', app_id=application.id))
 
 
 @main_bp.route('/careers/apply/checkout/<int:app_id>', methods=['POST'])
@@ -434,7 +527,12 @@ def job_apply_checkout(app_id):
     """
     Create Cashfree Order and redirect to Cashfree checkout.
     Fee is strictly calculated on server from job duration.
+    If PAYMENT_TEST_MODE is enabled, smoothly delegates to job_apply_test_payment.
     """
+    # Check if Test Mode is active
+    if current_app.config.get('PAYMENT_TEST_MODE', False):
+        return job_apply_test_payment(app_id)
+
     application = db.session.get(JobApplication, app_id) or abort(404)
     job = application.job
     if not job or not job.is_active:
