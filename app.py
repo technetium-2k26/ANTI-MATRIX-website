@@ -91,6 +91,16 @@ def create_app(config_name=None):
                         except Exception:
                             pass
                         conn.commit()
+
+                if 'application_success_email_status' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN application_success_email_status VARCHAR(30) DEFAULT 'PENDING' NOT NULL"))
+                        conn.commit()
+
+                if 'application_success_email_sent_at' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN application_success_email_sent_at DATETIME"))
+                        conn.commit()
                 
                 # Auto-link existing applications where user email matches
                 with db.engine.connect() as conn:
