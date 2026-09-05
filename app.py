@@ -101,6 +101,31 @@ def create_app(config_name=None):
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE job_applications ADD COLUMN application_success_email_sent_at DATETIME"))
                         conn.commit()
+
+                if 'joining_date' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN joining_date VARCHAR(100)"))
+                        conn.commit()
+
+                if 'joining_email_status' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN joining_email_status VARCHAR(30) DEFAULT 'NOT_SENT' NOT NULL"))
+                        conn.commit()
+
+                if 'joining_email_sent_at' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN joining_email_sent_at DATETIME"))
+                        conn.commit()
+
+                if 'offer_completed_at' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN offer_completed_at DATETIME"))
+                        conn.commit()
+
+                if 'hired_at' not in cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN hired_at DATETIME"))
+                        conn.commit()
                 
                 # Auto-link existing applications where user email matches
                 with db.engine.connect() as conn:
@@ -178,6 +203,13 @@ def create_app(config_name=None):
                         WHERE application_id IS NULL AND employee_id IS NOT NULL
                     '''))
                     conn.commit()
+
+            if 'employees' in inspector.get_table_names():
+                emp_cols = [c['name'] for c in inspector.get_columns('employees')]
+                if 'temp_password_encrypted' not in emp_cols:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE employees ADD COLUMN temp_password_encrypted VARCHAR(500)"))
+                        conn.commit()
         except Exception as e:
             app.logger.warning(f"Database auto-migration note: {str(e)}")
 
