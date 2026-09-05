@@ -4,28 +4,23 @@
 {% block title %}My Applications | Anti-Matrix{% endblock %}
 
 {% block content %}
-<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
+<!-- Page Hero -->
+<section class="page-hero">
   <div class="container">
-    
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-2xl); flex-wrap: wrap; gap: var(--space-md);">
-      <div>
-        <div class="badge" style="margin-bottom: 0.5rem;">
-          {{ icon('briefcase', size=11) }} Candidate Portal
-        </div>
-        <h1 style="font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 800; color: var(--color-text); margin-bottom: 0.35rem;">
-          My Applications
-        </h1>
-        <p style="color: var(--color-text-dim); margin-bottom: 0; font-size: 0.95rem;">
-          Track your submitted applications, review evaluation stages, and verify payment records.
-        </p>
-      </div>
+    <div class="badge">{{ icon('briefcase', size=11) }} Candidate Portal</div>
+    <h1>My Applications</h1>
+    <p>Track your submitted applications, review evaluation stages, and verify payment records.</p>
+  </div>
+</section>
 
-      <div>
-        <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
-          {{ icon('search', size=14) }} Browse Careers
-        </a>
-      </div>
+<section class="section" style="background: var(--color-bg); min-height: 60vh;">
+  <div class="container">
+
+    <!-- Sub-header actions -->
+    <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: var(--space-2xl);">
+      <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
+        {{ icon('search', size=14) }} Browse Careers
+      </a>
     </div>
 
     <!-- Flash Messages are handled by base.html -->
