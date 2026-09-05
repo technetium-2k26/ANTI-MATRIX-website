@@ -1,8 +1,22 @@
+import base64
+import hashlib
 from datetime import datetime, timezone
 import string
 import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+
+
+def _xor_cipher(data: bytes, key: bytes) -> bytes:
+    """Symmetric stream cipher for temporary server-side credential retention using SHA-256 key stretching."""
+    chunks = []
+    needed = len(data)
+    i = 0
+    while len(b''.join(chunks)) < needed:
+        chunks.append(hashlib.sha256(key + str(i).encode()).digest())
+        i += 1
+    expanded_key = b''.join(chunks)[:needed]
+    return bytes(a ^ b for a, b in zip(data, expanded_key))
 
 
 class Employee(db.Model):
@@ -18,6 +32,7 @@ class Employee(db.Model):
         index=True
     )
     password_hash = db.Column(db.String(256), nullable=False)
+    temp_password_encrypted = db.Column(db.String(500), nullable=True)  # Securely retained ONLY until joining email is sent
     account_status = db.Column(db.String(30), default='active', nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
@@ -40,6 +55,32 @@ class Employee(db.Model):
     def check_password(self, password: str) -> bool:
         """Verifies candidate password against stored secure hash."""
         return check_password_hash(self.password_hash, password)
+
+    def set_temp_password(self, plaintext: str, secret_key: str):
+        """Encrypts temporary password for onboarding email dispatch."""
+        if not plaintext or not secret_key:
+            self.temp_password_encrypted = None
+            return
+        try:
+            encrypted_bytes = _xor_cipher(plaintext.encode('utf-8'), secret_key.encode('utf-8'))
+            self.temp_password_encrypted = base64.b64encode(encrypted_bytes).decode('utf-8')
+        except Exception:
+            self.temp_password_encrypted = None
+
+    def get_temp_password(self, secret_key: str) -> str:
+        """Decrypts temporary password for onboarding email. Returns empty string if unavailable."""
+        if not self.temp_password_encrypted or not secret_key:
+            return ""
+        try:
+            raw_bytes = base64.b64decode(self.temp_password_encrypted.encode('utf-8'))
+            decrypted = _xor_cipher(raw_bytes, secret_key.encode('utf-8'))
+            return decrypted.decode('utf-8')
+        except Exception:
+            return ""
+
+    def clear_temp_password(self):
+        """Purges encrypted temporary password after successful email dispatch."""
+        self.temp_password_encrypted = None
 
     @property
     def job(self):

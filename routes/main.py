@@ -669,6 +669,10 @@ def cashfree_return():
         application.payment_status = 'paid'
         application.application_status = 'APPLIED'
         application.status = 'APPLIED'
+        if not application.application_code:
+            application.application_code = f"AM-APP-{application.id:06d}"
+        if payment.amount:
+            application.application_fee = int(payment.amount)
         db.session.commit()
 
         flash("Payment verified successfully! Your application has been submitted.", "success")
@@ -730,6 +734,10 @@ def cashfree_webhook():
             application.payment_status = 'paid'
             application.application_status = 'APPLIED'
             application.status = 'APPLIED'
+            if not application.application_code:
+                application.application_code = f"AM-APP-{application.id:06d}"
+            if payment.amount:
+                application.application_fee = int(payment.amount)
             db.session.commit()
 
         elif payment_status in ['FAILED', 'CANCELLED', 'USER_DROPPED']:

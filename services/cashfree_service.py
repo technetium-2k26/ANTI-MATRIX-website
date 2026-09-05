@@ -19,10 +19,33 @@ class CashfreeService:
 
     @classmethod
     def get_config(cls):
-        env = os.environ.get('CASHFREE_ENVIRONMENT', 'sandbox').lower()
-        client_id = os.environ.get('CASHFREE_CLIENT_ID', '').strip()
-        client_secret = os.environ.get('CASHFREE_CLIENT_SECRET', '').strip()
-        api_version = os.environ.get('CASHFREE_API_VERSION', '2023-08-01').strip()
+        env = (
+            os.environ.get('CASHFREE_ENV', '').strip() or 
+            os.environ.get('CASHFREE_ENVIRONMENT', '').strip() or 
+            (current_app.config.get('CASHFREE_ENV', '').strip() if current_app else '') or
+            (current_app.config.get('CASHFREE_ENVIRONMENT', '').strip() if current_app else '') or
+            'sandbox'
+        ).lower()
+
+        client_id = (
+            os.environ.get('CASHFREE_APP_ID', '').strip() or 
+            os.environ.get('CASHFREE_CLIENT_ID', '').strip() or 
+            (current_app.config.get('CASHFREE_APP_ID', '').strip() if current_app else '') or
+            (current_app.config.get('CASHFREE_CLIENT_ID', '').strip() if current_app else '')
+        )
+
+        client_secret = (
+            os.environ.get('CASHFREE_SECRET_KEY', '').strip() or 
+            os.environ.get('CASHFREE_CLIENT_SECRET', '').strip() or 
+            (current_app.config.get('CASHFREE_SECRET_KEY', '').strip() if current_app else '') or
+            (current_app.config.get('CASHFREE_CLIENT_SECRET', '').strip() if current_app else '')
+        )
+
+        api_version = (
+            os.environ.get('CASHFREE_API_VERSION', '').strip() or 
+            (current_app.config.get('CASHFREE_API_VERSION', '').strip() if current_app else '') or
+            '2023-08-01'
+        )
         
         # Determine base URL based on environment
         if env == 'production':

@@ -4,7 +4,7 @@ import re
 from app import create_app
 from models import db, User, JobPosting, JobApplication, Payment
 
-app = create_app('development')
+app = create_app('testing')
 app.config['TESTING'] = True
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['CASHFREE_ENVIRONMENT'] = 'test'

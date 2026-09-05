@@ -46,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Client validation
       const errors = {};
       if (!email) {
-        errors.email = 'Email is required';
-      } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-        errors.email = 'Enter a valid email address';
+        errors.email = 'Email or Employee ID is required';
+      } else if (!/^\S+@\S+\.\S+$/.test(email) && !/^AM[A-Za-z0-9]+$/i.test(email)) {
+        errors.email = 'Enter a valid email or Employee ID (e.g. AM4827)';
       }
       if (!password) {
         errors.password = 'Password is required';

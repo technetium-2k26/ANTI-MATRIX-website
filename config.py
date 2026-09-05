@@ -134,13 +134,16 @@ class Config:
     ALLOWED_RESUME_EXTENSIONS = {'pdf', 'doc', 'docx'}
     ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'jpg', 'jpeg', 'png'}
 
-    # Cashfree Payment Gateway Settings
-    CASHFREE_CLIENT_ID = os.environ.get('CASHFREE_CLIENT_ID', '')
-    CASHFREE_CLIENT_SECRET = os.environ.get('CASHFREE_CLIENT_SECRET', '')
-    CASHFREE_ENVIRONMENT = os.environ.get('CASHFREE_ENVIRONMENT', 'sandbox').lower()
-    CASHFREE_API_VERSION = os.environ.get('CASHFREE_API_VERSION', '2023-08-01')
-    CASHFREE_RETURN_URL = os.environ.get('CASHFREE_RETURN_URL', '')
-    CASHFREE_WEBHOOK_URL = os.environ.get('CASHFREE_WEBHOOK_URL', '')
+    # Cashfree Payment Gateway Settings (Render & Environment Compatible)
+    CASHFREE_APP_ID = (os.environ.get('CASHFREE_APP_ID', '').strip() or os.environ.get('CASHFREE_CLIENT_ID', '').strip())
+    CASHFREE_SECRET_KEY = (os.environ.get('CASHFREE_SECRET_KEY', '').strip() or os.environ.get('CASHFREE_CLIENT_SECRET', '').strip())
+    CASHFREE_CLIENT_ID = CASHFREE_APP_ID
+    CASHFREE_CLIENT_SECRET = CASHFREE_SECRET_KEY
+    CASHFREE_ENV = (os.environ.get('CASHFREE_ENV', '').strip() or os.environ.get('CASHFREE_ENVIRONMENT', '').strip() or 'sandbox').lower()
+    CASHFREE_ENVIRONMENT = CASHFREE_ENV
+    CASHFREE_API_VERSION = os.environ.get('CASHFREE_API_VERSION', '2023-08-01').strip()
+    CASHFREE_RETURN_URL = os.environ.get('CASHFREE_RETURN_URL', '').strip()
+    CASHFREE_WEBHOOK_URL = os.environ.get('CASHFREE_WEBHOOK_URL', '').strip()
 
     # Brevo (Sendinblue) Email Service Settings
     BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
@@ -155,14 +158,14 @@ class Config:
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '').strip()
     SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'info@antimatrix.co.in').strip()
 
-    # Payment Test Mode Switch (Bypasses Cashfree for local testing when True)
-    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
+    # Payment Test Mode Switch (Defaults to false so real Cashfree Sandbox is used)
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
 
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
-    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
 
 class ProductionConfig(Config):
@@ -178,7 +181,7 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     DEBUG = True
-    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'true').lower() in ('true', '1', 'yes')
+    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
 
 config = {

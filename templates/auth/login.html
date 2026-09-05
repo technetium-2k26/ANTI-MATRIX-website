@@ -38,15 +38,15 @@
       {% endif %}
 
       <div class="form-group">
-        <label for="login-email">Email Address</label>
+        <label for="login-email">Email Address or Employee ID</label>
         <input
           id="login-email"
           name="email"
-          type="email"
+          type="text"
           class="form-control {{ 'error' if errors.get('email') else '' }}"
-          placeholder="you@company.com"
+          placeholder="you@example.com or AM4827"
           value="{{ email if email else '' }}"
-          autoComplete="email"
+          autoComplete="username"
           aria-required="true"
         />
         <span id="login-email-err" class="form-error" style="display: {{ 'block' if errors.get('email') else 'none' }};">

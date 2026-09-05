@@ -74,6 +74,44 @@ Internship & Career Opportunities
 {{Company Email}}
 {{Website}}"""
 
+DEFAULT_JOINING_SUBJECT = "Welcome to Anti Matrix — Your Internship Joining Details & Employee Credentials"
+
+DEFAULT_JOINING_BODY = """Dear {{Student Name}},
+
+Congratulations!
+
+We are pleased to welcome you to the Anti Matrix internship program.
+
+Your internship joining has been confirmed.
+
+### Your Joining Details
+
+**Employee ID:** {{Employee ID}}
+**Internship Role:** {{Internship Role}}
+**Internship Duration:** {{Internship Duration}}
+**Joining Date:** {{Joining Date}}
+
+### Internship Portal Login
+
+You can access the internship portal using the credentials below:
+
+**Portal:** {{Internship Portal Link}}
+**Employee ID:** {{Employee ID}}
+**Temporary Password:** {{Employee Password}}
+
+Please keep these credentials confidential and do not share them with anyone.
+
+For your first login, you may be required to change your temporary password.
+
+We look forward to having you with us and wish you a successful and productive internship experience at Anti Matrix.
+
+Best Regards,
+
+**Anti Matrix Team**
+Internship & Career Opportunities
+{{Company Email}}
+{{Website}}"""
+
 
 # =====================================================================
 # MARKDOWN TO HTML EMAIL CONVERTER
@@ -759,7 +797,196 @@ def send_offer_letter_shortlisted_email(application_or_employee, start_date=None
 
 
 # =====================================================================
-# 3. PREVIEW & TEST EMAIL UTILITIES
+# 3. JOINING & EMPLOYEE CREDENTIALS EMAIL PREVIEW & DISPATCH
+# =====================================================================
+
+def render_joining_credentials_email(application, custom_params=None):
+    """
+    Renders the official Joining & Employee Credentials email with real applicant data.
+    Returns dictionary with rendered subject, plain text body, and responsive HTML body.
+    """
+    if not application:
+        return {'to': '', 'subject': '', 'body_text': '', 'body_html': ''}
+
+    custom_params = custom_params or {}
+    job = application.job
+    job_title = job.title if job and job.title else "Internship Position"
+    duration = application.duration_display if application.duration_display else (f"{job.duration.replace('_', ' ').title()}" if job and job.duration else "3 Months")
+    joining_date = custom_params.get('joining_date') or custom_params.get('start_date') or application.joining_date or "Immediate"
+    company_email = (
+        (current_app.config.get('CONTACT_EMAIL') if current_app else None) or 
+        os.environ.get('CONTACT_EMAIL') or 
+        os.environ.get('SENDER_EMAIL') or 
+        'info@antimatrix.co.in'
+    )
+    website = "www.antimatrix.co.in"
+    candidate_name = application.full_name or (f"{application.first_name or ''} {application.last_name or ''}".strip()) or "Applicant"
+    formatted_code = application.formatted_code if hasattr(application, 'formatted_code') else f"AM-APP-{application.id:06d}"
+    
+    employee = application.employee
+    emp_id = employee.employee_id if employee else formatted_code
+    
+    secret_key = current_app.config.get('SECRET_KEY', 'default-key') if current_app else 'default-key'
+    temp_password = (
+        custom_params.get('temp_password') or 
+        (employee.get_temp_password(secret_key) if employee else '') or 
+        "Provided during onboarding"
+    )
+    
+    portal_link = (
+        custom_params.get('portal_url') or 
+        (current_app.config.get('INTERNSHIP_PORTAL_URL') if current_app else None) or 
+        os.environ.get('INTERNSHIP_PORTAL_URL') or 
+        "https://www.antimatrix.co.in/internship"
+    )
+
+    variables = {
+        'Student Name': candidate_name,
+        'Employee ID': emp_id,
+        'Employee Password': temp_password,
+        'Internship Role': job_title,
+        'Internship Duration': duration,
+        'Joining Date': joining_date,
+        'Internship Portal Link': portal_link,
+        'Company Email': company_email,
+        'Website': website,
+        'employee_name': candidate_name,
+        'employee_id': emp_id,
+        'employee_password': temp_password,
+        'temp_password': temp_password,
+        'job_title': job_title,
+        'department': job.department if job and job.department else 'Engineering',
+        'application_id': formatted_code,
+        'internship_duration': duration,
+        'joining_date': joining_date,
+        'portal_url': portal_link,
+        'portal_link': portal_link,
+        'company_email': company_email,
+        'website': website
+    }
+
+    raw_subject = DEFAULT_JOINING_SUBJECT
+    raw_body = DEFAULT_JOINING_BODY
+    try:
+        tmpl = EmailTemplate.query.filter_by(template_type='joining_credentials').first()
+        if tmpl and tmpl.subject:
+            raw_subject = tmpl.subject
+        if tmpl and tmpl.body:
+            raw_body = tmpl.body
+    except Exception as e:
+        if current_app:
+            current_app.logger.warning(f"Could not load custom EmailTemplate for joining: {str(e)}")
+
+    subject = replace_variables(raw_subject, variables)
+    body_text = replace_variables(raw_body, variables)
+    body_html = markdown_to_html_email(body_text, title=subject)
+
+    return {
+        'to': application.email or '',
+        'subject': subject,
+        'body_text': body_text,
+        'body_html': body_html
+    }
+
+
+def send_joining_credentials_email(application_or_employee, joining_date=None, portal_url=None, temp_password=None):
+    """
+    Sends the official Joining & Employee Credentials email via Brevo.
+    Enforces duplicate sending protection and audit logging.
+    """
+    if isinstance(application_or_employee, Employee):
+        employee = application_or_employee
+        app = employee.application
+    elif isinstance(application_or_employee, JobApplication):
+        app = application_or_employee
+        employee = app.employee
+    else:
+        return False, "Invalid application or employee record."
+
+    if not app:
+        return False, "Missing associated candidate application record."
+
+    recipient_email = (app.email or "").strip()
+    if not recipient_email:
+        return False, "Candidate email address is missing for this application."
+
+    # Duplicate send protection
+    if app.joining_email_status == 'SENT':
+        sent_time = app.joining_email_sent_at.strftime('%b %d, %Y') if app.joining_email_sent_at else 'earlier'
+        return False, f"Joining & Credentials email already sent on {sent_time}."
+
+    secret_key = current_app.config.get('SECRET_KEY', 'default-key') if current_app else 'default-key'
+    resolved_pwd = temp_password or (employee.get_temp_password(secret_key) if employee else '')
+
+    effective_joining_date = joining_date or app.joining_date
+    if not effective_joining_date:
+        return False, "Joining date is required before sending the joining email."
+
+    try:
+        rendered = render_joining_credentials_email(
+            app,
+            custom_params={
+                'joining_date': effective_joining_date,
+                'portal_url': portal_url,
+                'temp_password': resolved_pwd
+            }
+        )
+        subject = rendered.get('subject') or DEFAULT_JOINING_SUBJECT
+        body_text = rendered.get('body_text') or DEFAULT_JOINING_BODY
+        body_html = rendered.get('body_html')
+
+        success, msg, provider_id = send_brevo_email(
+            recipient_email=recipient_email,
+            recipient_name=app.full_name or recipient_email,
+            subject=subject,
+            body_text=body_text,
+            body_html=body_html
+        )
+
+        now_utc = datetime.now(timezone.utc)
+        if success:
+            app.joining_email_status = 'SENT'
+            app.joining_email_sent_at = now_utc
+            app.joining_date = effective_joining_date
+            if employee:
+                employee.clear_temp_password()
+            log_status = 'SENT'
+            error_msg = None
+        else:
+            app.joining_email_status = 'FAILED'
+            log_status = 'FAILED'
+            error_msg = msg
+
+        # Log to EmailLog
+        try:
+            email_log = EmailLog(
+                recipient_email=recipient_email,
+                template_type='joining_credentials',
+                reference_id=employee.employee_id if employee else app.formatted_code,
+                subject=subject,
+                body_preview=body_text[:200] if body_text else '',
+                status=log_status,
+                provider_message_id=provider_id,
+                error_message=error_msg,
+                has_attachment=False,
+                sent_at=now_utc
+            )
+            db.session.add(email_log)
+            db.session.commit()
+        except Exception as db_err:
+            db.session.rollback()
+            if current_app:
+                current_app.logger.error(f"Database error saving EmailLog: {str(db_err)}")
+
+        return success, msg
+    except Exception as e:
+        if current_app:
+            current_app.logger.error(f"Unexpected error in send_joining_credentials_email: {str(e)}", exc_info=True)
+        return False, f"Failed to send Joining email: {str(e)}"
+
+
+# =====================================================================
+# 4. PREVIEW & TEST EMAIL UTILITIES
 # =====================================================================
 
 def render_sample_email_preview(template_type):
@@ -774,14 +1001,23 @@ def render_sample_email_preview(template_type):
         'Application Date': '15/09/2026',
         'Internship Duration': '3 Months',
         'Start Date': '15/09/2026',
+        'Joining Date': '15/09/2026',
+        'Employee ID': 'AM4827',
+        'Employee Password': 'AMx7P9k2Q',
+        'Internship Portal Link': 'https://www.antimatrix.co.in/internship',
         'Company Email': 'info@antimatrix.co.in',
         'Website': 'www.antimatrix.co.in',
         'employee_name': 'Rahul Kumar',
         'employee_id': 'AM4827',
+        'employee_password': 'AMx7P9k2Q',
+        'temp_password': 'AMx7P9k2Q',
         'job_title': 'AI Engineer Intern',
         'application_id': 'AM-APP-1001',
         'internship_duration': '3 Months',
         'start_date': '15/09/2026',
+        'joining_date': '15/09/2026',
+        'portal_url': 'https://www.antimatrix.co.in/internship',
+        'portal_link': 'https://www.antimatrix.co.in/internship',
         'company_email': 'info@antimatrix.co.in',
         'website': 'www.antimatrix.co.in'
     }
@@ -790,6 +1026,9 @@ def render_sample_email_preview(template_type):
     if template_type == 'application_successful':
         raw_subject = tmpl.subject if tmpl and tmpl.subject else DEFAULT_APPLICATION_SUCCESSFUL_SUBJECT
         raw_body = tmpl.body if tmpl and tmpl.body else DEFAULT_APPLICATION_SUCCESSFUL_BODY
+    elif template_type == 'joining_credentials':
+        raw_subject = tmpl.subject if tmpl and tmpl.subject else DEFAULT_JOINING_SUBJECT
+        raw_body = tmpl.body if tmpl and tmpl.body else DEFAULT_JOINING_BODY
     else:
         raw_subject = tmpl.subject if tmpl and tmpl.subject else DEFAULT_OFFER_LETTER_SUBJECT
         raw_body = tmpl.body if tmpl and tmpl.body else DEFAULT_OFFER_LETTER_BODY

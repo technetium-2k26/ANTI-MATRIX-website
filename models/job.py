@@ -145,6 +145,13 @@ class JobApplication(db.Model):
     application_success_email_status = db.Column(db.String(30), default='PENDING', nullable=False)  # PENDING, SENT, FAILED
     application_success_email_sent_at = db.Column(db.DateTime, nullable=True)
 
+    # Offer Completion & Joining Tracking
+    joining_date = db.Column(db.String(100), nullable=True)
+    joining_email_status = db.Column(db.String(30), default='NOT_SENT', nullable=False)  # NOT_SENT, SENDING, SENT, FAILED
+    joining_email_sent_at = db.Column(db.DateTime, nullable=True)
+    offer_completed_at = db.Column(db.DateTime, nullable=True)
+    hired_at = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -190,7 +197,7 @@ class JobApplication(db.Model):
 
     @property
     def status_display(self):
-        """Map internal database recruitment status to clean human-friendly label (Applied, Under Review, Shortlisted)."""
+        """Map internal database recruitment status to clean human-friendly label (Applied, Under Review, Shortlisted, Offer Completed, Hired)."""
         st = (self.status or self.application_status or 'APPLIED').strip()
         mapping = {
             'APPLIED': 'Applied',
@@ -205,6 +212,10 @@ class JobApplication(db.Model):
             'Shortlisted': 'Shortlisted',
             'SHORTLISTED': 'Shortlisted',
             'shortlisted': 'Shortlisted',
+            'OFFER_COMPLETED': 'Offer Completed',
+            'offer_completed': 'Offer Completed',
+            'COMPLETED': 'Offer Completed',
+            'completed': 'Offer Completed',
             'Rejected': 'Not Selected',
             'REJECTED': 'Not Selected',
             'rejected': 'Not Selected',
@@ -219,7 +230,9 @@ class JobApplication(db.Model):
     @property
     def status_badge_class(self):
         st = (self.status or self.application_status or 'APPLIED').strip().lower()
-        if st in ['shortlisted', 'hired']:
+        if st in ['hired']:
+            return 'hired'
+        elif st in ['shortlisted', 'offer_completed', 'completed']:
             return 'shortlisted'
         elif st in ['reviewed', 'under_review']:
             return 'reviewed'

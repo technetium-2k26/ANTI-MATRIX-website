@@ -170,7 +170,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             
             <button type="submit" class="btn btn-primary btn-lg" id="complete-test-payment-btn" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
-              {{ icon('check-circle', size=18) }} Complete Test Payment
+              {{ icon('check-circle', size=18) }} Complete Test Payment (₹{{ fee_inr }})
             </button>
           </form>
 
@@ -181,8 +181,8 @@
           <form method="POST" action="{{ url_for('main.job_apply_checkout', app_id=app.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             
-            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
-              {{ icon('credit-card', size=18) }} Pay ₹{{ fee_inr }}
+            <button type="submit" class="btn btn-primary btn-lg" id="pay-application-fee-btn" style="width: 100%; max-width: 380px; margin: 0 auto; justify-content: center; font-size: 1.05rem; gap: 8px;">
+              {{ icon('credit-card', size=18) }} Pay Application Fee (₹{{ fee_inr }})
             </button>
           </form>
 

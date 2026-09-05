@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from models import db, User
+from models import db, User, Employee, JobApplication
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -47,7 +47,7 @@ def login():
         is_json = request.is_json
         data = request.get_json() if is_json else request.form
 
-        email = (data.get('email') or '').strip()
+        identifier = (data.get('email') or data.get('identifier') or '').strip()
         password = data.get('password') or ''
         remember = bool(data.get('remember', False))
         if isinstance(data.get('remember'), str):
@@ -58,10 +58,8 @@ def login():
         redirect_target = get_safe_redirect(post_target)
 
         errors = {}
-        if not email:
-            errors['email'] = 'Email is required'
-        elif not EMAIL_REGEX.match(email):
-            errors['email'] = 'Enter a valid email address'
+        if not identifier:
+            errors['email'] = 'Email or Employee ID is required'
 
         if not password:
             errors['password'] = 'Password is required'
@@ -73,36 +71,87 @@ def login():
                 return jsonify({'status': 'error', 'errors': errors}), 400
             for field, err in errors.items():
                 flash(err, 'error')
-            return render_template('auth/login.html', errors=errors, email=email, redirect_target=redirect_target)
+            return render_template('auth/login.html', errors=errors, email=identifier, redirect_target=redirect_target)
 
-        # Authenticate user from database
-        user = User.query.filter_by(email=email.lower()).first()
-        if not user:
-            # For seamless migration and demo compatibility, create the user if first time
-            user = User(
-                name=email.split('@')[0].capitalize(),
-                email=email.lower()
-            )
-            user.set_password(password)
-            db.session.add(user)
-            db.session.commit()
-        else:
-            # If user exists, verify password
-            if not user.check_password(password):
+        authenticated_user = None
+
+        # 1. Check if identifier is an Employee ID (e.g. AM4827)
+        emp_match = Employee.query.filter(Employee.employee_id.ilike(identifier)).first()
+        if emp_match:
+            if emp_match.check_password(password):
+                # Valid Employee ID & Password -> Sync or create User account for candidate
+                cand_email = emp_match.candidate_email.lower()
+                user = User.query.filter_by(email=cand_email).first()
+                if not user:
+                    user = User(
+                        name=emp_match.candidate_name or f"Employee {emp_match.employee_id}",
+                        email=cand_email,
+                        role='member'
+                    )
+                    user.set_password(password)
+                    db.session.add(user)
+                    db.session.commit()
+                else:
+                    user.set_password(password)
+                    db.session.commit()
+                authenticated_user = user
+            else:
+                errors['password'] = 'Invalid Employee ID or password'
+                if is_json:
+                    return jsonify({'status': 'error', 'errors': errors}), 401
+                flash('Invalid Employee ID or password', 'error')
+                return render_template('auth/login.html', errors=errors, email=identifier, redirect_target=redirect_target)
+
+        # 2. Check if identifier is an Email Address
+        elif EMAIL_REGEX.match(identifier):
+            user = User.query.filter_by(email=identifier.lower()).first()
+            emp_by_email = Employee.query.join(JobApplication).filter(JobApplication.email.ilike(identifier.lower())).first()
+
+            if user and user.check_password(password):
+                authenticated_user = user
+            elif emp_by_email and emp_by_email.check_password(password):
+                if not user:
+                    user = User(
+                        name=emp_by_email.candidate_name or identifier.split('@')[0].capitalize(),
+                        email=identifier.lower(),
+                        role='member'
+                    )
+                user.set_password(password)
+                db.session.add(user)
+                db.session.commit()
+                authenticated_user = user
+            elif not user:
+                # For seamless demo and standard user creation
+                user = User(
+                    name=identifier.split('@')[0].capitalize(),
+                    email=identifier.lower()
+                )
+                user.set_password(password)
+                db.session.add(user)
+                db.session.commit()
+                authenticated_user = user
+            else:
                 errors['password'] = 'Invalid email or password'
                 if is_json:
                     return jsonify({'status': 'error', 'errors': errors}), 401
                 flash('Invalid email or password', 'error')
-                return render_template('auth/login.html', errors=errors, email=email, redirect_target=redirect_target)
+                return render_template('auth/login.html', errors=errors, email=identifier, redirect_target=redirect_target)
 
-        login_user(user, remember=remember)
+        else:
+            errors['email'] = 'Enter a valid email address or Employee ID (e.g. AM4827)'
+            if is_json:
+                return jsonify({'status': 'error', 'errors': errors}), 400
+            flash('Enter a valid email address or Employee ID (e.g. AM4827)', 'error')
+            return render_template('auth/login.html', errors=errors, email=identifier, redirect_target=redirect_target)
+
+        login_user(authenticated_user, remember=remember)
 
         if is_json:
             return jsonify({
                 'status': 'success',
                 'message': 'Welcome back!',
                 'redirect': redirect_target,
-                'user': user.to_dict()
+                'user': authenticated_user.to_dict()
             })
 
         return redirect(redirect_target)

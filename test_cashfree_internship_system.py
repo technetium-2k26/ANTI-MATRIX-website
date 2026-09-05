@@ -11,7 +11,7 @@ from config import INTERNSHIP_FEES, INDIA_STATES_AND_CITIES
 
 class CashfreeInternshipSystemTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = create_app('development')
+        self.app = create_app('testing')
         self.app.config['TESTING'] = True
         self.app.config['WTF_CSRF_ENABLED'] = False
         self.app.config['CASHFREE_ENVIRONMENT'] = 'test'
@@ -566,6 +566,8 @@ class CashfreeInternshipSystemTestCase(unittest.TestCase):
     def test_scenario_11_graduation_year_max_2029(self):
         """Graduation year > 2029 is rejected by backend."""
         job = JobPosting.query.first()
+        if not job:
+            job, _ = self._create_candidate_application(duration='1_month')
         form_data = {
             'first_name': 'Test',
             'last_name': 'User',

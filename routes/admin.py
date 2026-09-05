@@ -1,6 +1,7 @@
 import os
 import uuid
 import time
+from datetime import datetime, timezone
 from functools import wraps
 from flask import (
     Blueprint, render_template, request, redirect, url_for, flash,
@@ -329,9 +330,13 @@ def application_detail(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
     job = application.job
 
-    # Normalize application stage to one of: 'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED'
+    # Normalize application stage to one of: 'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'OFFER_COMPLETED', 'HIRED'
     st_raw = (application.status or application.application_status or 'APPLIED').strip().upper()
-    if st_raw in ['SHORTLISTED', 'HIRED']:
+    if st_raw in ['HIRED']:
+        current_stage = 'HIRED'
+    elif st_raw in ['OFFER_COMPLETED', 'OFFER_COMPLETE', 'COMPLETED', 'COMPLETE']:
+        current_stage = 'OFFER_COMPLETED'
+    elif st_raw in ['SHORTLISTED']:
         current_stage = 'SHORTLISTED'
     elif st_raw in ['UNDER_REVIEW', 'REVIEWED']:
         current_stage = 'UNDER_REVIEW'
@@ -340,6 +345,7 @@ def application_detail(app_id):
 
     app_email_preview = None
     shortlist_email_preview = None
+    joining_email_preview = None
     offer_doc = application.offer_letter_doc
     new_employee_creds = None
     template_missing_error = None
@@ -354,12 +360,18 @@ def application_detail(app_id):
         from services.email_service import render_application_successful_email
         app_email_preview = render_application_successful_email(application)
 
-    # If stage is SHORTLISTED: auto-prepare Offer Letter and Shortlist email preview with real candidate data
-    if current_stage == 'SHORTLISTED':
+    # If stage is SHORTLISTED or OFFER_COMPLETED: prepare Offer Letter & Shortlist email preview
+    if current_stage in ['SHORTLISTED', 'OFFER_COMPLETED']:
         from services.email_service import render_shortlisted_offer_email
         shortlist_email_preview = render_shortlisted_offer_email(application)
 
-        # Auto-generate Offer Letter DOCX if missing or not generated
+    # If stage is OFFER_COMPLETED or HIRED: prepare Joining & Credentials email preview
+    if current_stage in ['OFFER_COMPLETED', 'HIRED']:
+        from services.email_service import render_joining_credentials_email
+        joining_email_preview = render_joining_credentials_email(application)
+
+    # Auto-generate Offer Letter DOCX if missing or not generated when stage is SHORTLISTED, OFFER_COMPLETED, or HIRED
+    if current_stage in ['SHORTLISTED', 'OFFER_COMPLETED', 'HIRED']:
         if not offer_doc or not offer_doc.file_path or not os.path.exists(offer_doc.file_path):
             try:
                 offer_doc, _ = generate_offer_letter_docx(application)
@@ -375,6 +387,7 @@ def application_detail(app_id):
         current_stage=current_stage,
         app_email_preview=app_email_preview,
         shortlist_email_preview=shortlist_email_preview,
+        joining_email_preview=joining_email_preview,
         offer_doc=offer_doc,
         new_employee_creds=new_employee_creds,
         template_missing_error=template_missing_error
@@ -429,16 +442,149 @@ def mark_application_shortlisted(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
     application.status = 'SHORTLISTED'
     application.application_status = 'SHORTLISTED'
-    db.session.commit()
+
+    # Auto-generate Employee record and temporary credentials immediately on Shortlisting if not existing
+    if not application.employee:
+        try:
+            emp_id = Employee.generate_unique_employee_id()
+            plaintext_password = Employee.generate_secure_password(12)
+
+            employee = Employee(
+                employee_id=emp_id,
+                application_id=application.id,
+                account_status='active'
+            )
+            employee.set_password(plaintext_password)
+            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            employee.set_temp_password(plaintext_password, secret_key)
+            db.session.add(employee)
+            db.session.flush()
+
+            # Store credentials in session for immediate copy/display to admin
+            session['new_employee_credentials'] = {
+                'app_id': application.id,
+                'employee_id': employee.employee_id,
+                'temp_password': plaintext_password
+            }
+        except Exception as e:
+            current_app.logger.warning(f"Error creating employee during shortlist: {str(e)}")
 
     # Automatically generate Offer Letter DOCX
     try:
-        generate_offer_letter_docx(application)
-        flash(f"Candidate {application.full_name} marked as Shortlisted and Offer Letter generated automatically.", 'success')
+        offer_doc, _ = generate_offer_letter_docx(application)
+        if application.employee and offer_doc:
+            offer_doc.employee_id = application.employee.id
+        db.session.commit()
+        flash(f"Candidate {application.full_name} marked as Shortlisted. Employee ID ({application.employee.employee_id if application.employee else ''}) and Offer Letter DOCX generated automatically.", 'success')
     except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError) as tmpl_err:
+        db.session.commit()
         flash(f"Candidate marked as Shortlisted. Notice: {str(tmpl_err)}", 'warning')
     except Exception as e:
+        db.session.commit()
         flash(f"Candidate marked as Shortlisted. Error generating Offer Letter: {str(e)}", 'danger')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/mark-complete', methods=['POST'])
+@admin_required
+def mark_application_offer_complete(app_id):
+    """
+    Stage 4: Mark as Complete.
+    Validates employee and offer letter exist, updates status to OFFER_COMPLETED,
+    and automatically dispatches the Shortlisted / Offer Letter email with DOCX attachment via Brevo.
+    """
+    application = db.session.get(JobApplication, app_id) or abort(404)
+
+    # Ensure Offer Letter is generated
+    offer_doc = application.offer_letter_doc
+    if not offer_doc or not offer_doc.file_path or not os.path.exists(offer_doc.file_path):
+        try:
+            offer_doc, _ = generate_offer_letter_docx(application)
+        except Exception as e:
+            flash(f"Cannot complete offer: {str(e)}", 'danger')
+            return redirect(url_for('admin.application_detail', app_id=application.id))
+
+    # Update status to OFFER_COMPLETED
+    application.status = 'OFFER_COMPLETED'
+    application.application_status = 'OFFER_COMPLETED'
+    application.offer_completed_at = datetime.now(timezone.utc)
+
+    # Send Shortlisted email + Offer Letter attachment via Brevo if not already sent
+    if not offer_doc or offer_doc.email_status != 'sent':
+        from services.offer_letter_service import send_offer_letter_email
+        success, msg = send_offer_letter_email(application)
+        if success:
+            db.session.commit()
+            flash(f"Offer marked as Complete! Offer Letter email with DOCX attachment sent successfully to {application.email}.", 'success')
+        else:
+            db.session.commit()
+            flash(f"Offer marked as Complete. Notice on email delivery: {msg}", 'warning')
+    else:
+        db.session.commit()
+        flash(f"Application for {application.full_name} is marked as Offer Completed.", 'success')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/mark-hired', methods=['POST'])
+@admin_required
+def mark_application_hired(app_id):
+    """
+    Stage 5: Mark as Hired / Mark as Joining.
+    Validates joining_date, updates status to HIRED, and automatically dispatches
+    the Joining & Employee Credentials Email via Brevo REST API.
+    """
+    application = db.session.get(JobApplication, app_id) or abort(404)
+
+    joining_date = (request.form.get('joining_date') or '').strip()
+    if joining_date:
+        application.joining_date = joining_date
+    elif not application.joining_date:
+        application.joining_date = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+
+    application.status = 'HIRED'
+    application.application_status = 'HIRED'
+    application.hired_at = datetime.now(timezone.utc)
+
+    # Automatically dispatch Joining & Employee Credentials Email if not already sent
+    if application.joining_email_status != 'SENT':
+        from services.email_service import send_joining_credentials_email
+        success, msg = send_joining_credentials_email(application, joining_date=application.joining_date)
+        if success:
+            db.session.commit()
+            flash(f"Candidate {application.full_name} marked as HIRED! Joining details and employee credentials email sent successfully to {application.email}.", 'success')
+        else:
+            db.session.commit()
+            flash(f"Candidate {application.full_name} marked as HIRED. Notice on joining email: {msg}", 'warning')
+    else:
+        db.session.commit()
+        flash(f"Candidate {application.full_name} is marked as HIRED.", 'success')
+
+    return redirect(url_for('admin.application_detail', app_id=application.id))
+
+
+@admin_bp.route('/applications/<int:app_id>/send-joining-email', methods=['POST'])
+@admin_required
+def send_joining_email_action(app_id):
+    """Explicit action to send/resend Joining & Employee Credentials email via Brevo."""
+    application = db.session.get(JobApplication, app_id) or abort(404)
+
+    joining_date = (request.form.get('joining_date') or '').strip() or application.joining_date
+    if not joining_date:
+        joining_date = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+        application.joining_date = joining_date
+
+    # Allow resending
+    from services.email_service import send_joining_credentials_email
+    application.joining_email_status = 'PENDING'
+    success, msg = send_joining_credentials_email(application, joining_date=joining_date)
+    if success:
+        db.session.commit()
+        flash(f"Joining & Employee Credentials email sent successfully to {application.email}.", 'success')
+    else:
+        db.session.commit()
+        flash(f"Failed to send Joining email: {msg}", 'danger')
 
     return redirect(url_for('admin.application_detail', app_id=application.id))
 
@@ -448,9 +594,9 @@ def mark_application_shortlisted(app_id):
 def send_shortlist_offer_action(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
 
-    # Ensure status is SHORTLISTED
+    # Ensure status is SHORTLISTED or OFFER_COMPLETED or HIRED
     st = (application.status or application.application_status or '').upper()
-    if st not in ['SHORTLISTED', 'HIRED']:
+    if st not in ['SHORTLISTED', 'OFFER_COMPLETED', 'HIRED']:
         flash('Application must be Shortlisted before sending the Offer Letter.', 'danger')
         return redirect(url_for('admin.application_detail', app_id=application.id))
 
@@ -476,7 +622,7 @@ def send_shortlist_offer_action(app_id):
         flash(f"Failed to send Offer Letter email: {msg}", 'danger')
         return redirect(url_for('admin.application_detail', app_id=application.id))
 
-    # On confirmed successful send, auto-generate Employee credentials if not already existing
+    # Auto-generate Employee credentials if not already existing
     if not application.employee:
         try:
             emp_id = Employee.generate_unique_employee_id()
@@ -488,6 +634,8 @@ def send_shortlist_offer_action(app_id):
                 account_status='active'
             )
             employee.set_password(plaintext_password)
+            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            employee.set_temp_password(plaintext_password, secret_key)
             db.session.add(employee)
             db.session.flush()
 
@@ -537,7 +685,10 @@ def download_application_offer_letter(app_id):
 def update_application_status(app_id):
     application = db.session.get(JobApplication, app_id) or abort(404)
     new_status = request.form.get('status', '').strip()
-    valid_statuses = ['New', 'Reviewed', 'Shortlisted', 'Rejected', 'Hired', 'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED']
+    valid_statuses = [
+        'New', 'Reviewed', 'Shortlisted', 'Offer Completed', 'Hired', 'Rejected',
+        'APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'OFFER_COMPLETED', 'HIRED', 'REJECTED'
+    ]
 
     if new_status in valid_statuses:
         status_map = {
@@ -547,8 +698,12 @@ def update_application_status(app_id):
             'UNDER_REVIEW': 'UNDER_REVIEW',
             'Shortlisted': 'SHORTLISTED',
             'SHORTLISTED': 'SHORTLISTED',
+            'Offer Completed': 'OFFER_COMPLETED',
+            'OFFER_COMPLETED': 'OFFER_COMPLETED',
+            'Hired': 'HIRED',
+            'HIRED': 'HIRED',
             'Rejected': 'REJECTED',
-            'Hired': 'HIRED'
+            'REJECTED': 'REJECTED'
         }
         mapped_status = status_map.get(new_status, new_status.upper())
         application.status = mapped_status
@@ -673,12 +828,13 @@ def create_employee():
                 account_status='active'
             )
             employee.set_password(plaintext_password)
+            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            employee.set_temp_password(plaintext_password, secret_key)
 
             db.session.add(employee)
             db.session.commit()
 
             # Render confirmation screen displaying credentials for copying
-            # Plaintext password is provided ONLY in this immediate response and NEVER stored in DB
             return render_template(
                 'admin/employee_credentials.html',
                 employee=employee,
@@ -734,6 +890,7 @@ def templates():
     # Ensure standard email templates exist
     app_success_email = EmailTemplate.query.filter_by(template_type='application_successful').first()
     offer_letter_email = EmailTemplate.query.filter_by(template_type='offer_letter').first()
+    joining_email = EmailTemplate.query.filter_by(template_type='joining_credentials').first()
     
     # Active document templates
     offer_doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
@@ -749,6 +906,7 @@ def templates():
         'admin/templates.html',
         app_success_email=app_success_email,
         offer_letter_email=offer_letter_email,
+        joining_email=joining_email,
         offer_doc_template=offer_doc_template,
         offer_template_file_exists=offer_template_file_exists,
         exp_doc_template=exp_doc_template,
@@ -762,7 +920,7 @@ def templates():
 @admin_required
 def update_email_template(template_type):
     """Update subject and body for an Email Template."""
-    valid_types = ['application_successful', 'offer_letter']
+    valid_types = ['application_successful', 'offer_letter', 'joining_credentials']
     if template_type not in valid_types:
         flash('Invalid email template type.', 'danger')
         return redirect(url_for('admin.templates'))
@@ -778,7 +936,8 @@ def update_email_template(template_type):
     if not email_tmpl:
         name_map = {
             'application_successful': 'Application Successful Confirmation',
-            'offer_letter': 'Offer Letter Delivery'
+            'offer_letter': 'Offer Letter Delivery',
+            'joining_credentials': 'Joining & Employee Credentials'
         }
         email_tmpl = EmailTemplate(
             template_type=template_type,
@@ -800,7 +959,7 @@ def update_email_template(template_type):
 @admin_required
 def preview_email_template(template_type):
     """Preview rendered HTML email with sample preview values."""
-    valid_types = ['application_successful', 'offer_letter']
+    valid_types = ['application_successful', 'offer_letter', 'joining_credentials']
     if template_type not in valid_types:
         return jsonify({'error': 'Invalid template type'}), 400
 
@@ -813,7 +972,7 @@ def preview_email_template(template_type):
 @admin_required
 def send_test_email_route(template_type):
     """Send a sample test email to an admin-specified recipient without modifying live records."""
-    valid_types = ['application_successful', 'offer_letter']
+    valid_types = ['application_successful', 'offer_letter', 'joining_credentials']
     if template_type not in valid_types:
         flash('Invalid template type.', 'danger')
         return redirect(url_for('admin.templates'))
