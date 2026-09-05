@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Refund &amp; Cancellation Policy | Anti Matrix{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <div class="badge" style="margin-bottom: var(--space-sm); display: inline-flex;">
+      Legal &amp; Compliance
+    </div>
+    <h1 style="color: var(--color-white); font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; margin-bottom: var(--space-xs);">Refund &amp; Cancellation Policy</h1>
+    <p style="color: var(--color-text-dim); margin-bottom: 0;">Last Updated: 5 September 2026</p>
+  </div>
+</section>
+
+<section class="section" style="background: var(--color-bg); padding-top: var(--space-2xl); padding-bottom: var(--space-3xl);">
+  <div class="container" style="max-width: 900px; margin: 0 auto;">
+
+    <!-- Quick Legal Navigation Tabs -->
+    <div class="legal-nav-tabs" style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-2xl); flex-wrap: wrap; justify-content: center; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-lg);">
+      <a href="{{ url_for('main.terms') }}" class="btn btn-outline" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Terms &amp; Conditions
+      </a>
+      <a href="{{ url_for('main.privacy') }}" class="btn btn-outline" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Privacy Policy
+      </a>
+      <a href="{{ url_for('main.refund_policy') }}" class="btn btn-primary" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Refund &amp; Cancellation
+      </a>
+    </div>
+
+    <!-- Preamble Callout -->
+    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-lg); padding: var(--space-xl); margin-bottom: var(--space-2xl); color: var(--color-text-dim); line-height: 1.7;">
+      <p style="margin-bottom: var(--space-sm); color: var(--color-white); font-weight: 500;">
+        This Refund &amp; Cancellation Policy explains the terms applicable to payments made to <strong>Anti Matrix</strong> for website development, software development, digital services, and internship applications.
+      </p>
+      <p style="margin-bottom: 0; font-size: 0.9rem; color: var(--color-primary-light);">
+        By purchasing our services or submitting an internship application through the Anti Matrix website, you acknowledge and agree to the applicable terms described below.
+      </p>
+    </div>
+
+    <!-- Section Navigation Anchors -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-2xl);">
+      <a href="#services-policy" style="text-decoration: none;">
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); transition: all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size: 0.75rem; color: var(--color-primary-light); text-transform: uppercase; font-weight: 700;">Section A</div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-white);">Website, Software &amp; Digital Services</div>
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px;">Advance payment, 30% retention &amp; cancellation logic</div>
+        </div>
+      </a>
+      <a href="#internship-policy" style="text-decoration: none;">
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); transition: all 0.2s;" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">
+          <div style="font-size: 0.75rem; color: var(--color-primary-light); text-transform: uppercase; font-weight: 700;">Section B</div>
+          <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-white);">Internship Applications</div>
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px;">₹199 / ₹399 Application Fee non-refundable terms</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- PART A: Website, Software & Digital Services -->
+    <div id="services-policy" style="margin-bottom: var(--space-3xl);">
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-lg); border-bottom: 2px solid rgba(16, 185, 129, 0.4); padding-bottom: var(--space-sm);">
+        <span class="badge" style="background: var(--color-primary); color: #000000; font-weight: 800;">PART A</span>
+        <h2 style="color: var(--color-white); font-size: 1.5rem; margin: 0;">Website, Software &amp; Digital Services</h2>
+      </div>
+
+      <!-- 1. Services -->
+      <div class="legal-section" style="margin-bottom: var(--space-xl);">
+        <h3 style="color: var(--color-white); margin-bottom: var(--space-sm); font-size: 1.25rem;">1. Website, Software &amp; Digital Services</h3>
+        <p style="color: var(--color-text-dim); line-height: 1.7;">
+          Anti Matrix provides various technology and digital services, including website development, web application development, mobile application development, software engineering, UI/UX design, cloud solutions, website maintenance, application maintenance, and customized technology solutions. Because these services involve detailed planning, technical resource allocation, and custom labor performed specifically for a client, payments are governed by the terms below.
+        </p>
+      </div>
+
+      <!-- 2. Advance Payment -->
+      <div class="legal-section" style="margin-bottom: var(--space-xl);">
+        <h3 style="color: var(--color-white); margin-bottom: var(--space-sm); font-size: 1.25rem;">2. Advance Payment</h3>
+        <p style="color: var(--color-text-dim); line-height: 1.7;">
+          For development and digital service projects, Anti Matrix requires an advance payment before beginning project work. The advance payment confirms the client's commitment to proceed, reserving dedicated engineering resources and scheduling project milestones.
+        </p>
+      </div>
+
+      <!-- 3. Cancellation by Client -->
+      <div class="legal-section" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-xl); margin-bottom: var(--space-xl);">
+        <h3 style="color: var(--color-white); margin-bottom: var(--space-sm); font-size: 1.25rem;">3. Cancellation by Client</h3>
+        <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+          A client may request project cancellation by notifying Anti Matrix in writing via official communication channels. However, once the project has commenced or dedicated engineering resources have been mobilized:
+        </p>
+        <div style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: var(--space-md); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-bottom: var(--space-md); color: var(--color-white);">
+          <strong>30% of the applicable advance payment will be retained by Anti Matrix as a cancellation and processing charge and will not be refunded.</strong>
+        </div>
+        <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+          The remaining eligible amount, if any, may be considered according to the project stage, work already performed, and actual expenses incurred.
+        </p>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <strong style="color: var(--color-primary-light); display: block; margin-bottom: 4px; font-size: 0.85rem; text-transform: uppercase;">Example Calculation</strong>
+          <p style="font-size: 0.9rem; color: var(--color-text-dim); margin-bottom: 0; line-height: 1.6;">
+            If the client pays an advance of <strong>₹10,000</strong> and subsequently cancels after work has commenced:
+            <br />
+            &bull; <strong>30% = ₹3,000</strong> is retained as a cancellation/processing charge.
+            <br />
+            &bull; The remaining <strong>₹7,000</strong> may be considered for refund, subject to work already completed, third-party expenses, and the specific project agreement.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 to 9 in Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">4. Work Already Completed</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Any refund will be adjusted to account for hours invested in project planning, architecture design, UI/UX, coding, deployment, and documentation completed before notice.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">5. Non-Refundable Expenses</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Third-party direct costs incurred for the project (domain registration, cloud hosting, API keys, paid fonts/assets, gateway fees) cannot be refunded and will be deducted.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">6. Client Delays &amp; Cooperation</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Delays in providing required client assets, approvals, or credentials do not create a right to a refund. Inactive projects may be paused or closed per contract.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">7. Scope Changes</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Scope modifications or extra feature additions may adjust timeline and costs, and do not entitle the client to a refund of original milestone payments.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">8. Cancellation Before Work Begins</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            If cancellation is requested before any design or engineering work commences or third-party costs are incurred, requests will be reviewed less gateway processing fees.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">9. Post-Delivery Notice</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Once agreed deliverables are substantially delivered and verified, payments made for completed work are strictly non-refundable. Revisions follow the project warranty.
+          </p>
+        </div>
+      </div>
+
+      <!-- 10 & 11 -->
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg);">
+        <h4 style="color: var(--color-white); font-size: 1.1rem; margin-bottom: var(--space-xs);">10. Refund Processing &amp; 11. Request Procedure</h4>
+        <p style="font-size: 0.9rem; color: var(--color-text-dim); line-height: 1.7; margin-bottom: 0;">
+          Where a refund is approved in writing by Anti Matrix, funds will be processed using the original electronic payment channel. Processing times depend on banking and gateway settlement schedules. To request a review, send your project agreement, transaction receipt, and rationale to <strong>info@antimatrix.co.in</strong>.
+        </p>
+      </div>
+    </div>
+
+    <!-- PART B: Internship Applications -->
+    <div id="internship-policy" style="margin-bottom: var(--space-3xl);">
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-lg); border-bottom: 2px solid rgba(16, 185, 129, 0.4); padding-bottom: var(--space-sm);">
+        <span class="badge" style="background: var(--color-primary); color: #000000; font-weight: 800;">PART B</span>
+        <h2 style="color: var(--color-white); font-size: 1.5rem; margin: 0;">Internship Applications</h2>
+      </div>
+
+      <!-- 12. Non-refundable fee banner -->
+      <div style="background: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.12) 0%, var(--color-surface) 100%); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: var(--radius-lg); padding: var(--space-xl); margin-bottom: var(--space-xl);">
+        <h3 style="color: #f87171; margin-bottom: var(--space-sm); font-size: 1.35rem;">
+          12. Internship Application Fees Are Non-Refundable
+        </h3>
+        <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+          The Application Fee associated with an internship application is <strong>strictly non-refundable</strong> once the application and payment have been successfully submitted.
+        </p>
+
+        <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-md);">
+          <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-xl); text-align: center;">
+            <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 600;">1 Month Internship</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary-light);">₹199</div>
+            <div style="font-size: 0.75rem; color: #f87171; font-weight: 600;">Non-Refundable</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-xl); text-align: center;">
+            <div style="font-size: 0.8rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 600;">3 Months Internship</div>
+            <div style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary-light);">₹399</div>
+            <div style="font-size: 0.75rem; color: #f87171; font-weight: 600;">Non-Refundable</div>
+          </div>
+        </div>
+
+        <p style="color: var(--color-text-dim); font-size: 0.9rem; line-height: 1.7; margin-bottom: 0;">
+          The fee covers administrative evaluation, document verification, system processing, and application onboarding. <strong>This policy applies regardless of whether the candidate is:</strong>
+          <br />
+          &bull; Selected or not selected
+          <br />
+          &bull; Not shortlisted
+          <br />
+          &bull; Withdraws their application or changes their mind
+          <br />
+          &bull; Does not proceed with or complete the internship program
+          <br />
+          &bull; Fails to respond to subsequent onboarding emails or communication
+        </p>
+      </div>
+
+      <!-- 13 to 19 in clean cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-xl);">
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">13. Application Cancellation</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            A candidate may decide not to proceed with their internship, but submitting a withdrawal request does not entitle the candidate to a refund of the Application Fee.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">14. Payment Failure</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            If money was deducted from your account but the payment shows failed or the application was not created, banks automatically reverse the debit via payment gateway settlement cycles.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">15. Duplicate Payment</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            If a candidate accidentally makes duplicate successful payments for the exact same Application ID due to a browser glitch, provide transaction references to Anti Matrix for verification and refund of the duplicate amount.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">16. Fraudulent Transactions</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Transactions suspected of involving payment tampering, card misuse, or fraud are investigated and resolved in accordance with Indian cybersecurity and payment provider laws.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">17. No Cash Refunds</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Approved refunds are strictly issued through traceable electronic payment channels or original source accounts. No cash refunds are provided under any circumstance.
+          </p>
+        </div>
+
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg);">
+          <h4 style="color: var(--color-white); font-size: 1rem; margin-bottom: var(--space-xs);">18. Service Cancellation by Anti Matrix</h4>
+          <p style="font-size: 0.85rem; color: var(--color-text-dim); line-height: 1.6; margin-bottom: 0;">
+            Anti Matrix reserves the right to cancel candidate participation or terminate client projects in instances of forged credentials, terms violations, fraud, or abusive conduct.
+          </p>
+        </div>
+      </div>
+
+      <!-- 19. Selection is Separate -->
+      <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl);">
+        <h4 style="color: var(--color-primary-light); font-size: 1.1rem; margin-bottom: var(--space-xs);">
+          19. Internship Selection Is Independent From Payment
+        </h4>
+        <p style="font-size: 0.9rem; color: var(--color-text-dim); line-height: 1.7; margin-bottom: 0;">
+          Payment of the Application Fee does not imply or guarantee selection. The application follows an objective evaluation process: <strong>Applied → Under Review → Shortlisted</strong>. Only official Offer Letters issued by Anti Matrix confirm selection.
+        </p>
+      </div>
+
+      <!-- 20 & 21: Policy Changes & Contact -->
+      <div class="legal-section" style="background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, var(--color-surface) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-lg); padding: var(--space-xl);">
+        <h3 style="color: var(--color-white); margin-bottom: var(--space-sm); font-size: 1.35rem;">
+          20. Policy Updates &amp; 21. Contact Us
+        </h3>
+        <p style="color: var(--color-text-dim); margin-bottom: var(--space-md); font-size: 0.95rem;">
+          Anti Matrix reserves the right to amend this Refund &amp; Cancellation Policy. Changes are published on this page with an updated date. For billing, refund, or transaction queries, please contact us:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); color: var(--color-text-dim); font-size: 0.9rem;">
+          <div>
+            <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Anti Matrix</strong>
+            <span>Chennai, Tamil Nadu, India</span>
+          </div>
+          <div>
+            <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Email Support:</strong>
+            <a href="mailto:info@antimatrix.co.in" style="color: var(--color-primary-light); text-decoration: none;">info@antimatrix.co.in</a> &bull;
+            <a href="mailto:info@antimatrix.com" style="color: var(--color-primary-light); text-decoration: none;">info@antimatrix.com</a>
+          </div>
+          <div>
+            <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Official Website:</strong>
+            <a href="https://antimatrix.co.in" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); text-decoration: none;">www.antimatrix.co.in</a>
+          </div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: var(--space-md); margin-bottom: 0;">
+          <em>*When contacting us regarding an application payment, please specify your Application ID (AM-APP-XXXXXX) or gateway payment reference number.</em>
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

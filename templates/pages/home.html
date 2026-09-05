@@ -109,99 +109,129 @@
     
     <div class="services-grid">
       {# Service 1 #}
-      <div class="card service-card animate-fade-up delay-1">
-        <div class="icon-box">{{ icon('code-2', size=24) }}</div>
-        <h3>Web Development</h3>
-        <p>Custom, high-performance websites and web applications built for scale and reliability.</p>
-        <ul class="service-capabilities">
-          <li>React / Next.js SPAs</li>
-          <li>Full-stack Node & Python APIs</li>
-          <li>E-commerce platforms</li>
-          <li>Progressive Web Apps</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-1" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/home_svc_web.jpg') }}"
+             alt="Web development – laptop showing clean dashboard UI"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('code-2', size=24) }}</div>
+          <h3>Web Development</h3>
+          <p>Custom, high-performance websites and web applications built for scale and reliability.</p>
+          <ul class="service-capabilities">
+            <li>React / Next.js SPAs</li>
+            <li>Full-stack Node &amp; Python APIs</li>
+            <li>E-commerce platforms</li>
+            <li>Progressive Web Apps</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
 
       {# Service 2 #}
-      <div class="card service-card animate-fade-up delay-2">
-        <div class="icon-box">{{ icon('smartphone', size=24) }}</div>
-        <h3>Mobile Applications</h3>
-        <p>Native and cross-platform mobile apps delivering seamless experiences on iOS and Android.</p>
-        <ul class="service-capabilities">
-          <li>React Native & Flutter</li>
-          <li>iOS & Android native</li>
-          <li>App Store optimization</li>
-          <li>Push & offline support</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-2" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/home_svc_mobile.jpg') }}"
+             alt="Mobile app development – two smartphones with emerald green dashboards"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('smartphone', size=24) }}</div>
+          <h3>Mobile Applications</h3>
+          <p>Native and cross-platform mobile apps delivering seamless experiences on iOS and Android.</p>
+          <ul class="service-capabilities">
+            <li>React Native &amp; Flutter</li>
+            <li>iOS &amp; Android native</li>
+            <li>App Store optimization</li>
+            <li>Push &amp; offline support</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
 
       {# Service 3 #}
-      <div class="card service-card animate-fade-up delay-3">
-        <div class="icon-box">{{ icon('brain', size=24) }}</div>
-        <h3>AI & Machine Learning</h3>
-        <p>Intelligent automation and data-driven insights that give your business a competitive edge.</p>
-        <ul class="service-capabilities">
-          <li>Predictive analytics</li>
-          <li>NLP & chatbot solutions</li>
-          <li>Computer vision systems</li>
-          <li>ML model deployment</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-3" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/home_svc_ai.jpg') }}"
+             alt="AI and Machine Learning – glowing neural network brain visualization"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('brain', size=24) }}</div>
+          <h3>AI &amp; Machine Learning</h3>
+          <p>Intelligent automation and data-driven insights that give your business a competitive edge.</p>
+          <ul class="service-capabilities">
+            <li>Predictive analytics</li>
+            <li>NLP &amp; chatbot solutions</li>
+            <li>Computer vision systems</li>
+            <li>ML model deployment</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
 
       {# Service 4 #}
-      <div class="card service-card animate-fade-up delay-1">
-        <div class="icon-box">{{ icon('trending-up', size=24) }}</div>
-        <h3>Digital Marketing & Growth</h3>
-        <p>Data-backed strategies that drive targeted traffic, qualified leads, and measurable ROI.</p>
-        <ul class="service-capabilities">
-          <li>SEO & content strategy</li>
-          <li>Paid media campaigns</li>
-          <li>Conversion optimization</li>
-          <li>Analytics & reporting</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-1" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/home_svc_marketing.jpg') }}"
+             alt="Digital marketing – laptop with analytics dashboard and growth chart icons"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('trending-up', size=24) }}</div>
+          <h3>Digital Marketing &amp; Growth</h3>
+          <p>Data-backed strategies that drive targeted traffic, qualified leads, and measurable ROI.</p>
+          <ul class="service-capabilities">
+            <li>SEO &amp; content strategy</li>
+            <li>Paid media campaigns</li>
+            <li>Conversion optimization</li>
+            <li>Analytics &amp; reporting</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
 
       {# Service 5 #}
-      <div class="card service-card animate-fade-up delay-2">
-        <div class="icon-box">{{ icon('shield', size=24) }}</div>
-        <h3>Cloud & DevOps</h3>
-        <p>Secure, scalable cloud infrastructure with automated CI/CD pipelines and monitoring.</p>
-        <ul class="service-capabilities">
-          <li>AWS / GCP / Azure</li>
-          <li>Docker & Kubernetes</li>
-          <li>CI/CD automation</li>
-          <li>Security & compliance</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-2" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/service_cloud_devops.jpg') }}"
+             alt="Cloud and DevOps – server infrastructure and monitoring dashboards"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('shield', size=24) }}</div>
+          <h3>Cloud &amp; DevOps</h3>
+          <p>Secure, scalable cloud infrastructure with automated CI/CD pipelines and monitoring.</p>
+          <ul class="service-capabilities">
+            <li>AWS / GCP / Azure</li>
+            <li>Docker &amp; Kubernetes</li>
+            <li>CI/CD automation</li>
+            <li>Security &amp; compliance</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
 
       {# Service 6 #}
-      <div class="card service-card animate-fade-up delay-3">
-        <div class="icon-box">{{ icon('globe', size=24) }}</div>
-        <h3>UI/UX Design</h3>
-        <p>Human-centered design that converts visitors into loyal customers through elegant experiences.</p>
-        <ul class="service-capabilities">
-          <li>User research & personas</li>
-          <li>Wireframing & prototyping</li>
-          <li>Design systems</li>
-          <li>Accessibility-first</li>
-        </ul>
-        <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
-          Learn more {{ icon('arrow-right', size=14) }}
-        </a>
+      <div class="card service-card animate-fade-up delay-3" style="padding: 0; overflow: hidden;">
+        <img src="{{ url_for('static', filename='images/service_ui_ux.jpg') }}"
+             alt="UI/UX Design – Figma wireframes on screen with design mood board"
+             style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="padding: var(--space-xl);">
+          <div class="icon-box">{{ icon('globe', size=24) }}</div>
+          <h3>UI/UX Design</h3>
+          <p>Human-centered design that converts visitors into loyal customers through elegant experiences.</p>
+          <ul class="service-capabilities">
+            <li>User research &amp; personas</li>
+            <li>Wireframing &amp; prototyping</li>
+            <li>Design systems</li>
+            <li>Accessibility-first</li>
+          </ul>
+          <a href="{{ url_for('main.services') }}" class="btn btn-ghost" style="padding:0; color:var(--color-primary-light); font-weight:600; font-size:0.875rem; display:inline-flex; align-items:center; gap:0.375rem; background:none;">
+            Learn more {{ icon('arrow-right', size=14) }}
+          </a>
+        </div>
       </div>
     </div>
 

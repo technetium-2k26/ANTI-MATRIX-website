@@ -918,10 +918,20 @@ def contact():
 
 
 @main_bp.route('/privacy')
+@main_bp.route('/privacy-policy')
 def privacy():
     return render_template('pages/privacy.html')
 
 
 @main_bp.route('/terms')
+@main_bp.route('/terms-and-conditions')
 def terms():
     return render_template('pages/terms.html')
+
+
+@main_bp.route('/refund-policy')
+@main_bp.route('/cancellation-refund')
+@main_bp.route('/refunds')
+def refund_policy():
+    return render_template('pages/refund_policy.html')
+

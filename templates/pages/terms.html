@@ -1,63 +1,192 @@
 {% extends 'base.html' %}
 
-{% block title %}Terms of Service | Anti-Matrix{% endblock %}
+{% block title %}Terms &amp; Conditions | Anti Matrix{% endblock %}
 
 {% block content %}
 <!-- Page Hero -->
 <section class="page-hero">
   <div class="container">
-    <h1>Terms of Service</h1>
-    <p>Last updated: January 1, 2026</p>
+    <div class="badge" style="margin-bottom: var(--space-sm); display: inline-flex;">
+      Legal &amp; Compliance
+    </div>
+    <h1 style="color: var(--color-white); font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 800; margin-bottom: var(--space-xs);">Terms &amp; Conditions</h1>
+    <p style="color: var(--color-text-dim); margin-bottom: 0;">Last Updated: 5 September 2026</p>
   </div>
 </section>
 
-<section class="section" style="background: var(--color-bg);">
-  <div class="container" style="max-width: 820px; margin: 0 auto;">
-    {% set sections = [
-      {
-        'title': '1. Acceptance of Terms',
-        'content': 'By accessing or using Anti-Matrix services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.'
-      },
-      {
-        'title': '2. Services Description',
-        'content': 'Anti-Matrix provides technology consulting, software development, mobile application development, AI/ML systems, digital marketing, and related professional services as described on our website and in individual project agreements.'
-      },
-      {
-        'title': '3. Client Responsibilities',
-        'content': 'Clients are responsible for providing accurate project requirements, timely feedback during development, access to necessary systems and credentials, and payment according to agreed schedules.'
-      },
-      {
-        'title': '4. Intellectual Property',
-        'content': 'Upon full payment, clients receive full ownership of all custom code, designs, and deliverables created specifically for their project. Anti-Matrix retains rights to our proprietary frameworks, libraries, and methodologies.'
-      },
-      {
-        'title': '5. Confidentiality',
-        'content': 'Both parties agree to maintain confidentiality of proprietary information shared during the engagement. Anti-Matrix will sign NDAs upon request before commencing any project discussion.'
-      },
-      {
-        'title': '6. Payment Terms',
-        'content': 'Payment schedules are defined in individual project agreements. Standard terms are 30% upfront, 40% at mid-project milestone, and 30% upon delivery. Late payments may incur charges of 1.5% per month.'
-      },
-      {
-        'title': '7. Limitation of Liability',
-        'content': 'Anti-Matrix\'s total liability shall not exceed the total fees paid for the specific project giving rise to the claim. We are not liable for indirect, incidental, or consequential damages.'
-      },
-      {
-        'title': '8. Governing Law',
-        'content': 'These terms are governed by the laws of the State of California, United States. Disputes shall be resolved through binding arbitration in San Francisco, California.'
-      }
-    ] %}
+<section class="section" style="background: var(--color-bg); padding-top: var(--space-2xl); padding-bottom: var(--space-3xl);">
+  <div class="container" style="max-width: 900px; margin: 0 auto;">
 
-    {% for s in sections %}
-      <div style="margin-bottom: var(--space-2xl);">
-        <h3 style="color: #000000; margin-bottom: var(--space-md);">{{ s.title }}</h3>
-        <p>{{ s.content }}</p>
-      </div>
-    {% endfor %}
-
-    <div style="margin-top: var(--space-2xl);">
-      <a href="{{ url_for('main.contact') }}" class="btn btn-outline">Contact Us With Questions</a>
+    <!-- Quick Legal Navigation Tabs -->
+    <div class="legal-nav-tabs" style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-2xl); flex-wrap: wrap; justify-content: center; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-lg);">
+      <a href="{{ url_for('main.terms') }}" class="btn btn-primary" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Terms &amp; Conditions
+      </a>
+      <a href="{{ url_for('main.privacy') }}" class="btn btn-outline" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Privacy Policy
+      </a>
+      <a href="{{ url_for('main.refund_policy') }}" class="btn btn-outline" style="border-radius: var(--radius-full); font-size: 0.85rem; padding: 0.5rem 1.25rem;">
+        Refund &amp; Cancellation
+      </a>
     </div>
+
+    <!-- Preamble Callout -->
+    <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-lg); padding: var(--space-xl); margin-bottom: var(--space-2xl); color: var(--color-text-dim); line-height: 1.7;">
+      <p style="margin-bottom: var(--space-sm); color: var(--color-white); font-weight: 500;">
+        Welcome to <strong>Anti Matrix</strong> ("Anti Matrix", "we", "our", or "us"). These Terms &amp; Conditions govern your access to and use of our website (<a href="https://antimatrix.co.in" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light);">antimatrix.co.in</a>), software solutions, digital consulting services, and our Careers / Internship Portal.
+      </p>
+      <p style="margin-bottom: 0; font-size: 0.9rem; color: var(--color-primary-light);">
+        By accessing our website, engaging our services, or submitting an internship application, you acknowledge that you have read, understood, and agree to be bound by these Terms &amp; Conditions, our Privacy Policy, and our Refund &amp; Cancellation Policy.
+      </p>
+    </div>
+
+    <!-- Sections 1 - 12 -->
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        1. Acceptance of Terms
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        By browsing, accessing, or using any services provided by Anti Matrix, you enter into a legally binding contract with Anti Matrix. If you do not agree with any provision of these Terms &amp; Conditions, you must refrain from using our website, services, and application platforms.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        2. Description of Services
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        Anti Matrix delivers cutting-edge technology consulting, enterprise web and mobile application engineering, AI/ML model integration, cloud infrastructure, UI/UX architecture, digital solutions, and professional student internship programs. The exact scope, timeline, and deliverables for client projects are defined in individual statements of work or project proposals.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        3. Client Responsibilities &amp; Project Cooperation
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        Clients engaging Anti Matrix for digital solutions are responsible for providing comprehensive project specifications, necessary assets, third-party credentials, and timely feedback. Delays resulting from client non-cooperation or delayed approvals may impact project milestones and do not entitle the client to penalties or refunds.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        4. Payment &amp; Commercial Terms
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+        For client software development, payments follow agreed milestone schedules. An initial advance payment is required before engineering commences to allocate dedicated personnel and infrastructure.
+      </p>
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); color: var(--color-text-dim); font-size: 0.9rem; line-height: 1.7;">
+        <strong style="color: var(--color-white);">Cancellation &amp; Retention Charge:</strong> If a client cancels a project after payment and commencement of work, <strong>30% of the advance payment is retained</strong> by Anti Matrix as a non-refundable administrative and processing charge. The remaining amount is calculated based on work performed and incurred third-party costs, as detailed in our Refund &amp; Cancellation Policy.
+      </div>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        5. Internship &amp; Careers Portal Terms
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+        Anti Matrix provides an online portal for candidates seeking educational internships and industry experience:
+      </p>
+      <ul style="color: var(--color-text-dim); line-height: 1.8; padding-left: 1.25rem; margin-bottom: var(--space-md);">
+        <li>
+          <strong>Application Fees:</strong> Where applicable (e.g. 1-Month program: <strong>₹199</strong>, 3-Months program: <strong>₹399</strong>), the fee covers processing, verification, and technical review.
+        </li>
+        <li>
+          <strong>Strictly Non-Refundable:</strong> The Application Fee is non-refundable upon submission, regardless of candidate selection, withdrawal, or scheduling changes.
+        </li>
+        <li>
+          <strong>No Guarantee of Selection:</strong> Payment of an Application Fee does not guarantee selection, shortlisting, or an internship offer. The selection process follows an objective review: <em>Applied → Under Review → Shortlisted</em>.
+        </li>
+        <li>
+          <strong>Offer Letters:</strong> Only formal Offer Letters generated through official Anti Matrix channels constitute confirmation of internship onboarding.
+        </li>
+      </ul>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        6. Candidate Verification Documents (Aadhaar, PAN &amp; College ID)
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-md);">
+        Candidates may be required to upload valid identification documents (such as Aadhaar card, PAN card, or college ID) for identity verification and academic accreditation:
+      </p>
+      <ul style="color: var(--color-text-dim); line-height: 1.8; padding-left: 1.25rem;">
+        <li>Candidates must upload genuine, legible, and authentic documents that belong solely to themselves.</li>
+        <li>Forged, manipulated, or third-party documents are strictly prohibited and will lead to immediate disqualification and account termination.</li>
+        <li>Documents are processed and stored securely in accordance with our Privacy Policy.</li>
+      </ul>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        7. Intellectual Property Rights
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        Upon complete payment of all agreed fees, clients receive full ownership rights to custom deliverables, code, and digital assets produced specifically for their project. Anti Matrix retains ownership of pre-existing frameworks, proprietary code libraries, reusable algorithms, and foundational development tools. All website content, trademarks, logos, and branding on <a href="https://antimatrix.co.in" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light);">antimatrix.co.in</a> remain the exclusive intellectual property of Anti Matrix.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        8. Confidentiality &amp; Non-Disclosure
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        Both Anti Matrix and its clients agree to treat confidential information exchanged during project engagements with the utmost care. Proprietary data, source code, credentials, and strategic documentation will not be disclosed to unauthorized third parties without prior written consent.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        9. Limitation of Liability
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        To the maximum extent permitted under applicable law, Anti Matrix, its founders, employees, and affiliates shall not be liable for indirect, incidental, special, or consequential damages resulting from website downtime, third-party gateway delays, or service disruptions. Our total liability for any claim arising from a commercial project shall not exceed the total fees paid by the client for that specific engagement.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        10. Governing Law &amp; Jurisdiction
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        These Terms &amp; Conditions, and any disputes arising out of or related to our services, shall be governed by and construed in accordance with the laws of <strong>India</strong>. The courts and legal tribunals located in <strong>Chennai, Tamil Nadu, India</strong> shall have exclusive jurisdiction over any legal proceedings or dispute resolutions.
+      </p>
+    </div>
+
+    <div class="legal-section" style="margin-bottom: var(--space-2xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-md); font-size: 1.35rem; border-left: 3px solid var(--color-primary); padding-left: var(--space-sm);">
+        11. Modifications to Terms
+      </h3>
+      <p style="color: var(--color-text-dim); line-height: 1.7;">
+        Anti Matrix reserves the right to revise these Terms &amp; Conditions periodically. Any updates will be published on this page with an updated "Last Updated" date. Continued usage of our website and services following updates constitutes acceptance of the amended terms.
+      </p>
+    </div>
+
+    <!-- Section 12: Contact Us -->
+    <div class="legal-section" style="background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, var(--color-surface) 100%); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-lg); padding: var(--space-xl);">
+      <h3 style="color: var(--color-white); margin-bottom: var(--space-sm); font-size: 1.35rem;">
+        12. Contact Information
+      </h3>
+      <p style="color: var(--color-text-dim); margin-bottom: var(--space-md); font-size: 0.95rem;">
+        For inquiries or legal notices regarding these Terms &amp; Conditions, please contact us:
+      </p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); color: var(--color-text-dim); font-size: 0.9rem;">
+        <div>
+          <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Anti Matrix</strong>
+          <span>Chennai, Tamil Nadu, India</span>
+        </div>
+        <div>
+          <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Email Support:</strong>
+          <a href="mailto:info@antimatrix.co.in" style="color: var(--color-primary-light); text-decoration: none;">info@antimatrix.co.in</a> &bull;
+          <a href="mailto:info@antimatrix.com" style="color: var(--color-primary-light); text-decoration: none;">info@antimatrix.com</a>
+        </div>
+        <div>
+          <strong style="color: var(--color-white); display: block; margin-bottom: 4px;">Official Website:</strong>
+          <a href="https://antimatrix.co.in" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary-light); text-decoration: none;">www.antimatrix.co.in</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 {% endblock %}

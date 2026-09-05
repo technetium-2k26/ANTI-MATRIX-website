@@ -84,8 +84,9 @@
             <li><a href="{{ url_for('main.pricing') }}">Pricing Plans</a></li>
             <li><a href="{{ url_for('main.services') }}">Our Services</a></li>
             <li><a href="{{ url_for('main.about') }}">Our Story</a></li>
+            <li><a href="{{ url_for('main.terms') }}">Terms &amp; Conditions</a></li>
             <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
-            <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+            <li><a href="{{ url_for('main.refund_policy') }}">Refund &amp; Cancellation</a></li>
           </ul>
         </div>
 
@@ -116,8 +117,9 @@
       <div class="footer-bottom">
         <p>© {{ current_year }} Anti-Matrix. All rights reserved.</p>
         <div class="footer-bottom-links">
+          <a href="{{ url_for('main.terms') }}">Terms &amp; Conditions</a>
           <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
-          <a href="{{ url_for('main.terms') }}">Terms of Service</a>
+          <a href="{{ url_for('main.refund_policy') }}">Refund &amp; Cancellation</a>
           <a href="{{ url_for('main.contact') }}">Support</a>
         </div>
       </div>

@@ -29,38 +29,28 @@
           </a>
         </div>
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_web_dev.jpg') }}" 
+               alt="Web Development workspace with dual monitors showing React code and analytics dashboard"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['React', 'Next.js', 'Node.js', 'Python', 'PostgreSQL', 'Redis'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>Custom React / Next.js applications</li>
-            <li>Full-stack Node.js and Python APIs</li>
-            <li>E-commerce and marketplace platforms</li>
-            <li>Progressive Web Apps (PWA)</li>
-            <li>CMS integrations (Contentful, Sanity)</li>
-            <li>Performance optimization & Core Web Vitals</li>
-          </ul>
         </div>
       </div>
 
       {# Service 2: Mobile App Development #}
       <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_mobile_dev.jpg') }}" 
+               alt="Mobile app development with smartphone and laptop showing app UI and code"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['React Native', 'Flutter', 'Swift', 'Kotlin', 'Firebase'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>React Native & Flutter cross-platform apps</li>
-            <li>Native iOS (Swift) & Android (Kotlin)</li>
-            <li>App Store & Google Play submission</li>
-            <li>Offline-first & real-time sync</li>
-            <li>Push notifications & deep linking</li>
-            <li>Mobile analytics & crash reporting</li>
-          </ul>
         </div>
         <div>
           <div class="icon-box">{{ icon('smartphone', size=28) }}</div>
@@ -76,49 +66,39 @@
       <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
           <div class="icon-box">{{ icon('brain', size=28) }}</div>
-          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">AI & Machine Learning</h3>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">AI &amp; Machine Learning</h3>
           <p style="margin-bottom: var(--space-xl); line-height: 1.8;">We build intelligent systems that automate processes, extract insights, and create competitive advantages using state-of-the-art AI and machine learning.</p>
           <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
             Get Started {{ icon('arrow-right', size=16) }}
           </a>
         </div>
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_ai_ml.jpg') }}" 
+               alt="AI and Machine Learning researcher working with neural network visualization and data charts"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['Python', 'TensorFlow', 'PyTorch', 'OpenAI', 'Hugging Face', 'FastAPI'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>Predictive analytics & forecasting</li>
-            <li>Natural Language Processing (NLP)</li>
-            <li>Computer vision & image recognition</li>
-            <li>Recommendation engines</li>
-            <li>LLM integration & fine-tuning</li>
-            <li>MLOps & model deployment pipelines</li>
-          </ul>
         </div>
       </div>
 
       {# Service 4: Digital Marketing & Growth #}
       <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_digital_marketing.jpg') }}" 
+               alt="Digital marketing strategy team meeting reviewing SEO analytics and growth metrics"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['Google Analytics', 'HubSpot', 'Semrush', 'Mailchimp', 'Meta Ads'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>Search Engine Optimization (SEO)</li>
-            <li>Pay-per-click advertising (Google, Meta)</li>
-            <li>Social media management & ads</li>
-            <li>Content strategy & creation</li>
-            <li>Email marketing automation</li>
-            <li>Conversion rate optimization (CRO)</li>
-          </ul>
         </div>
         <div>
           <div class="icon-box">{{ icon('trending-up', size=28) }}</div>
-          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Digital Marketing & Growth</h3>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Digital Marketing &amp; Growth</h3>
           <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Data-driven marketing strategies that build your brand, attract qualified leads, and convert visitors into loyal, long-term customers.</p>
           <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
             Get Started {{ icon('arrow-right', size=16) }}
@@ -130,45 +110,35 @@
       <div class="card reveal" style="display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
           <div class="icon-box">{{ icon('shield', size=28) }}</div>
-          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Cloud & DevOps</h3>
+          <h3 style="font-size: 1.5rem; color: var(--color-text); margin-bottom: var(--space-md);">Cloud &amp; DevOps</h3>
           <p style="margin-bottom: var(--space-xl); line-height: 1.8;">Secure, scalable cloud infrastructure with automated pipelines, monitoring, and zero-downtime deployments so your product is always up and fast.</p>
           <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
             Get Started {{ icon('arrow-right', size=16) }}
           </a>
         </div>
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_cloud_devops.jpg') }}" 
+               alt="Cloud DevOps engineer monitoring Kubernetes and CI/CD pipelines in server room"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['AWS', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>AWS, GCP & Azure architecture</li>
-            <li>Docker & Kubernetes orchestration</li>
-            <li>CI/CD pipeline automation</li>
-            <li>Infrastructure as Code (Terraform)</li>
-            <li>Security audits & penetration testing</li>
-            <li>24/7 monitoring & incident response</li>
-          </ul>
         </div>
       </div>
 
       {# Service 6: UI/UX Design #}
       <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_ui_ux.jpg') }}" 
+               alt="UI/UX designer working on Figma wireframes and prototypes in creative studio"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['Figma', 'Adobe XD', 'Maze', 'Hotjar', 'Storybook'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>User research & persona development</li>
-            <li>Information architecture & wireframing</li>
-            <li>High-fidelity Figma prototypes</li>
-            <li>Design system creation</li>
-            <li>Usability testing & iteration</li>
-            <li>WCAG 2.1 accessibility compliance</li>
-          </ul>
         </div>
         <div>
           <div class="icon-box">{{ icon('palette', size=28) }}</div>
@@ -191,38 +161,28 @@
           </a>
         </div>
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_enterprise_software.jpg') }}" 
+               alt="Executive team reviewing enterprise ERP and CRM dashboards in corporate boardroom"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['React', 'Node.js', 'Python', 'PostgreSQL', 'Microservices'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>Custom ERP & CRM systems</li>
-            <li>Legacy system modernization</li>
-            <li>Third-party API integrations</li>
-            <li>Real-time dashboards & reporting</li>
-            <li>Role-based access control (RBAC)</li>
-            <li>Multi-tenant SaaS architecture</li>
-          </ul>
         </div>
       </div>
 
       {# Service 8: Digital Transformation #}
       <div class="card reveal" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--space-2xl); align-items: center; padding: var(--space-2xl);">
         <div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--space-lg);">
+          <img src="{{ url_for('static', filename='images/service_digital_transformation.jpg') }}" 
+               alt="Digital transformation strategy consultant presenting roadmap to executives in boardroom"
+               style="width: 100%; border-radius: var(--radius-lg); box-shadow: 0 8px 32px rgba(15,23,42,0.12); object-fit: cover; height: 280px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--space-lg);">
             {% for t in ['Strategy', 'Agile', 'JIRA', 'Confluence', 'Miro'] %}
               <span class="tech-pill">{{ t }}</span>
             {% endfor %}
           </div>
-          <ul class="service-capabilities">
-            <li>Digital maturity assessment</li>
-            <li>Technology roadmap planning</li>
-            <li>Process automation & digitization</li>
-            <li>Team upskilling & training</li>
-            <li>Agile transformation coaching</li>
-            <li>KPI tracking & continuous improvement</li>
-          </ul>
         </div>
         <div>
           <div class="icon-box">{{ icon('globe', size=28) }}</div>
@@ -256,19 +216,19 @@
 
       <div class="card" style="text-align: center;">
         <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">02</div>
-        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Design & Plan</h3>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Design &amp; Plan</h3>
         <p style="font-size: 0.875rem;">Architecture blueprints, UI/UX wireframes, and a detailed roadmap agreed upon before development begins.</p>
       </div>
 
       <div class="card" style="text-align: center;">
         <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">03</div>
-        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Build & Iterate</h3>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Build &amp; Iterate</h3>
         <p style="font-size: 0.875rem;">Agile sprints with weekly demos. You see real progress and can give feedback at every stage.</p>
       </div>
 
       <div class="card" style="text-align: center;">
         <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; color: rgba(16, 185, 129, 0.25); margin-bottom: var(--space-md);">04</div>
-        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Launch & Grow</h3>
+        <h3 style="font-size: 1.1rem; color: var(--color-text); margin-bottom: var(--space-sm);">Launch &amp; Grow</h3>
         <p style="font-size: 0.875rem;">Rigorous QA, smooth deployment, and ongoing support to continuously optimize and scale your product.</p>
       </div>
     </div>
