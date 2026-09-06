@@ -836,7 +836,7 @@ def job_apply_success(app_id):
 @main_bp.route('/my-profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    """Display and manage user profile (Name, Email, Phone Number)."""
+    """Display and manage user profile (Name, Email, Phone Number, Applied Positions)."""
     if request.method == 'POST':
         name = (request.form.get('name') or '').strip()
         phone = (request.form.get('phone') or '').strip()
@@ -844,15 +844,28 @@ def profile():
             current_user.name = name
         current_user.phone = phone if phone else None
         db.session.commit()
-        flash('Profile updated successfully!', 'success')
+        flash('Profile details updated successfully.', 'success')
         return redirect(url_for('main.profile'))
 
-    apps_count = JobApplication.query.filter(
+    user_applications = JobApplication.query.filter(
         (JobApplication.user_id == current_user.id) |
-        (JobApplication.email == current_user.email.lower())
-    ).count()
+        ((JobApplication.user_id.is_(None)) & (JobApplication.email == current_user.email.lower()))
+    ).order_by(JobApplication.created_at.desc()).all()
 
-    return render_template('pages/profile.html', apps_count=apps_count)
+    # Ensure all matching prior applications are linked to this user_id
+    needs_commit = False
+    for app in user_applications:
+        if app.user_id is None:
+            app.user_id = current_user.id
+            needs_commit = True
+    if needs_commit:
+        db.session.commit()
+
+    return render_template(
+        'pages/profile.html',
+        applications=user_applications,
+        apps_count=len(user_applications)
+    )
 
 
 @main_bp.route('/my-applications')
