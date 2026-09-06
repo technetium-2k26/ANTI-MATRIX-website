@@ -4,200 +4,156 @@
 {% block title %}My Profile | Anti-Matrix{% endblock %}
 
 {% block content %}
-<!-- Header Bar -->
-<section class="page-hero" style="padding: 3rem 0 2rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 70%);">
+<!-- Page Hero (Uses global CSS padding so header content is never hidden behind fixed navbar) -->
+<section class="page-hero">
   <div class="container">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--color-text-dim);">
-      <a href="{{ url_for('main.home') }}" style="color: var(--color-text-dim); text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--color-text-dim)'">Home</a>
-      <span>/</span>
-      <span style="color: var(--color-primary-light); font-weight: 500;">My Profile</span>
+    <div class="badge" style="margin-bottom: var(--space-sm);">
+      {{ icon('user', size=12) }} Candidate Profile
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
-      <div>
-        <h1 style="font-size: 2rem; font-weight: 700; color: #fff; margin: 0 0 0.4rem 0; letter-spacing: -0.02em;">Account Profile</h1>
-        <p style="color: var(--color-text-dim); margin: 0; font-size: 0.95rem;">Manage your candidate credentials, personal contact info, and track applied job positions.</p>
-      </div>
-      <div style="display: flex; gap: 0.75rem; align-items: center;">
-        <a href="{{ url_for('main.careers') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
-          {{ icon('search', size=13) }} Browse Careers
-        </a>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="gap: 6px; color: #f87171; border-color: rgba(239, 68, 68, 0.25);" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
-          {{ icon('log-out', size=13) }} Log Out
-        </a>
-      </div>
-    </div>
+    <h1>Account Profile</h1>
+    <p>Manage your candidate identity, primary contact information, and track all your submitted job applications.</p>
   </div>
 </section>
 
-<style>
-.profile-layout-grid {
-  display: grid;
-  grid-template-columns: 290px 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-.profile-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-@media (max-width: 860px) {
-  .profile-layout-grid {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 640px) {
-  .profile-form-grid {
-    grid-template-columns: 1fr;
-  }
-  .profile-form-grid > div:last-child {
-    grid-column: span 1 !important;
-  }
-}
-</style>
-
-<!-- Main Profile Content -->
-<section style="background: var(--color-bg); min-height: 70vh; padding: 2.5rem 0 4rem 0;">
+<!-- Main Profile Section -->
+<section class="section" style="background: var(--color-bg-alt); min-height: 65vh; padding-top: var(--space-2xl); padding-bottom: var(--space-3xl);">
   <div class="container">
-    
+
     <div class="profile-layout-grid">
       
-      <!-- ================= SIDEBAR: Identity & Credentials ================= -->
-      <aside style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- ================= SIDEBAR: Profile Identity Card ================= -->
+      <aside style="display: flex; flex-direction: column; gap: var(--space-lg);">
         
-        <!-- Profile Identity Card -->
-        <div class="card" style="border: 1px solid rgba(255, 255, 255, 0.08); background: #0f172a; border-radius: 12px; padding: 1.75rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
+        <!-- Identity Summary Card -->
+        <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-xl); box-shadow: var(--shadow-card);">
           
           <!-- Avatar + Status -->
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-            <div style="position: relative; margin-bottom: 1rem;">
+          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: var(--space-lg); border-bottom: 1px solid var(--color-border);">
+            <div style="position: relative; margin-bottom: var(--space-md);">
               {% if current_user.profile_picture %}
-                <img src="{{ current_user.profile_picture }}" alt="{{ current_user.name }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.15); display: block;" />
+                <img src="{{ current_user.profile_picture }}" alt="{{ current_user.name }}" style="width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; display: block; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);" />
               {% else %}
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: #1e293b; border: 2px solid rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #f8fafc;">
+                <div style="width: 84px; height: 84px; border-radius: 50%; background: #0f172a; border: 2px solid #0f172a; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 700; color: #ffffff; font-family: var(--font-heading); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);">
                   {{ current_user.name[0].upper() if current_user.name else 'U' }}
                 </div>
               {% endif %}
               
-              <!-- Provider Badge Icon -->
-              <div style="position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; border-radius: 50%; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center;" title="Signed in via {{ current_user.provider|capitalize }}">
+              <!-- Provider Icon Badge -->
+              <div style="position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);" title="Signed in via {{ current_user.provider|capitalize }}">
                 {% if current_user.provider == 'google' %}
-                  {{ google_icon(size=14) }}
+                  {{ google_icon(size=15) }}
                 {% elif current_user.provider == 'github' %}
-                  {{ github_icon(size=14, color='#ffffff') }}
+                  {{ github_icon(size=15, color='#0f172a') }}
                 {% else %}
-                  {{ icon('mail', size=12, color='var(--color-primary-light)') }}
+                  {{ icon('mail', size=13, color='var(--color-primary)') }}
                 {% endif %}
               </div>
             </div>
 
             <!-- Full Name & Role -->
-            <h2 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 0.35rem 0; word-break: break-word;">
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-xs) 0; font-family: var(--font-heading); word-break: break-word;">
               {{ current_user.name }}
             </h2>
             
             {% if current_user.role == 'admin' %}
-              <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.725rem; font-weight: 700; letter-spacing: 0.04em; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 9999px; padding: 2px 10px; text-transform: uppercase;">
-                {{ icon('shield', size=11, color='var(--color-primary-light)') }} Administrator
+              <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; color: var(--color-primary); background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.25); border-radius: 9999px; padding: 3px 12px; text-transform: uppercase;">
+                {{ icon('shield', size=12, color='var(--color-primary)') }} Administrator
               </div>
             {% else %}
-              <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.725rem; font-weight: 600; color: #94a3b8; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9999px; padding: 2px 10px;">
-                {{ icon('user', size=11) }} Candidate
+              <div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; color: #475569; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 9999px; padding: 3px 12px;">
+                {{ icon('user', size=12) }} Candidate Account
               </div>
             {% endif %}
           </div>
 
           <!-- Metadata List -->
-          <div style="display: flex; flex-direction: column; gap: 1rem; padding-top: 1.25rem; font-size: 0.85rem;">
+          <div style="display: flex; flex-direction: column; gap: var(--space-md); padding-top: var(--space-lg); font-size: 0.875rem;">
             
             <!-- Email -->
             <div>
-              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: 0.03em;">Email Address</div>
-              <div style="color: #f1f5f9; display: flex; align-items: center; gap: 6px; word-break: break-all;">
-                {{ icon('mail', size=13, color='var(--color-primary-light)') }}
+              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.04em;">Primary Email</div>
+              <div style="color: var(--color-text); display: flex; align-items: center; gap: 6px; word-break: break-all; font-weight: 500;">
+                {{ icon('mail', size=14, color='var(--color-primary)') }}
                 <span>{{ current_user.email }}</span>
               </div>
             </div>
 
             <!-- Phone Number -->
             <div>
-              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: 0.03em;">Phone Number</div>
-              <div style="color: #f1f5f9; display: flex; align-items: center; gap: 6px;">
-                {{ icon('phone', size=13, color='var(--color-primary-light)') }}
-                <span>{{ current_user.phone_number or 'Not provided yet' }}</span>
+              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.04em;">Contact Number</div>
+              <div style="color: var(--color-text); display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                {{ icon('phone', size=14, color='var(--color-primary)') }}
+                <span>{{ current_user.phone_number or 'Not provided' }}</span>
               </div>
             </div>
 
             <!-- Authentication Method -->
             <div>
-              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: 0.03em;">Sign-in Method</div>
-              <div style="color: #f1f5f9; display: flex; align-items: center; gap: 6px;">
+              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.04em;">Sign-in Method</div>
+              <div style="color: var(--color-text); display: flex; align-items: center; gap: 6px; font-weight: 500;">
                 {% if current_user.provider == 'google' %}
                   {{ google_icon(size=14) }} Google Account
                 {% elif current_user.provider == 'github' %}
-                  {{ github_icon(size=14, color='#fff') }} GitHub Account
+                  {{ github_icon(size=14, color='#0f172a') }} GitHub Account
                 {% else %}
-                  {{ icon('lock', size=13, color='var(--color-primary-light)') }} Password
+                  {{ icon('lock', size=13, color='var(--color-primary)') }} Email &amp; Password
                 {% endif %}
               </div>
             </div>
 
             <!-- Applications Count -->
             <div>
-              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; margin-bottom: 0.2rem; letter-spacing: 0.03em;">Job Applications</div>
-              <div style="color: #f1f5f9; display: flex; align-items: center; gap: 6px; font-weight: 600;">
-                {{ icon('briefcase', size=13, color='var(--color-primary-light)') }}
-                <span>{{ apps_count }} Position{{ 's' if apps_count != 1 else '' }} Applied</span>
+              <div style="color: var(--color-text-dim); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; letter-spacing: 0.04em;">Career Records</div>
+              <div style="color: var(--color-text); display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                {{ icon('briefcase', size=14, color='var(--color-primary)') }}
+                <span>{{ apps_count }} Application{{ 's' if apps_count != 1 else '' }} Active</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Quick Navigation Links Card -->
-        <div class="card" style="border: 1px solid rgba(255, 255, 255, 0.08); background: #0f172a; border-radius: 12px; padding: 1.25rem;">
-          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-text-dim); letter-spacing: 0.05em; margin-bottom: 0.75rem;">
-            Navigation
+        <!-- Quick Navigation Card -->
+        <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); box-shadow: var(--shadow-card);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-text-dim); letter-spacing: 0.05em; margin-bottom: var(--space-sm);">
+            Navigation Shortcuts
           </div>
-          <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-            <a href="{{ url_for('main.my_applications') }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none; color: #f1f5f9; font-size: 0.85rem; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <a href="{{ url_for('main.my_applications') }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; color: var(--color-text); font-size: 0.875rem; font-weight: 500; transition: all 0.15s;" onmouseover="this.style.background='#f8fafc'; this.style.color='#059669';" onmouseout="this.style.background='transparent'; this.style.color='var(--color-text)';">
               <span style="display: flex; align-items: center; gap: 8px;">
-                {{ icon('briefcase', size=14, color='var(--color-primary-light)') }} My Applications
+                {{ icon('briefcase', size=15, color='var(--color-primary)') }} My Applications
               </span>
-              <span style="font-size: 0.75rem; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: var(--color-primary-light); padding: 1px 6px; border-radius: 4px;">{{ apps_count }}</span>
+              <span style="font-size: 0.75rem; font-weight: 700; background: rgba(5, 150, 105, 0.12); color: var(--color-primary); padding: 2px 8px; border-radius: 4px;">{{ apps_count }}</span>
             </a>
 
-            <a href="{{ url_for('main.careers') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none; color: #f1f5f9; font-size: 0.85rem; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-              {{ icon('search', size=14) }} Explore All Jobs
+            <a href="{{ url_for('main.careers') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; color: var(--color-text); font-size: 0.875rem; font-weight: 500; transition: all 0.15s;" onmouseover="this.style.background='#f8fafc'; this.style.color='#059669';" onmouseout="this.style.background='transparent'; this.style.color='var(--color-text)';">
+              {{ icon('search', size=15, color='#64748b') }} Explore All Jobs
             </a>
 
             {% if current_user.role == 'admin' %}
-              <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 0.4rem 0;"></div>
+              <div style="height: 1px; background: var(--color-border); margin: 0.4rem 0;"></div>
               
-              <a href="{{ url_for('admin.dashboard') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none; color: var(--color-primary-light); font-size: 0.85rem; transition: background 0.15s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.08)'" onmouseout="this.style.background='transparent'">
-                {{ icon('shield', size=14) }} Admin Dashboard
+              <a href="{{ url_for('admin.dashboard') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; color: var(--color-primary); font-size: 0.875rem; font-weight: 600; transition: all 0.15s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.08)';" onmouseout="this.style.background='transparent';">
+                {{ icon('shield', size=15, color='var(--color-primary)') }} Admin Dashboard
               </a>
-              <a href="{{ url_for('admin.applications') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none; color: #f1f5f9; font-size: 0.85rem; transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                {{ icon('users', size=14) }} Candidate Dossiers
+              <a href="{{ url_for('admin.applications') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; color: var(--color-text); font-size: 0.875rem; font-weight: 500; transition: all 0.15s;" onmouseover="this.style.background='#f8fafc'; this.style.color='#059669';" onmouseout="this.style.background='transparent'; this.style.color='var(--color-text)';">
+                {{ icon('users', size=15, color='#64748b') }} Candidate Applications
               </a>
-              <a href="{{ url_for('admin.money_management') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none; color: #10b981; font-size: 0.85rem; transition: background 0.15s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.08)'" onmouseout="this.style.background='transparent'">
-                {{ icon('wallet', size=14) }} Money Management
+              <a href="{{ url_for('admin.money_management') }}" style="display: flex; align-items: center; gap: 8px; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); text-decoration: none; color: var(--color-primary); font-size: 0.875rem; font-weight: 600; transition: all 0.15s;" onmouseover="this.style.background='rgba(5, 150, 105, 0.08)';" onmouseout="this.style.background='transparent';">
+                {{ icon('wallet', size=15, color='var(--color-primary)') }} Money Management
               </a>
             {% endif %}
           </div>
         </div>
       </aside>
 
-      <!-- ================= MAIN SECTION: Details & Applied Jobs ================= -->
-      <main style="display: flex; flex-direction: column; gap: 2rem;">
+      <!-- ================= MAIN SECTION: Details & Applied Positions ================= -->
+      <main style="display: flex; flex-direction: column; gap: var(--space-xl);">
         
-        <!-- SECTION 1: Personal & Contact Information -->
-        <div class="card" style="border: 1px solid rgba(255, 255, 255, 0.08); background: #0f172a; border-radius: 12px; padding: 1.75rem 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-            <div>
-              <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">Personal Information</h3>
-              <p style="font-size: 0.85rem; color: var(--color-text-dim); margin: 0;">Update your primary contact details used by our recruitment team for communications.</p>
-            </div>
+        <!-- CARD 1: Personal Contact Information -->
+        <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2xl); box-shadow: var(--shadow-card);">
+          <div style="margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1px solid var(--color-border);">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin: 0 0 4px 0; font-family: var(--font-heading);">Personal Information</h3>
+            <p style="font-size: 0.875rem; color: var(--color-text-dim); margin: 0;">Keep your primary contact details up to date for recruiters, interview calls, and offer dispatches.</p>
           </div>
 
           <form method="POST" action="{{ url_for('main.profile') }}">
@@ -205,9 +161,9 @@
 
             <div class="profile-form-grid">
               
-              <!-- Full Name -->
-              <div>
-                <label for="profile-name" style="display: block; font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-bottom: 0.4rem;">
+              <!-- Full Legal Name -->
+              <div class="form-group">
+                <label for="profile-name">
                   Full Legal Name <span style="color: #ef4444;">*</span>
                 </label>
                 <input
@@ -217,13 +173,12 @@
                   class="form-control"
                   value="{{ current_user.name }}"
                   required
-                  style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; border-radius: 6px; padding: 0.65rem 0.85rem; width: 100%; font-size: 0.9rem;"
                 />
               </div>
 
               <!-- Phone Number -->
-              <div>
-                <label for="profile-phone" style="display: block; font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-bottom: 0.4rem;">
+              <div class="form-group">
+                <label for="profile-phone">
                   Phone Number
                 </label>
                 <input
@@ -233,19 +188,18 @@
                   class="form-control"
                   placeholder="+91 98765 43210"
                   value="{{ current_user.phone_number or '' }}"
-                  style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.12); color: #fff; border-radius: 6px; padding: 0.65rem 0.85rem; width: 100%; font-size: 0.9rem;"
                 />
-                <span style="font-size: 0.75rem; color: var(--color-text-dim); display: block; margin-top: 0.3rem;">Used for interview notifications &amp; onboarding.</span>
+                <span style="font-size: 0.75rem; color: var(--color-text-dim); margin-top: 4px;">Used for WhatsApp interview alerts and verification calls.</span>
               </div>
 
-              <!-- Email Address (Read-only) -->
-              <div style="grid-column: span 2;">
-                <label for="profile-email" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; font-weight: 600; color: #e2e8f0; margin-bottom: 0.4rem;">
-                  <span>Primary Account Email</span>
-                  <span style="font-size: 0.725rem; font-weight: 600; color: #10b981; display: inline-flex; align-items: center; gap: 4px;">
-                    {{ icon('check-circle', size=12) }} Verified Primary
+              <!-- Primary Email (Read-only for security) -->
+              <div class="form-group profile-email-col">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs);">
+                  <label for="profile-email" style="margin: 0;">Primary Account Email</label>
+                  <span style="font-size: 0.75rem; font-weight: 600; color: var(--color-primary); display: inline-flex; align-items: center; gap: 4px;">
+                    {{ icon('check-circle', size=13) }} Verified Identity
                   </span>
-                </label>
+                </div>
                 <input
                   id="profile-email"
                   type="email"
@@ -253,114 +207,114 @@
                   value="{{ current_user.email }}"
                   readonly
                   disabled
-                  style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.08); color: #94a3b8; border-radius: 6px; padding: 0.65rem 0.85rem; width: 100%; font-size: 0.9rem; cursor: not-allowed;"
+                  style="background: #f8fafc; color: var(--color-text-dim); cursor: not-allowed;"
                 />
-                <span style="font-size: 0.75rem; color: var(--color-text-dim); display: block; margin-top: 0.3rem;">
-                  Tied directly to your login identity for secure authentication.
+                <span style="font-size: 0.75rem; color: var(--color-text-dim); margin-top: 4px;">
+                  Tied directly to your authenticated login. Contact support to update your primary account email.
                 </span>
               </div>
             </div>
 
-            <!-- Save Action -->
-            <div style="display: flex; justify-content: flex-end;">
-              <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 600; gap: 6px;">
-                {{ icon('check-circle', size=15) }} Save Changes
+            <!-- Submit Button -->
+            <div style="display: flex; justify-content: flex-end; margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--color-border);">
+              <button type="submit" class="btn btn-primary" style="gap: 8px; font-weight: 600;">
+                {{ icon('check', size=15) }} Save Profile Changes
               </button>
             </div>
           </form>
         </div>
 
-        <!-- SECTION 2: Applied Job Positions ("what he applied etc") -->
-        <div class="card" style="border: 1px solid rgba(255, 255, 255, 0.08); background: #0f172a; border-radius: 12px; padding: 1.75rem 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
+        <!-- CARD 2: Applied Job Positions ("what he applied etc") -->
+        <div class="card" style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2xl); box-shadow: var(--shadow-card);">
           
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap; gap: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xl); padding-bottom: var(--space-md); border-bottom: 1px solid var(--color-border); flex-wrap: wrap; gap: var(--space-sm);">
             <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0;">Job Applications</h3>
-                <span style="font-size: 0.75rem; font-weight: 700; background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--color-text); margin: 0; font-family: var(--font-heading);">Applied Positions</h3>
+                <span style="font-size: 0.75rem; font-weight: 700; background: rgba(5, 150, 105, 0.1); color: var(--color-primary); padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(5, 150, 105, 0.2);">
                   {{ apps_count }} Total
                 </span>
               </div>
-              <p style="font-size: 0.85rem; color: var(--color-text-dim); margin: 0.25rem 0 0 0;">Positions and internships you have applied for at Anti-Matrix.</p>
+              <p style="font-size: 0.875rem; color: var(--color-text-dim); margin: 4px 0 0 0;">Real-time progress of all job and internship applications you have submitted to Anti-Matrix.</p>
             </div>
             
             {% if applications %}
-              <a href="{{ url_for('main.my_applications') }}" class="btn btn-outline btn-sm" style="font-size: 0.8rem; gap: 6px;">
-                {{ icon('eye', size=12) }} Detailed View
+              <a href="{{ url_for('main.my_applications') }}" class="btn btn-outline btn-sm" style="gap: 6px;">
+                {{ icon('eye', size=13) }} View Full Dossier
               </a>
             {% endif %}
           </div>
 
           <!-- Applications List -->
           {% if applications %}
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
               {% for app in applications %}
-                <div style="background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(16, 185, 129, 0.3)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.08)'">
+                <div style="background: #ffffff; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); transition: all var(--transition-fast);" onmouseover="this.style.borderColor='var(--color-primary)'; this.style.boxShadow='0 2px 10px rgba(5, 150, 105, 0.08)';" onmouseout="this.style.borderColor='var(--color-border)'; this.style.boxShadow='none';">
                   
-                  <!-- Job Info -->
-                  <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 240px;">
+                  <!-- Left Details -->
+                  <div style="display: flex; flex-direction: column; gap: 4px; min-width: 260px;">
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                      <span style="font-family: var(--font-mono, monospace); font-size: 0.775rem; font-weight: 700; color: var(--color-primary-light); background: rgba(16, 185, 129, 0.1); padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                      <span style="font-family: var(--font-mono, monospace); font-size: 0.8rem; font-weight: 700; color: var(--color-primary); background: rgba(5, 150, 105, 0.1); padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid rgba(5, 150, 105, 0.2);">
                         {{ app.formatted_code }}
                       </span>
                       {% if app.duration_display %}
-                        <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05); padding: 0.15rem 0.45rem; border-radius: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 600; color: #2563eb; background: rgba(37, 99, 235, 0.08); padding: 0.15rem 0.5rem; border-radius: 4px; border: 1px solid rgba(37, 99, 235, 0.2);">
                           {{ app.duration_display }}
                         </span>
                       {% endif %}
                     </div>
                     
-                    <div style="font-size: 1.05rem; font-weight: 700; color: #fff;">
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--color-text); margin: 4px 0 0 0;">
                       {{ app.job.title if app.job else 'Position' }}
-                    </div>
+                    </h4>
                     
-                    <div style="font-size: 0.8rem; color: var(--color-text-dim); display: flex; align-items: center; gap: 8px;">
+                    <div style="font-size: 0.825rem; color: var(--color-text-dim); display: flex; align-items: center; gap: 6px;">
                       <span>{{ app.job.department if app.job else 'Anti-Matrix' }}</span>
                       <span>&bull;</span>
                       <span>Applied on {{ app.created_at.strftime('%d %b %Y') }}</span>
                     </div>
                   </div>
 
-                  <!-- Status & Details Action -->
-                  <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                  <!-- Right Status & Action -->
+                  <div style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
                     
-                    <!-- Payment badge -->
+                    <!-- Payment Status -->
                     {% if app.payment_status == 'paid' %}
-                      <span style="font-size: 0.75rem; font-weight: 600; color: #10b981; background: rgba(16, 185, 129, 0.12); padding: 0.25rem 0.6rem; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.25); display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="badge-status active" style="font-size: 0.775rem;">
                         {{ icon('check', size=11) }} Fee Paid
                       </span>
                     {% elif app.payment_status == 'pending' %}
-                      <span style="font-size: 0.75rem; font-weight: 600; color: #eab308; background: rgba(234, 179, 8, 0.12); padding: 0.25rem 0.6rem; border-radius: 4px; border: 1px solid rgba(234, 179, 8, 0.25); display: inline-flex; align-items: center; gap: 4px;">
+                      <span class="badge-status" style="background: rgba(217, 119, 6, 0.1); color: #d97706; border: 1px solid rgba(217, 119, 6, 0.3); font-size: 0.775rem;">
                         {{ icon('clock', size=11) }} Fee Pending
                       </span>
                     {% else %}
-                      <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05); padding: 0.25rem 0.6rem; border-radius: 4px;">
+                      <span class="badge-status" style="background: #f1f5f9; color: var(--color-text-dim); border: 1px solid var(--color-border); font-size: 0.775rem;">
                         Exempt
                       </span>
                     {% endif %}
 
                     <!-- Application Pipeline Status -->
-                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 4px; {% if app.status in ['Hired', 'Shortlisted'] %}background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);{% elif app.status == 'Rejected' %}background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);{% else %}background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);{% endif %}">
+                    <span class="badge-status {{ app.status_badge_class }}" style="font-size: 0.775rem; font-weight: 700;">
                       {{ app.status_display }}
                     </span>
 
-                    <!-- View Details link -->
-                    <a href="{{ url_for('main.my_application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;">
-                      View Status &rarr;
+                    <!-- Action Link -->
+                    <a href="{{ url_for('main.my_application_detail', app_id=app.id) }}" class="btn btn-outline btn-sm" style="gap: 4px;">
+                      View Details {{ icon('arrow-right', size=12) }}
                     </a>
                   </div>
                 </div>
               {% endfor %}
             </div>
           {% else %}
-            <!-- Clean Empty State -->
-            <div style="text-align: center; padding: 3rem 1.5rem; background: #1e293b; border-radius: 8px; border: 1px dashed rgba(255, 255, 255, 0.12);">
-              <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.85rem; color: var(--color-primary-light);">
+            <!-- Professional Empty State -->
+            <div style="text-align: center; padding: var(--space-3xl) var(--space-xl); background: var(--color-bg-alt); border-radius: var(--radius-sm); border: 1px dashed var(--color-border);">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); color: var(--color-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--space-md);">
                 {{ icon('briefcase', size=22) }}
               </div>
-              <h4 style="font-size: 1.05rem; font-weight: 600; color: #fff; margin: 0 0 0.35rem 0;">No Applications Submitted Yet</h4>
-              <p style="font-size: 0.85rem; color: var(--color-text-dim); max-width: 420px; margin: 0 auto 1.25rem auto;">
-                You haven't submitted any job or internship applications with this account yet. Explore our open technical and operational roles.
+              <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-xs) 0;">No Active Applications</h4>
+              <p style="font-size: 0.875rem; color: var(--color-text-dim); max-width: 440px; margin: 0 auto var(--space-lg) auto; line-height: 1.6;">
+                You haven't submitted any job or internship applications yet. Browse our active openings across engineering, design, and operations to apply.
               </p>
               <a href="{{ url_for('main.careers') }}" class="btn btn-primary btn-sm" style="gap: 6px;">
                 {{ icon('search', size=13) }} View Open Positions
@@ -375,4 +329,34 @@
 
   </div>
 </section>
+
+<style>
+.profile-layout-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+.profile-email-col {
+  grid-column: span 2;
+}
+@media (max-width: 960px) {
+  .profile-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-email-col {
+    grid-column: span 1;
+  }
+}
+</style>
 {% endblock %}
