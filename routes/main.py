@@ -632,7 +632,7 @@ def cashfree_checkout_page(payment_id):
 def cashfree_return():
     """
     Cashfree Return Endpoint.
-    Verifies transaction status server-side before updating state.
+    Verifies transaction status server-side from Cashfree Sandbox before updating state.
     """
     order_id = request.args.get('order_id') or request.form.get('order_id')
     if not order_id:
@@ -646,13 +646,16 @@ def cashfree_return():
 
     application = payment.application
 
-    # If already verified paid, safely redirect to success
+    # If already verified paid, safely redirect to success (Idempotent)
     if payment.payment_status == 'paid' and application.payment_status == 'paid':
         return redirect(url_for('main.job_apply_success', app_id=application.id))
 
-    # Check for manual simulation parameters in test mode
+    cfg = CashfreeService.get_config()
+    is_test_env = (cfg['environment'] == 'test' or current_app.config.get('TESTING', False))
+
+    # Allow simulation bypass ONLY during isolated automated unit test execution
     sim_status = request.args.get('sim_status')
-    if sim_status and current_app.config.get('CASHFREE_ENVIRONMENT') != 'production':
+    if sim_status and is_test_env:
         if sim_status == 'SUCCESS':
             is_paid = True
             p_status = 'SUCCESS'
@@ -664,7 +667,7 @@ def cashfree_return():
             pay_details = {'cf_payment_id': None, 'simulated': True}
             err = "Simulated payment failure."
     else:
-        # Perform Server-Side Verification via Cashfree API
+        # Perform Server-Side Verification via Official Cashfree Sandbox API
         is_paid, p_status, pay_details, err = CashfreeService.verify_order_payment(order_id)
 
     if is_paid and p_status == 'SUCCESS':
@@ -685,11 +688,11 @@ def cashfree_return():
         # Automatically record income in Money Management
         try:
             from services.money_service import record_cashfree_income
-            cfg = CashfreeService.get_config()
             record_cashfree_income(application, payment, pay_details, env=cfg['environment'])
         except Exception as e:
             current_app.logger.warning(f"Failed to record money transaction for Cashfree order {order_id}: {e}")
 
+        current_app.logger.info(f"Application finalized: {application.id} ({application.application_code}) for Cashfree order {order_id}")
         flash("Payment verified successfully! Your application has been submitted.", "success")
         return redirect(url_for('main.job_apply_success', app_id=application.id))
     
@@ -716,9 +719,12 @@ def cashfree_webhook():
     timestamp = request.headers.get('x-webhook-timestamp', '')
     raw_body = request.get_data()
 
+    cfg = CashfreeService.get_config()
+    is_test_env = (cfg['environment'] == 'test' or current_app.config.get('TESTING', False))
+
     # Verify signature
     is_valid = CashfreeService.verify_webhook_signature(signature, timestamp, raw_body)
-    if not is_valid and current_app.config.get('CASHFREE_ENVIRONMENT') == 'production':
+    if not is_valid and not is_test_env:
         return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
 
     try:
@@ -742,7 +748,6 @@ def cashfree_webhook():
             # Ensure financial transaction exists even if webhook fires after return url
             try:
                 from services.money_service import record_cashfree_income
-                cfg = CashfreeService.get_config()
                 record_cashfree_income(application, payment, payment_info, env=cfg['environment'])
             except Exception:
                 pass
@@ -765,10 +770,11 @@ def cashfree_webhook():
             # Automatically record income in Money Management
             try:
                 from services.money_service import record_cashfree_income
-                cfg = CashfreeService.get_config()
                 record_cashfree_income(application, payment, payment_info, env=cfg['environment'])
             except Exception as e:
                 current_app.logger.warning(f"Failed to record money transaction for webhook order {order_id}: {e}")
+
+            current_app.logger.info(f"Application finalized via Webhook: {application.id} ({application.application_code}) for Cashfree order {order_id}")
 
         elif payment_status in ['FAILED', 'CANCELLED', 'USER_DROPPED']:
             payment.payment_status = 'failed'

@@ -6,9 +6,12 @@ import json
 import time
 import uuid
 import re
+import logging
 import requests
 from flask import current_app
 from config import INTERNSHIP_FEES
+
+logger = logging.getLogger(__name__)
 
 
 class CashfreeService:
@@ -19,35 +22,42 @@ class CashfreeService:
 
     @classmethod
     def get_config(cls):
+        app_env = ''
+        app_client_id = ''
+        app_client_secret = ''
+        app_api_version = ''
+        if current_app:
+            app_env = (current_app.config.get('CASHFREE_ENV') or current_app.config.get('CASHFREE_ENVIRONMENT') or '').strip()
+            app_client_id = (current_app.config.get('CASHFREE_APP_ID') or current_app.config.get('CASHFREE_CLIENT_ID') or '').strip()
+            app_client_secret = (current_app.config.get('CASHFREE_SECRET_KEY') or current_app.config.get('CASHFREE_CLIENT_SECRET') or '').strip()
+            app_api_version = (current_app.config.get('CASHFREE_API_VERSION') or '').strip()
+
         env = (
+            app_env or
             os.environ.get('CASHFREE_ENV', '').strip() or 
             os.environ.get('CASHFREE_ENVIRONMENT', '').strip() or 
-            (current_app.config.get('CASHFREE_ENV', '').strip() if current_app else '') or
-            (current_app.config.get('CASHFREE_ENVIRONMENT', '').strip() if current_app else '') or
             'sandbox'
         ).lower()
 
         client_id = (
+            app_client_id or
             os.environ.get('CASHFREE_APP_ID', '').strip() or 
-            os.environ.get('CASHFREE_CLIENT_ID', '').strip() or 
-            (current_app.config.get('CASHFREE_APP_ID', '').strip() if current_app else '') or
-            (current_app.config.get('CASHFREE_CLIENT_ID', '').strip() if current_app else '')
+            os.environ.get('CASHFREE_CLIENT_ID', '').strip()
         )
 
         client_secret = (
+            app_client_secret or
             os.environ.get('CASHFREE_SECRET_KEY', '').strip() or 
-            os.environ.get('CASHFREE_CLIENT_SECRET', '').strip() or 
-            (current_app.config.get('CASHFREE_SECRET_KEY', '').strip() if current_app else '') or
-            (current_app.config.get('CASHFREE_CLIENT_SECRET', '').strip() if current_app else '')
+            os.environ.get('CASHFREE_CLIENT_SECRET', '').strip()
         )
 
         api_version = (
+            app_api_version or
             os.environ.get('CASHFREE_API_VERSION', '').strip() or 
-            (current_app.config.get('CASHFREE_API_VERSION', '').strip() if current_app else '') or
             '2023-08-01'
         )
         
-        # Determine base URL based on environment
+        # Determine base URL based on environment (defaults to Sandbox)
         if env == 'production':
             base_url = cls.PRODUCTION_BASE_URL
         else:
@@ -96,6 +106,7 @@ class CashfreeService:
         Amount is strictly calculated from job duration on server.
         """
         cfg = cls.get_config()
+        env = cfg['environment']
         
         # Server-enforced fee validation
         duration = job.duration or application.duration or '1_month'
@@ -125,18 +136,14 @@ class CashfreeService:
         if notify_url:
             payload["order_meta"]["notify_url"] = notify_url
 
-        # Check for mock/test environment without real credentials
-        is_mock_or_unconfigured = (
-            cfg['environment'] == 'test' or
-            not cfg['client_id'] or
-            not cfg['client_secret'] or
-            cfg['client_id'].startswith('your_') or
-            cfg['client_secret'].startswith('your_')
-        )
+        # Safe structured logging (no credentials or secrets logged)
+        logger.info(f"Cashfree environment: {env}")
+        logger.info(f"Cashfree order creation started (Order ID: {order_id}, Amount: INR {amount})")
 
-        if is_mock_or_unconfigured and cfg['environment'] != 'production':
-            # Local development test session
+        # Isolated automated unit testing mode
+        if env == 'test':
             mock_session_id = f"session_test_{order_id}_{uuid.uuid4().hex[:8]}"
+            logger.info(f"Cashfree order created (Test Simulation): {order_id}")
             return True, {
                 "order_id": order_id,
                 "payment_session_id": mock_session_id,
@@ -146,7 +153,12 @@ class CashfreeService:
                 "is_sandbox_simulation": True
             }, None
 
-        # Execute Live/Sandbox Cashfree API call
+        # Verify Sandbox credentials presence
+        if not cfg['client_id'] or not cfg['client_secret'] or cfg['client_id'].startswith('your_') or cfg['client_secret'].startswith('your_'):
+            logger.error(f"Cashfree {env.upper()} credentials not configured. Please set CASHFREE_APP_ID and CASHFREE_SECRET_KEY.")
+            return False, None, f"Cashfree {env.capitalize()} credentials are not configured. Please set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in your environment."
+
+        # Execute Live Sandbox / Production Cashfree API call
         endpoint = f"{cfg['base_url']}/orders"
         try:
             response = requests.post(
@@ -157,32 +169,31 @@ class CashfreeService:
             )
             data = response.json()
             if response.status_code in [200, 201]:
+                logger.info(f"Cashfree order created: {order_id}")
                 return True, data, None
             else:
                 error_msg = data.get('message') or data.get('error', {}).get('message') or f"Cashfree API Error ({response.status_code})"
+                logger.warning(f"Cashfree order creation failed ({response.status_code}): {error_msg}")
                 return False, data, error_msg
         except Exception as e:
+            logger.error(f"Network error connecting to Cashfree PG: {str(e)}")
             return False, None, f"Network error connecting to Cashfree PG: {str(e)}"
 
     @classmethod
     def get_order_status(cls, order_id: str):
         """Retrieve the order details directly from Cashfree."""
         cfg = cls.get_config()
+        env = cfg['environment']
 
-        is_mock_or_unconfigured = (
-            cfg['environment'] == 'test' or
-            not cfg['client_id'] or
-            not cfg['client_secret'] or
-            cfg['client_id'].startswith('your_') or
-            cfg['client_secret'].startswith('your_')
-        )
-
-        if is_mock_or_unconfigured and cfg['environment'] != 'production':
+        if env == 'test':
             return True, {
                 "order_id": order_id,
                 "order_status": "PAID",
                 "order_amount": 199.00
             }, None
+
+        if not cfg['client_id'] or not cfg['client_secret'] or cfg['client_id'].startswith('your_') or cfg['client_secret'].startswith('your_'):
+            return False, None, f"Cashfree {env.capitalize()} credentials are not configured."
 
         endpoint = f"{cfg['base_url']}/orders/{order_id}"
         try:
@@ -204,16 +215,9 @@ class CashfreeService:
     def get_order_payments(cls, order_id: str):
         """Retrieve all payment transactions for a given Cashfree order."""
         cfg = cls.get_config()
+        env = cfg['environment']
 
-        is_mock_or_unconfigured = (
-            cfg['environment'] == 'test' or
-            not cfg['client_id'] or
-            not cfg['client_secret'] or
-            cfg['client_id'].startswith('your_') or
-            cfg['client_secret'].startswith('your_')
-        )
-
-        if is_mock_or_unconfigured and cfg['environment'] != 'production':
+        if env == 'test':
             return True, [{
                 "payment_status": "SUCCESS",
                 "cf_payment_id": f"cf_sim_{order_id}",
@@ -221,6 +225,9 @@ class CashfreeService:
                 "payment_currency": "INR",
                 "payment_time": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
             }], None
+
+        if not cfg['client_id'] or not cfg['client_secret'] or cfg['client_id'].startswith('your_') or cfg['client_secret'].startswith('your_'):
+            return False, None, f"Cashfree {env.capitalize()} credentials are not configured."
 
         endpoint = f"{cfg['base_url']}/orders/{order_id}/payments"
         try:
@@ -244,6 +251,7 @@ class CashfreeService:
         Verify payment status server-side from Cashfree.
         Returns (is_paid, payment_status_string, payment_info_dict, error_message).
         """
+        logger.info(f"Cashfree payment verification started (Order ID: {order_id})")
         success, payments_data, err = cls.get_order_payments(order_id)
         
         if success and isinstance(payments_data, list) and len(payments_data) > 0:
@@ -251,27 +259,36 @@ class CashfreeService:
             for pay in payments_data:
                 p_status = pay.get('payment_status', '').upper()
                 if p_status == 'SUCCESS':
+                    logger.info(f"Cashfree payment status: SUCCESS for Order ID: {order_id}")
                     return True, 'SUCCESS', pay, None
                 elif p_status in ['FAILED', 'USER_DROPPED', 'CANCELLED']:
+                    logger.info(f"Cashfree payment status: {p_status} for Order ID: {order_id}")
                     return False, p_status, pay, None
                 elif p_status == 'PENDING':
+                    logger.info(f"Cashfree payment status: PENDING for Order ID: {order_id}")
                     return False, 'PENDING', pay, None
 
             # If none succeeded, return latest payment's status
             latest = payments_data[-1]
-            return False, latest.get('payment_status', 'FAILED'), latest, None
+            p_status = latest.get('payment_status', 'FAILED')
+            logger.info(f"Cashfree payment status: {p_status} for Order ID: {order_id}")
+            return False, p_status, latest, None
 
         # Fallback to checking order status directly
         ord_success, order_data, ord_err = cls.get_order_status(order_id)
         if ord_success and isinstance(order_data, dict):
             ord_status = order_data.get('order_status', '').upper()
             if ord_status == 'PAID':
+                logger.info(f"Cashfree payment status: SUCCESS (Order Paid) for Order ID: {order_id}")
                 return True, 'SUCCESS', order_data, None
             elif ord_status == 'ACTIVE':
+                logger.info(f"Cashfree payment status: PENDING (Order Active) for Order ID: {order_id}")
                 return False, 'PENDING', order_data, None
             elif ord_status in ['EXPIRED', 'TERMINATED']:
+                logger.info(f"Cashfree payment status: FAILED (Order {ord_status}) for Order ID: {order_id}")
                 return False, 'FAILED', order_data, None
 
+        logger.warning(f"Cashfree payment verification status: UNKNOWN for Order ID: {order_id} - {err or ord_err}")
         return False, 'UNKNOWN', None, err or ord_err or "No payment records found for order"
 
     @classmethod
@@ -299,3 +316,4 @@ class CashfreeService:
             return hmac.compare_digest(computed_signature, signature)
         except Exception:
             return False
+

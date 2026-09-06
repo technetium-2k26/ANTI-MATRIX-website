@@ -292,7 +292,9 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     DEBUG = True
-    PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
+    PAYMENT_TEST_MODE = False
+    CASHFREE_ENV = 'test'
+    CASHFREE_ENVIRONMENT = 'test'
 
 
 config = {
