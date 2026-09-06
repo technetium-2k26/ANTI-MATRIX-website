@@ -1,6 +1,6 @@
+from flask import Flask, render_template, jsonify
 import os
-from datetime import datetime
-from flask import Flask, render_template
+from datetime import datetime, timezone
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from config import config, INTERNSHIP_FEES, INTERNSHIP_PRICING
@@ -59,6 +59,14 @@ def create_app(config_name=None):
             'current_year': datetime.now().year,
             'app_name': 'Anti-Matrix'
         }
+
+    @app.route('/api/health', methods=['GET'])
+    def health_check():
+        return jsonify({
+            'status': 'OK',
+            'message': 'Your API is running',
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
 
     # Error Handlers
     @app.errorhandler(403)
@@ -121,17 +129,17 @@ def create_app(config_name=None):
 
                 if 'joining_email_sent_at' not in cols:
                     with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN joining_email_sent_at DATETIME"))
+                        conn.execute(text(f"ALTER TABLE job_applications ADD COLUMN joining_email_sent_at {type_str}"))
                         conn.commit()
 
                 if 'offer_completed_at' not in cols:
                     with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN offer_completed_at DATETIME"))
+                        conn.execute(text(f"ALTER TABLE job_applications ADD COLUMN offer_completed_at {type_str}"))
                         conn.commit()
 
                 if 'hired_at' not in cols:
                     with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN hired_at DATETIME"))
+                        conn.execute(text(f"ALTER TABLE job_applications ADD COLUMN hired_at {type_str}"))
                         conn.commit()
                 
                 # Auto-link existing applications where user email matches
