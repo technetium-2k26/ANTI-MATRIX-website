@@ -18,12 +18,24 @@ class User(UserMixin, db.Model):
     profile_picture = db.Column(db.String(500), nullable=True)
     provider = db.Column(db.String(50), default='email', nullable=False)  # 'email', 'google', 'github'
     provider_id = db.Column(db.String(255), nullable=True, index=True)
+    phone = db.Column(db.String(50), nullable=True)
     last_login = db.Column(db.DateTime, nullable=True)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     applications = db.relationship('JobApplication', backref='user', lazy=True)
+
+    @property
+    def phone_number(self):
+        """Returns the user's phone or falls back to their most recent job application phone."""
+        if self.phone and self.phone.strip():
+            return self.phone.strip()
+        if self.applications:
+            for app in reversed(self.applications):
+                if hasattr(app, 'phone') and app.phone and app.phone.strip():
+                    return app.phone.strip()
+        return None
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
@@ -38,6 +50,7 @@ class User(UserMixin, db.Model):
             'id': self.id,
             'name': self.name,
             'email': self.email,
+            'phone': self.phone_number,
             'role': self.role,
             'profile_picture': self.profile_picture,
             'provider': self.provider,

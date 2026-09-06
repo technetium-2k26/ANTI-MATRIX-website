@@ -248,6 +248,8 @@ def create_app(config_name=None):
                             conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_provider_id ON users (provider_id)"))
                         except Exception:
                             pass
+                    if 'phone' not in user_cols:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN phone VARCHAR(50)"))
                     if 'last_login' not in user_cols:
                         type_str = "DATETIME" if dialect_is_sqlite else "TIMESTAMP"
                         conn.execute(text(f"ALTER TABLE users ADD COLUMN last_login {type_str}"))

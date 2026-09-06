@@ -832,6 +832,29 @@ def job_apply_success(app_id):
     return render_template('pages/job_apply_success.html', app=application, job=application.job)
 
 
+@main_bp.route('/profile', methods=['GET', 'POST'])
+@main_bp.route('/my-profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    """Display and manage user profile (Name, Email, Phone Number)."""
+    if request.method == 'POST':
+        name = (request.form.get('name') or '').strip()
+        phone = (request.form.get('phone') or '').strip()
+        if name:
+            current_user.name = name
+        current_user.phone = phone if phone else None
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('main.profile'))
+
+    apps_count = JobApplication.query.filter(
+        (JobApplication.user_id == current_user.id) |
+        (JobApplication.email == current_user.email.lower())
+    ).count()
+
+    return render_template('pages/profile.html', apps_count=apps_count)
+
+
 @main_bp.route('/my-applications')
 @login_required
 def my_applications():
