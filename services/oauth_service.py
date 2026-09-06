@@ -59,21 +59,14 @@ def is_github_configured(app=None) -> bool:
 def get_google_redirect_uri() -> str:
     """
     Determine the authorized redirect URI for Google OAuth callback.
-    Intelligently handles local testing (localhost/127.0.0.1) vs production.
+    1. Highest priority: GOOGLE_REDIRECT_URI explicitly set in .env.
+    2. APP_URL set in .env.
+    3. Fall back to url_for external.
     """
     custom_uri = current_app.config.get('GOOGLE_REDIRECT_URI', '').strip()
-    try:
-        from flask import request
-        if request and hasattr(request, 'host') and ('localhost' in request.host or '127.0.0.1' in request.host):
-            if custom_uri and ('localhost' in custom_uri or '127.0.0.1' in custom_uri):
-                return custom_uri
-            return f"http://{request.host}/auth/google/callback"
-    except Exception:
-        pass
-
     if custom_uri:
         return custom_uri
-    
+
     app_url = current_app.config.get('APP_URL', '').strip()
     if app_url:
         return f"{app_url.rstrip('/')}/auth/google/callback"
@@ -84,21 +77,14 @@ def get_google_redirect_uri() -> str:
 def get_github_redirect_uri() -> str:
     """
     Determine the authorized redirect URI for GitHub OAuth callback.
-    Intelligently handles local testing (localhost/127.0.0.1) vs production.
+    1. Highest priority: GITHUB_REDIRECT_URI explicitly set in .env.
+    2. APP_URL set in .env.
+    3. Fall back to url_for external.
     """
     custom_uri = current_app.config.get('GITHUB_REDIRECT_URI', '').strip()
-    try:
-        from flask import request
-        if request and hasattr(request, 'host') and ('localhost' in request.host or '127.0.0.1' in request.host):
-            if custom_uri and ('localhost' in custom_uri or '127.0.0.1' in custom_uri):
-                return custom_uri
-            return f"http://{request.host}/auth/github/callback"
-    except Exception:
-        pass
-
     if custom_uri:
         return custom_uri
-    
+
     app_url = current_app.config.get('APP_URL', '').strip()
     if app_url:
         return f"{app_url.rstrip('/')}/auth/github/callback"
