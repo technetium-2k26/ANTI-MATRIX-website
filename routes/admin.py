@@ -1493,7 +1493,8 @@ def edit_money_transaction(txn_id):
     Automatic Cashfree transactions are strictly locked and cannot be edited.
     """
     from services.money_service import (
-        STANDARD_INCOME_CATEGORIES, STANDARD_EXPENSE_CATEGORIES, PAYMENT_METHODS
+        STANDARD_INCOME_CATEGORIES, STANDARD_EXPENSE_CATEGORIES, PAYMENT_METHODS,
+        validate_manual_admin_mutation
     )
 
     txn = db.session.get(MoneyTransaction, txn_id)
@@ -1501,8 +1502,9 @@ def edit_money_transaction(txn_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('admin.money_management'))
 
-    if txn.source != 'MANUAL':
-        flash('Cashfree automatic transactions cannot be edited directly.', 'danger')
+    allowed, err_msg = validate_manual_admin_mutation(current_user, txn=txn, action='edit')
+    if not allowed:
+        flash(err_msg or 'You are not authorized to edit this transaction.', 'danger')
         return redirect(url_for('admin.money_management'))
 
     if request.method == 'POST':
@@ -1602,8 +1604,10 @@ def delete_money_transaction(txn_id):
         flash('Transaction not found.', 'danger')
         return redirect(url_for('admin.money_management'))
 
-    if txn.source != 'MANUAL':
-        flash('Cashfree automatic transactions cannot be deleted. They remain permanently linked to payment records.', 'danger')
+    from services.money_service import validate_manual_admin_mutation
+    allowed, err_msg = validate_manual_admin_mutation(current_user, txn=txn, action='delete')
+    if not allowed:
+        flash(err_msg or 'Cashfree automatic transactions cannot be deleted. They remain permanently linked to payment records.', 'danger')
         return redirect(url_for('admin.money_management'))
 
     try:

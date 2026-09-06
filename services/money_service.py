@@ -44,6 +44,45 @@ PAYMENT_METHODS = [
     "Other"
 ]
 
+# ==============================================================================
+# MONEY MANAGEMENT SECURITY & PERMISSION BOUNDARY
+# ==============================================================================
+# RULE:
+# 1. No AI prompt, LLM agent, natural-language command, chatbot, or automated prompt
+#    mechanism has write access (INSERT, UPDATE, DELETE) to Money Management transactions.
+# 2. AI / Prompt systems have strictly READ-ONLY access (e.g. summary, analytics, search).
+# 3. Only an authenticated Administrator explicitly submitting the web form in the
+#    Admin Dashboard (Money Management -> Transaction History -> Edit) may update an existing transaction.
+# 4. Cashfree automatic transactions are immutable regarding core payment facts.
+# ==============================================================================
+
+
+def validate_manual_admin_mutation(user, txn=None, action="edit"):
+    """
+    Enforces the non-negotiable security boundary for Money Management write operations.
+    
+    Requirements:
+    - User must be authenticated and have role == 'admin'.
+    - Action must be explicit manual admin action.
+    - If modifying an existing transaction (edit/delete), Cashfree automatic records are locked.
+    
+    Returns:
+        (is_allowed: bool, error_message: str or None)
+    """
+    if not user or not getattr(user, 'is_authenticated', False):
+        return False, "Authentication required. Only authenticated administrators can modify transactions."
+
+    role = (getattr(user, 'role', '') or '').strip().lower()
+    if role != 'admin':
+        return False, "Unauthorized. Only administrators have permission to modify transaction records."
+
+    if txn:
+        # Check source protection for Cashfree transactions
+        if txn.source != 'MANUAL' and action in ['edit', 'delete']:
+            return False, "Cashfree automatic transactions cannot be manually modified or deleted."
+
+    return True, None
+
 
 def record_cashfree_income(application, payment, payment_details=None, env=None):
     """

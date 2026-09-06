@@ -20,16 +20,26 @@ class TestMoneyManagementSystem(unittest.TestCase):
     Ensures data preservation, strict idempotency, audit trail, and calculation accuracy.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        # Use development/testing config that connects to the SQLite database
-        cls.app = create_app('development')
-        cls.app.config['WTF_CSRF_ENABLED'] = False
-        cls.client = cls.app.test_client()
-
     def setUp(self):
+        """Set up test Flask app with isolated in-memory testing SQLite database."""
+        self.app = create_app('testing')
+        self.app.config['WTF_CSRF_ENABLED'] = False
+        self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
+
+        db.create_all()
+
+        # Create admin user for testing auth
+        self.admin = User(name='Test Admin', email='test_admin@antimatrix.ai', role='admin', is_active=True)
+        self.admin.set_password('AdminPass123!')
+        db.session.add(self.admin)
+
+        # Create candidate/student user for testing authorization restrictions
+        self.student = User(name='Test Student', email='student_test@example.com', role='candidate', is_active=True)
+        self.student.set_password('StudentPass123!')
+        db.session.add(self.student)
+        db.session.commit()
 
         # Record baseline counts of all pre-existing tables to guarantee data preservation
         self.baseline_counts = {
@@ -43,34 +53,9 @@ class TestMoneyManagementSystem(unittest.TestCase):
             'contact_inquiries': ContactInquiry.query.count(),
         }
 
-        # Find or create admin user for testing auth
-        self.admin = User.query.filter_by(role='admin').first()
-        if not self.admin:
-            self.admin = User(name='Test Admin', email='test_admin@antimatrix.ai', role='admin', is_active=True)
-            self.admin.set_password('AdminPass123!')
-            db.session.add(self.admin)
-            db.session.commit()
-
-        # Find or create candidate/student user for testing authorization restrictions
-        self.student = User.query.filter_by(role='candidate').first()
-        if not self.student:
-            self.student = User(name='Test Student', email='student_test@example.com', role='candidate', is_active=True)
-            self.student.set_password('StudentPass123!')
-            db.session.add(self.student)
-            db.session.commit()
-
     def tearDown(self):
-        # Clean up only test transactions created during test runs, NEVER real pre-existing data
-        test_txns = MoneyTransaction.query.filter(
-            (MoneyTransaction.reference.like('TEST-%')) | 
-            (MoneyTransaction.purpose.like('TEST%')) |
-            (MoneyTransaction.category == 'Test Category') |
-            (MoneyTransaction.cashfree_order_id.like('TEST-CF-%'))
-        ).all()
-        for t in test_txns:
-            db.session.delete(t)
-        db.session.commit()
-
+        db.session.remove()
+        db.drop_all()
         self.app_context.pop()
 
     def test_01_manual_expense_with_historical_date(self):
@@ -226,12 +211,27 @@ class TestMoneyManagementSystem(unittest.TestCase):
         TEST 4 — Duplicate Cashfree Callback / Webhook Idempotency.
         Calling record_cashfree_income multiple times for same order MUST not create duplicates.
         """
+        job = JobPosting.query.first()
+        if not job:
+            job = JobPosting(title="TEST Developer", department="Tech", location="Remote", employment_type="Internship", duration="1_month", short_description="Test", description="Test")
+            db.session.add(job)
+            db.session.commit()
+
         app_record = JobApplication.query.first()
+        if not app_record:
+            app_record = JobApplication(
+                job_id=job.id, full_name="Test Candidate", email="candidate@test.com", phone="9876543210",
+                college="Test College", degree="B.Tech", department="CSE", graduation_year="2026",
+                resume_filename="resume.pdf", resume_path="/dummy/path", status="New"
+            )
+            db.session.add(app_record)
+            db.session.commit()
+
         test_order_id = "TEST-CF-DUP-001"
         test_cf_pay_id = "TEST-CF-PAY-DUP-001"
 
         payment = Payment(
-            application_id=app_record.id if app_record else 1,
+            application_id=app_record.id,
             cashfree_order_id=test_order_id,
             amount=399.00,
             currency='INR',
@@ -614,6 +614,72 @@ class TestMoneyManagementSystem(unittest.TestCase):
         self.assertEqual(DocumentTemplate.query.count(), self.baseline_counts['document_templates'])
         self.assertEqual(EmailTemplate.query.count(), self.baseline_counts['email_templates'])
         self.assertEqual(ContactInquiry.query.count(), self.baseline_counts['contact_inquiries'])
+
+    def test_11_prompt_ai_permission_boundary_and_manual_admin_exclusivity(self):
+        """
+        TEST 11 — Prompt/AI Permission Boundary & Manual Admin Exclusivity.
+        Ensures:
+        1. No prompt/AI/unauthorized mechanism has write access (INSERT, UPDATE, DELETE).
+        2. Only authenticated Administrators interacting with the manual web form can edit/delete.
+        3. Automated Cashfree records are protected from alteration.
+        4. Read-only query/analytics interfaces work seamlessly with ZERO database mutation.
+        """
+        from services.money_service import validate_manual_admin_mutation
+
+        # 1. Unauthenticated prompt/entity -> Blocked
+        allowed, err = validate_manual_admin_mutation(None, action='edit')
+        self.assertFalse(allowed)
+        self.assertIn("Authentication required", err)
+
+        # 2. Non-admin candidate/student/agent entity -> Blocked
+        allowed_student, err_student = validate_manual_admin_mutation(self.student, action='edit')
+        self.assertFalse(allowed_student)
+        self.assertIn("Unauthorized", err_student)
+
+        # 3. Cashfree automatic transaction edit/delete -> Blocked even for admin
+        cf_mock_txn = MoneyTransaction(
+            transaction_type='INCOME',
+            amount=199.00,
+            source='AUTOMATIC',
+            provider='CASHFREE',
+            reference='CF-MOCK-001'
+        )
+        allowed_cf_edit, err_cf_edit = validate_manual_admin_mutation(self.admin, txn=cf_mock_txn, action='edit')
+        self.assertFalse(allowed_cf_edit)
+        self.assertIn("Cashfree automatic transactions cannot be manually modified", err_cf_edit)
+
+        allowed_cf_del, err_cf_del = validate_manual_admin_mutation(self.admin, txn=cf_mock_txn, action='delete')
+        self.assertFalse(allowed_cf_del)
+        self.assertIn("Cashfree automatic transactions cannot be manually modified", err_cf_del)
+
+        # 4. Authenticated Admin on manual transaction -> Allowed
+        manual_mock_txn = MoneyTransaction(
+            transaction_type='EXPENSE',
+            amount=250.00,
+            source='MANUAL',
+            provider='MANUAL',
+            reference='MANUAL-MOCK-001'
+        )
+        allowed_manual, err_manual = validate_manual_admin_mutation(self.admin, txn=manual_mock_txn, action='edit')
+        self.assertTrue(allowed_manual)
+        self.assertIsNone(err_manual)
+
+        # 5. Read-Only Query & Analytics: Verify zero database mutation occurs during reads
+        count_before = MoneyTransaction.query.count()
+        summary = get_financial_summary()
+        self.assertIsInstance(summary, dict)
+        self.assertIn('total_income', summary)
+        self.assertIn('total_expense', summary)
+        self.assertIn('balance', summary)
+
+        txns_list = filter_transactions(type_filter='all', env_filter='all').all()
+        for t in txns_list:
+            d = t.to_dict()
+            self.assertIsInstance(d, dict)
+            self.assertEqual(d['id'], t.id)
+
+        count_after = MoneyTransaction.query.count()
+        self.assertEqual(count_before, count_after)
 
 
 if __name__ == '__main__':
