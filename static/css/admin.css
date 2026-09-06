@@ -1567,16 +1567,17 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
   text-align: right;
 }
 
 .gpay-txn-amount {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 800;
   font-family: var(--font-mono, monospace), system-ui;
   letter-spacing: -0.01em;
+  line-height: 1.15;
 }
 
 .gpay-txn-amount.income {
@@ -1587,10 +1588,33 @@
   color: #dc2626;
 }
 
+.gpay-txn-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-admin-sans, 'Inter', sans-serif);
+}
+
+.gpay-txn-status.income {
+  color: #059669;
+}
+
+.gpay-txn-status.expense {
+  color: #dc2626;
+}
+
+.gpay-txn-date {
+  font-size: 0.775rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
 .gpay-txn-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-top: 2px;
 }
 
 .gpay-empty-state {

@@ -364,7 +364,7 @@ class TestMoneyManagementSystem(unittest.TestCase):
     def test_07_admin_authorization_enforcement(self):
         """
         TEST 7 — Admin Authorization Enforcement.
-        Unauthenticated guests and non-admin users must NOT access Money Management.
+        Unauthenticated guests and non-admin users must NOT access Money Management or Add Transaction pages.
         """
         self.logout_user()
 
@@ -373,8 +373,14 @@ class TestMoneyManagementSystem(unittest.TestCase):
         resp = guest_client.get('/admin/money-management')
         self.assertEqual(resp.status_code, 302)  # Redirects to login
 
-        post_resp = guest_client.post('/admin/money-management/transactions/create', data={'amount': '100'})
+        resp_add = guest_client.get('/admin/money-management/add')
+        self.assertEqual(resp_add.status_code, 302)
+
+        post_resp = guest_client.post('/admin/money-management/add', data={'amount': '100'})
         self.assertEqual(post_resp.status_code, 302)
+
+        post_legacy_resp = guest_client.post('/admin/money-management/transactions/create', data={'amount': '100'})
+        self.assertEqual(post_legacy_resp.status_code, 302)
 
         # 2. Authenticated non-admin candidate/student
         self.login_user('student_test@example.com', 'StudentPass123!')
@@ -382,14 +388,63 @@ class TestMoneyManagementSystem(unittest.TestCase):
         student_resp = self.client.get('/admin/money-management')
         self.assertEqual(student_resp.status_code, 403)  # Forbidden
 
-        student_post = self.client.post('/admin/money-management/transactions/create', data={'amount': '100'})
+        student_add_resp = self.client.get('/admin/money-management/add')
+        self.assertEqual(student_add_resp.status_code, 403)
+
+        student_post = self.client.post('/admin/money-management/add', data={'amount': '100'})
         self.assertEqual(student_post.status_code, 403)
+
+        student_post_legacy = self.client.post('/admin/money-management/transactions/create', data={'amount': '100'})
+        self.assertEqual(student_post_legacy.status_code, 403)
 
         self.logout_user()
 
-    def test_08_data_preservation_verification(self):
+    def test_08_dedicated_add_transaction_page_flow(self):
         """
-        TEST 8 — Non-Negotiable Data Preservation Verification.
+        TEST 8 — Dedicated Add Transaction Page Flow.
+        Verify GET /admin/money-management/add renders form, and POST records transaction and redirects to main dashboard.
+        """
+        with self.client.session_transaction() as sess:
+            sess['_user_id'] = str(self.admin.id)
+            sess['_fresh'] = True
+
+        # 1. GET /admin/money-management/add
+        get_resp = self.client.get('/admin/money-management/add')
+        self.assertEqual(get_resp.status_code, 200)
+        self.assertIn(b'Add Transaction', get_resp.data)
+        self.assertIn(b'Record income or expense into the financial ledger', get_resp.data)
+        self.assertIn(b'Back to Money Management', get_resp.data)
+
+        # 2. POST /admin/money-management/add (Record Income)
+        post_resp = self.client.post('/admin/money-management/add', data={
+            'transaction_type': 'INCOME',
+            'amount': '2500.00',
+            'transaction_date': '2026-09-06',
+            'transaction_time': '10:30 AM',
+            'category': 'Client Consulting',
+            'purpose': 'TEST Consulting Inflow',
+            'description': 'Strategy consultation fee',
+            'payment_method': 'Bank Transfer',
+            'reference': 'TEST-DEDICATED-001'
+        }, follow_redirects=True)
+
+        self.assertEqual(post_resp.status_code, 200)
+        self.assertIn(b'Transaction History', post_resp.data)
+        self.assertIn(b'TEST Consulting Inflow', post_resp.data)
+
+        # Verify record in DB
+        txn = MoneyTransaction.query.filter_by(reference='TEST-DEDICATED-001').first()
+        self.assertIsNotNone(txn)
+        self.assertEqual(txn.amount, 2500.00)
+        self.assertEqual(txn.transaction_type, 'INCOME')
+
+        # Cleanup test transaction
+        db.session.delete(txn)
+        db.session.commit()
+
+    def test_09_data_preservation_verification(self):
+        """
+        TEST 9 — Non-Negotiable Data Preservation Verification.
         Ensure that all pre-existing records, tables, and IDs remain 100% unchanged.
         """
         self.assertEqual(JobPosting.query.count(), self.baseline_counts['job_postings'])

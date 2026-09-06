@@ -1359,93 +1359,128 @@ def money_management():
     )
 
 
+@admin_bp.route('/money-management/add', methods=['GET', 'POST'])
+@admin_required
+def add_money_transaction():
+    """
+    Dedicated Add Transaction page for recording manual Income and Expense entries.
+    GET: Displays the standalone executive Add Transaction form.
+    POST: Processes and stores the manual transaction with audit logging.
+    """
+    from services.money_service import (
+        STANDARD_INCOME_CATEGORIES, STANDARD_EXPENSE_CATEGORIES, PAYMENT_METHODS
+    )
+
+    if request.method == 'POST':
+        txn_type = (request.form.get('transaction_type') or '').strip().upper()
+        amount_str = (request.form.get('amount') or '').strip()
+        txn_date_str = (request.form.get('transaction_date') or '').strip()
+        txn_time = (request.form.get('transaction_time') or '').strip()
+        category = (request.form.get('category') or '').strip()
+        custom_category = (request.form.get('custom_category') or '').strip()
+        purpose = (request.form.get('purpose') or '').strip()
+        description = (request.form.get('description') or '').strip()
+        payment_method = (request.form.get('payment_method') or 'Bank Transfer').strip()
+        reference = (request.form.get('reference') or '').strip()
+
+        # Handle custom category
+        if category.lower() in ['other', 'custom', 'other income', 'other expense'] and custom_category:
+            category = custom_category
+        elif not category and custom_category:
+            category = custom_category
+
+        # Validate Transaction Type
+        if txn_type not in ['INCOME', 'EXPENSE']:
+            flash('Invalid transaction type. Must be Income or Expense.', 'danger')
+            return redirect(url_for('admin.add_money_transaction'))
+
+        # Validate Amount (must be positive numeric > 0)
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError("Amount must be greater than zero.")
+        except (ValueError, TypeError):
+            flash('Please enter a valid numeric amount greater than zero.', 'danger')
+            return redirect(url_for('admin.add_money_transaction'))
+
+        # Validate Transaction Date (supports historical dates)
+        if not txn_date_str:
+            txn_date = datetime.now(timezone.utc).date()
+        else:
+            try:
+                txn_date = datetime.strptime(txn_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Invalid date format. Please select a valid date (YYYY-MM-DD).', 'danger')
+                return redirect(url_for('admin.add_money_transaction'))
+
+        # Default time if not entered
+        if not txn_time:
+            txn_time = datetime.now(timezone.utc).strftime('%I:%M %p')
+
+        # Category is required
+        if not category:
+            category = "Other Income" if txn_type == 'INCOME' else "Other Expense"
+
+        if not purpose:
+            purpose = category
+
+        now_utc = datetime.now(timezone.utc)
+
+        try:
+            new_txn = MoneyTransaction(
+                transaction_type=txn_type,
+                amount=amount,
+                transaction_date=txn_date,
+                transaction_time=txn_time,
+                category=category,
+                purpose=purpose,
+                description=description,
+                payment_method=payment_method,
+                reference=reference,
+                source='MANUAL',
+                provider='MANUAL',
+                environment='MANUAL',
+                created_by_admin_id=current_user.id,
+                created_at=now_utc,
+                updated_at=now_utc
+            )
+            db.session.add(new_txn)
+            db.session.commit()
+            flash(f"Manual {txn_type.capitalize()} of ₹{amount:,.2f} recorded successfully!", 'success')
+            return redirect(url_for('admin.money_management'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error saving transaction: {str(e)}", 'danger')
+            return redirect(url_for('admin.add_money_transaction'))
+
+    # GET Request: Prepare form context
+    total_jobs = JobPosting.query.count()
+    total_applications = JobApplication.query.count()
+    new_applications = JobApplication.query.filter_by(status='New').count()
+    total_employees = Employee.query.count()
+    today_date_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+    return render_template(
+        'admin/money_management_add.html',
+        income_categories=STANDARD_INCOME_CATEGORIES,
+        expense_categories=STANDARD_EXPENSE_CATEGORIES,
+        payment_methods=PAYMENT_METHODS,
+        today_date_str=today_date_str,
+        total_jobs=total_jobs,
+        total_applications=total_applications,
+        new_applications=new_applications,
+        total_employees=total_employees
+    )
+
+
 @admin_bp.route('/money-management/transactions/create', methods=['POST'])
 @admin_required
 def create_money_transaction():
     """
-    Manually create a new Income or Expense transaction.
-    Supports historical dates entered by the admin.
+    Legacy / Direct endpoint for manually creating an Income or Expense transaction.
+    Maintains full backward compatibility.
     """
-    txn_type = (request.form.get('transaction_type') or '').strip().upper()
-    amount_str = (request.form.get('amount') or '').strip()
-    txn_date_str = (request.form.get('transaction_date') or '').strip()
-    txn_time = (request.form.get('transaction_time') or '').strip()
-    category = (request.form.get('category') or '').strip()
-    custom_category = (request.form.get('custom_category') or '').strip()
-    purpose = (request.form.get('purpose') or '').strip()
-    description = (request.form.get('description') or '').strip()
-    payment_method = (request.form.get('payment_method') or 'Manual').strip()
-    reference = (request.form.get('reference') or '').strip()
-
-    # Handle custom category if 'Other' or custom is specified
-    if category.lower() in ['other', 'custom', 'other income', 'other expense'] and custom_category:
-        category = custom_category
-    elif not category and custom_category:
-        category = custom_category
-
-    # Validate Transaction Type
-    if txn_type not in ['INCOME', 'EXPENSE']:
-        flash('Invalid transaction type. Must be Income or Expense.', 'danger')
-        return redirect(url_for('admin.money_management'))
-
-    # Validate Amount (must be positive numeric > 0)
-    try:
-        amount = float(amount_str)
-        if amount <= 0:
-            raise ValueError("Amount must be greater than zero.")
-    except (ValueError, TypeError):
-        flash('Please enter a valid numeric amount greater than zero.', 'danger')
-        return redirect(url_for('admin.money_management'))
-
-    # Validate Transaction Date (supports historical dates)
-    if not txn_date_str:
-        txn_date = datetime.now(timezone.utc).date()
-    else:
-        try:
-            txn_date = datetime.strptime(txn_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            flash('Invalid date format. Please select a valid date (YYYY-MM-DD).', 'danger')
-            return redirect(url_for('admin.money_management'))
-
-    # Default time if not entered
-    if not txn_time:
-        txn_time = datetime.now(timezone.utc).strftime('%I:%M %p')
-
-    # Category is required
-    if not category:
-        category = "Other Income" if txn_type == 'INCOME' else "Other Expense"
-
-    if not purpose:
-        purpose = category
-
-    now_utc = datetime.now(timezone.utc)
-
-    try:
-        new_txn = MoneyTransaction(
-            transaction_type=txn_type,
-            amount=amount,
-            transaction_date=txn_date,
-            transaction_time=txn_time,
-            category=category,
-            purpose=purpose,
-            description=description,
-            payment_method=payment_method,
-            reference=reference,
-            source='MANUAL',
-            provider='MANUAL',
-            environment='MANUAL',
-            created_by_admin_id=current_user.id,
-            created_at=now_utc,
-            updated_at=now_utc
-        )
-        db.session.add(new_txn)
-        db.session.commit()
-        flash(f"Manual {txn_type.capitalize()} of ₹{amount:,.2f} recorded successfully!", 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error saving transaction: {str(e)}", 'danger')
-
-    return redirect(url_for('admin.money_management'))
+    return add_money_transaction()
 
 
 @admin_bp.route('/money-management/transactions/<int:txn_id>/edit', methods=['POST'])
