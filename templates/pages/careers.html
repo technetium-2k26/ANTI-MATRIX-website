@@ -7,16 +7,14 @@
 <!-- Page Hero -->
 <section class="page-hero" style="padding-bottom: var(--space-2xl);">
   <div class="container">
-    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.35rem 0.85rem; margin-bottom: var(--space-md);">
-      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary-light); box-shadow: 0 0 10px var(--color-primary-light); display: inline-block;"></span>
-      <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.05em;">
-        Actively Hiring &bull; {{ jobs|length }} Position{{ 's' if jobs|length != 1 else '' }} Available
-      </span>
+    <div class="badge" style="margin-bottom: var(--space-md); display: inline-flex; align-items: center; gap: 8px;">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); display: inline-block;"></span>
+      <span>Careers at Anti-Matrix &bull; {{ jobs|length }} Active Position{{ 's' if jobs|length != 1 else '' }}</span>
     </div>
 
     <h1 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.15; margin-bottom: var(--space-md); color: var(--color-text);">
       Build remarkable technology.<br />
-      <span style="color: var(--color-primary-light);">Break the matrix with us.</span>
+      <span style="color: var(--color-primary);">Break the matrix with us.</span>
     </h1>
 
     <p style="font-size: 1.1rem; color: var(--color-text-dim); max-width: 680px; margin-bottom: var(--space-xl); line-height: 1.7;">
@@ -24,65 +22,65 @@
     </p>
 
     <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; align-items: center;">
-      <a href="#open-positions" class="btn btn-primary btn-lg" style="gap: 8px;">
+      <a href="#open-positions" class="btn btn-primary" style="padding: 0.85rem 1.75rem; font-size: 0.95rem; font-weight: 600; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);">
         View Open Positions {{ icon('arrow-down', size=16) }}
       </a>
-      <a href="#why-antimatrix" class="btn btn-outline btn-lg">
+      <a href="#why-antimatrix" class="btn btn-outline" style="padding: 0.85rem 1.5rem; font-size: 0.95rem; font-weight: 500;">
         Life &amp; Culture at Anti-Matrix
       </a>
     </div>
   </div>
 </section>
 
-<!-- ================= 1. POPPING CURRENT JOBS AT TOP OF CAREERS PAGE ================= -->
+<!-- ================= 1. CURRENT OPENINGS SECTION ================= -->
 <section id="open-positions" class="section" style="background: var(--color-bg); padding-top: var(--space-2xl); padding-bottom: var(--space-3xl);">
   <div class="container">
 
     {% if jobs %}
-      <!-- FEATURED LATEST OPENING SPOTLIGHT BANNER (POPS IN TOP) -->
+      <!-- FEATURED LATEST OPENING SPOTLIGHT BANNER -->
       {% set featured_job = jobs[0] %}
-      <div class="featured-opening-banner reveal" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.6) 100%); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: var(--radius-xl); padding: var(--space-2xl); margin-bottom: var(--space-3xl); box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35); position: relative; overflow: hidden;">
+      <div class="featured-opening-banner" style="background: #ffffff; border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); border-radius: var(--radius-md); padding: var(--space-2xl); margin-bottom: var(--space-3xl); box-shadow: var(--shadow-card); position: relative;">
         
-        <!-- Glow accent badge -->
+        <!-- Header row -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-md);">
-          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 6px; padding: 0.3rem 0.75rem;">
-            <span style="font-size: 0.8rem;">🔥</span>
-            <span style="font-size: 0.775rem; font-weight: 800; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.06em;">
-              Featured Current Opening &bull; Urgent Hiring
+          <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(5, 150, 105, 0.08); border: 1px solid rgba(5, 150, 105, 0.25); border-radius: 4px; padding: 0.25rem 0.75rem;">
+            {{ icon('star', size=13, color='var(--color-primary)', fill='var(--color-primary)') }}
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em;">
+              Featured Priority Opening
             </span>
           </div>
 
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="badge" style="background: rgba(255,255,255,0.06); color: var(--color-text-dim);">
-              {{ icon('calendar', size=11) }} Posted Recently
+            <span style="font-size: 0.8rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 5px;">
+              {{ icon('clock', size=13, color='var(--color-primary)') }} Actively Reviewing Applications
             </span>
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-2xl); align-items: center;">
           <div>
-            <h2 style="font-size: clamp(1.6rem, 3vw, 2.25rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-sm); line-height: 1.2;">
+            <h2 style="font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; color: var(--color-text); margin-bottom: var(--space-sm); font-family: var(--font-heading); line-height: 1.25;">
               {{ featured_job.title }}
             </h2>
 
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: var(--space-md);">
-              <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 4px; background: rgba(16,185,129,0.15); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.3);">
+              <span style="font-size: 0.8rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 4px; background: #f1f5f9; color: var(--color-text); border: 1px solid var(--color-border);">
                 {{ featured_job.department }}
               </span>
               <span style="font-size: 0.85rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 5px;">
-                {{ icon('map-pin', size=13) }} {{ featured_job.location }}
+                {{ icon('map-pin', size=13, color='var(--color-primary)') }} {{ featured_job.location }}
               </span>
               <span style="font-size: 0.85rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 5px;">
-                {{ icon('clock', size=13) }} {{ featured_job.employment_type }}
+                {{ icon('briefcase', size=13, color='var(--color-primary)') }} {{ featured_job.employment_type }}
               </span>
               {% if featured_job.duration_display %}
-                <span style="font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
+                <span style="font-size: 0.8rem; font-weight: 600; padding: 0.2rem 0.65rem; border-radius: 4px; background: rgba(37, 99, 235, 0.08); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.2);">
                   {{ icon('clock', size=12) }} {{ featured_job.duration_display }}
                 </span>
               {% endif %}
               {% if featured_job.fee_display %}
-                <span style="font-size: 0.85rem; color: var(--color-primary-light); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; background: rgba(16,185,129,0.12); padding: 0.2rem 0.65rem; border-radius: 4px; border: 1px solid rgba(16,185,129,0.3);">
-                  {{ icon('credit-card', size=13) }} Fee: {{ featured_job.fee_display }}
+                <span style="font-size: 0.85rem; color: var(--color-primary); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; background: rgba(5, 150, 105, 0.08); padding: 0.2rem 0.65rem; border-radius: 4px; border: 1px solid rgba(5, 150, 105, 0.2);">
+                  {{ icon('credit-card', size=13) }} Application Fee: {{ featured_job.fee_display }}
                 </span>
               {% elif featured_job.salary %}
                 <span style="font-size: 0.85rem; color: var(--color-text-dim); display: inline-flex; align-items: center; gap: 5px;">
@@ -91,32 +89,32 @@
               {% endif %}
             </div>
 
-            <p style="font-size: 0.95rem; color: var(--color-text-dim); line-height: 1.7; margin-bottom: var(--space-lg); max-width: 680px;">
+            <p style="font-size: 0.95rem; color: var(--color-text-dim); line-height: 1.65; margin-bottom: var(--space-lg); max-width: 680px;">
               {{ featured_job.short_description }}
             </p>
 
-            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: var(--space-lg);">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: var(--space-md);">
               {% for s in featured_job.get_skills_list() %}
-                <span style="font-size: 0.775rem; color: var(--color-text-muted); background: rgba(255,255,255,0.05); border: 1px solid var(--color-border); padding: 0.2rem 0.6rem; border-radius: var(--radius-sm);">
+                <span style="font-size: 0.775rem; color: #334155; background: #f8fafc; border: 1px solid var(--color-border); padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 500;">
                   {{ s }}
                 </span>
               {% endfor %}
             </div>
           </div>
 
-          <!-- Quick Action CTA Box -->
-          <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-md);">
-            <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 0 20px rgba(16,185,129,0.4);">
-              {{ icon('zap', size=24) }}
+          <!-- Action Box -->
+          <div style="background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-xl); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-md);">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(5, 150, 105, 0.1); border: 1px solid rgba(5, 150, 105, 0.2); display: flex; align-items: center; justify-content: center; color: var(--color-primary);">
+              {{ icon('shield', size=22, color='var(--color-primary)') }}
             </div>
 
             <div>
-              <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-white);">Fast-Track Hiring</div>
-              <div style="font-size: 0.8rem; color: var(--color-text-dim); margin-top: 2px;">Direct review by technical leadership</div>
+              <div style="font-size: 1rem; font-weight: 700; color: var(--color-text); font-family: var(--font-heading);">Priority Evaluation</div>
+              <div style="font-size: 0.8rem; color: var(--color-text-dim); margin-top: 2px;">Direct technical screening within 48 hours</div>
             </div>
 
-            <a href="{{ url_for('main.apply_job', job_id=featured_job.id) }}" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center; font-size: 1rem; font-weight: 700; gap: 8px;">
-              Apply Now {{ icon('arrow-right', size=16) }}
+            <a href="{{ url_for('main.apply_job', job_id=featured_job.id) }}" class="btn btn-primary" style="width: 100%; justify-content: center; font-weight: 600; gap: 8px;">
+              Apply Now {{ icon('arrow-right', size=15) }}
             </a>
 
             <button type="button" onclick="toggleDetailsPane('role-{{ featured_job.id }}')" class="btn btn-outline btn-sm" style="width: 100%; justify-content: center;">
@@ -126,15 +124,15 @@
         </div>
 
         {# Expanded featured details drawer #}
-        <div id="role-{{ featured_job.id }}" class="job-details-pane card animate-fade-up" style="display: none; margin-top: var(--space-xl); border-color: rgba(16, 185, 129, 0.35); background: rgba(0, 0, 0, 0.5);">
+        <div id="role-{{ featured_job.id }}" class="job-details-pane card animate-fade-up" style="display: none; margin-top: var(--space-xl); border: 1px solid var(--color-border); background: #ffffff; border-radius: var(--radius-sm); padding: var(--space-xl);">
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-xl);">
             <div>
-              <h4 style="color: var(--color-white); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">About the Role</h4>
+              <h4 style="color: var(--color-text); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">About the Role</h4>
               <p style="margin-bottom: var(--space-lg); line-height: 1.7; color: var(--color-text-dim);">{{ featured_job.description }}</p>
               
               {% if featured_job.responsibilities %}
-                <h4 style="color: var(--color-white); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">Key Responsibilities</h4>
-                <ul class="service-capabilities" style="margin-bottom: var(--space-lg); line-height: 1.7;">
+                <h4 style="color: var(--color-text); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">Key Responsibilities</h4>
+                <ul class="service-capabilities" style="margin-bottom: var(--space-lg); line-height: 1.7; color: var(--color-text-dim);">
                   {% for resp in featured_job.get_responsibilities_list() %}
                     <li>{{ resp }}</li>
                   {% endfor %}
@@ -142,8 +140,8 @@
               {% endif %}
 
               {% if featured_job.requirements %}
-                <h4 style="color: var(--color-white); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">Qualifications &amp; Requirements</h4>
-                <ul class="service-capabilities" style="line-height: 1.7;">
+                <h4 style="color: var(--color-text); font-size: 1.15rem; margin-bottom: var(--space-md); font-family: var(--font-heading);">Qualifications &amp; Requirements</h4>
+                <ul class="service-capabilities" style="line-height: 1.7; color: var(--color-text-dim);">
                   {% for req in featured_job.get_requirements_list() %}
                     <li>{{ req }}</li>
                   {% endfor %}
@@ -151,29 +149,29 @@
               {% endif %}
             </div>
 
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);">
+            <div style="background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md);">
               <div>
                 <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Department</div>
-                <div style="color: var(--color-white); font-weight: 600;">{{ featured_job.department }}</div>
+                <div style="color: var(--color-text); font-weight: 600;">{{ featured_job.department }}</div>
               </div>
               <div>
                 <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Location</div>
-                <div style="color: var(--color-white); font-weight: 600;">{{ featured_job.location }}</div>
+                <div style="color: var(--color-text); font-weight: 600;">{{ featured_job.location }}</div>
               </div>
               <div>
                 <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Work Arrangement</div>
-                <div style="color: var(--color-white); font-weight: 600;">{{ featured_job.employment_type }}</div>
+                <div style="color: var(--color-text); font-weight: 600;">{{ featured_job.employment_type }}</div>
               </div>
               {% if featured_job.duration_display %}
                 <div>
                   <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Internship Duration</div>
-                  <div style="color: #60a5fa; font-weight: 700;">{{ featured_job.duration_display }}</div>
+                  <div style="color: #2563eb; font-weight: 700;">{{ featured_job.duration_display }}</div>
                 </div>
               {% endif %}
               {% if featured_job.fee_display %}
                 <div>
                   <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Application Fee</div>
-                  <div style="color: var(--color-primary-light); font-weight: 800; font-size: 1.15rem;">{{ featured_job.fee_display }}</div>
+                  <div style="color: var(--color-primary); font-weight: 800; font-size: 1.15rem;">{{ featured_job.fee_display }}</div>
                 </div>
               {% endif %}
 
@@ -216,9 +214,9 @@
             >
               <div class="job-info" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                  <div class="job-title" style="font-size: 1.2rem; font-weight: 700; color: var(--color-white);">{{ job.title }}</div>
+                  <div class="job-title" style="font-size: 1.2rem; font-weight: 700; color: var(--color-text); font-family: var(--font-heading);">{{ job.title }}</div>
                   {% if loop.first %}
-                    <span style="font-size: 0.68rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(16,185,129,0.2); color: var(--color-primary-light); border: 1px solid rgba(16,185,129,0.4);">HOT</span>
+                    <span style="font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(5, 150, 105, 0.1); color: var(--color-primary); border: 1px solid rgba(5, 150, 105, 0.25);">Priority</span>
                   {% endif %}
                 </div>
 
