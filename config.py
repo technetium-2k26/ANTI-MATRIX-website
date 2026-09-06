@@ -102,17 +102,48 @@ def get_internship_fee(duration: str) -> int:
     return INTERNSHIP_FEES.get(duration, 0)
 
 
+def get_database_uri(force_production_check=False):
+    """
+    Retrieves and normalizes the database URI.
+    Supports PostgreSQL (Supabase) and SQLite.
+    Normalizes 'postgres://' to 'postgresql://' for SQLAlchemy compatibility.
+    In production environments, raises RuntimeError if DATABASE_URL is not set.
+    """
+    raw_url = os.environ.get('DATABASE_URL', '').strip()
+    if raw_url:
+        if raw_url.startswith('postgres://'):
+            raw_url = 'postgresql://' + raw_url[len('postgres://'):]
+        return raw_url
+
+    # Check if production is explicitly configured or running on Render
+    is_prod = (
+        force_production_check
+        or os.environ.get('FLASK_CONFIG', '').lower() == 'production'
+        or os.environ.get('FLASK_ENV', '').lower() == 'production'
+        or os.environ.get('RENDER', '').lower() == 'true'
+    )
+    if is_prod and not raw_url:
+        raise RuntimeError(
+            "CRITICAL CONFIGURATION ERROR: DATABASE_URL environment variable is missing in Production. "
+            "Production on Render requires a valid Supabase PostgreSQL connection string."
+        )
+
+    return f"sqlite:///{os.path.join(BASE_DIR, 'antimatrix.db')}"
+
+
 class Config:
     """Base configuration."""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'antimatrix-dev-secret-key-change-in-prod-2026')
     
     # Database configuration with postgres:// to postgresql:// normalization
-    db_url = os.environ.get('DATABASE_URL', f"sqlite:///{os.path.join(BASE_DIR, 'antimatrix.db')}")
-    if db_url.startswith('postgres://'):
-        db_url = db_url.replace('postgres://', 'postgresql://', 1)
-    
-    SQLALCHEMY_DATABASE_URI = db_url
+    SQLALCHEMY_DATABASE_URI = get_database_uri(force_production_check=False)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # SQLAlchemy Engine & Connection Pool Options (Optimized for Supabase Pooler / Supavisor & Web Services)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     
     # Session & Security
     SESSION_COOKIE_HTTPONLY = True
@@ -173,6 +204,14 @@ class ProductionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1')
     PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
+    
+    # In production, pool sizing is added for PostgreSQL
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 10,
+        'max_overflow': 20,
+    }
 
 
 class TestingConfig(Config):
@@ -190,4 +229,5 @@ config = {
     'testing': TestingConfig,
     'default': DevelopmentConfig if os.environ.get('FLASK_ENV') != 'production' else ProductionConfig
 }
+
 

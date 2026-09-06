@@ -28,7 +28,7 @@ class Employee(db.Model):
         db.Integer,
         db.ForeignKey('job_applications.id', ondelete='CASCADE'),
         unique=True,
-        nullable=False,
+        nullable=True,
         index=True
     )
     password_hash = db.Column(db.String(256), nullable=False)

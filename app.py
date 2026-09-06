@@ -76,11 +76,17 @@ def create_app(config_name=None):
     # Auto-initialize database tables and seed default data
     with app.app_context():
         db.create_all()
+        
+        # Log database backend safely without exposing credentials or hosts
+        backend_name = db.engine.dialect.name.upper()
+        app.logger.info(f"Anti-Matrix Database backend initialized: {backend_name}")
 
         # Ensure database schema is updated for user_id on job_applications
         try:
             from sqlalchemy import inspect, text
             inspector = inspect(db.engine)
+            dialect_is_sqlite = (db.engine.dialect.name == 'sqlite')
+
             if 'job_applications' in inspector.get_table_names():
                 cols = [c['name'] for c in inspector.get_columns('job_applications')]
                 if 'user_id' not in cols:
@@ -99,7 +105,8 @@ def create_app(config_name=None):
 
                 if 'application_success_email_sent_at' not in cols:
                     with db.engine.connect() as conn:
-                        conn.execute(text("ALTER TABLE job_applications ADD COLUMN application_success_email_sent_at DATETIME"))
+                        type_str = "DATETIME" if dialect_is_sqlite else "TIMESTAMP"
+                        conn.execute(text(f"ALTER TABLE job_applications ADD COLUMN application_success_email_sent_at {type_str}"))
                         conn.commit()
 
                 if 'joining_date' not in cols:
@@ -145,8 +152,8 @@ def create_app(config_name=None):
                 emp_doc_cols = [c['name'] for c in emp_doc_col_objs]
                 emp_id_col = next((c for c in emp_doc_col_objs if c['name'] == 'employee_id'), None)
 
-                # If employee_id is NOT NULL in SQLite table definition, migrate it non-destructively
-                if emp_id_col and not emp_id_col.get('nullable', True):
+                # If employee_id is NOT NULL in SQLite table definition, migrate it non-destructively (SQLite only)
+                if dialect_is_sqlite and emp_id_col and not emp_id_col.get('nullable', True):
                     with db.engine.connect() as conn:
                         conn.execute(text('''
                             CREATE TABLE IF NOT EXISTS employee_documents_new (

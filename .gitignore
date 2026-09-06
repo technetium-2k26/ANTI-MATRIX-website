@@ -32,6 +32,8 @@ instance/
 .webassets-cache
 *.db
 *.sqlite3
+*.backup
+*.bak
 
 # Environment variables
 .env

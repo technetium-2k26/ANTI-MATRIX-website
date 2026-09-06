@@ -532,6 +532,13 @@ def job_apply_test_payment(app_id):
     # Commit payment & application transaction
     db.session.commit()
 
+    # Automatically record income in Money Management (Test Simulation)
+    try:
+        from services.money_service import record_cashfree_income
+        record_cashfree_income(application, payment, {"simulated": True}, env='TEST')
+    except Exception as e:
+        current_app.logger.warning(f"Failed to record money transaction for test payment: {e}")
+
     flash("Test payment completed successfully! Your application has been submitted.", "success")
     return redirect(url_for('main.job_apply_success', app_id=application.id))
 
@@ -675,6 +682,14 @@ def cashfree_return():
             application.application_fee = int(payment.amount)
         db.session.commit()
 
+        # Automatically record income in Money Management
+        try:
+            from services.money_service import record_cashfree_income
+            cfg = CashfreeService.get_config()
+            record_cashfree_income(application, payment, pay_details, env=cfg['environment'])
+        except Exception as e:
+            current_app.logger.warning(f"Failed to record money transaction for Cashfree order {order_id}: {e}")
+
         flash("Payment verified successfully! Your application has been submitted.", "success")
         return redirect(url_for('main.job_apply_success', app_id=application.id))
     
@@ -724,6 +739,13 @@ def cashfree_webhook():
 
         # Idempotent check
         if payment.payment_status == 'paid':
+            # Ensure financial transaction exists even if webhook fires after return url
+            try:
+                from services.money_service import record_cashfree_income
+                cfg = CashfreeService.get_config()
+                record_cashfree_income(application, payment, payment_info, env=cfg['environment'])
+            except Exception:
+                pass
             return jsonify({'status': 'already_processed', 'message': 'Already processed'}), 200
 
         if payment_status in ['SUCCESS', 'PAID']:
@@ -740,6 +762,14 @@ def cashfree_webhook():
                 application.application_fee = int(payment.amount)
             db.session.commit()
 
+            # Automatically record income in Money Management
+            try:
+                from services.money_service import record_cashfree_income
+                cfg = CashfreeService.get_config()
+                record_cashfree_income(application, payment, payment_info, env=cfg['environment'])
+            except Exception as e:
+                current_app.logger.warning(f"Failed to record money transaction for webhook order {order_id}: {e}")
+
         elif payment_status in ['FAILED', 'CANCELLED', 'USER_DROPPED']:
             payment.payment_status = 'failed'
             application.payment_status = 'failed'
@@ -749,6 +779,7 @@ def cashfree_webhook():
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 
 @main_bp.route('/careers/apply/retry-payment/<int:app_id>')

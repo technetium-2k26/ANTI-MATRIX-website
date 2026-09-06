@@ -894,3 +894,542 @@
   }
 }
 
+/* ==========================================================================
+   MONEY MANAGEMENT & GOOGLE PAY-STYLE TRANSACTION STYLES
+   ========================================================================== */
+
+/* --- Financial Top Summary Grid --- */
+.money-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 860px) {
+  .money-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.money-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.money-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.money-stat-card.income {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(10, 15, 29, 0.95) 100%);
+}
+
+.money-stat-card.income::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.money-stat-card.expense {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, rgba(10, 15, 29, 0.95) 100%);
+}
+
+.money-stat-card.expense::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.money-stat-card.balance {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.1) 0%, rgba(10, 15, 29, 0.95) 100%);
+}
+
+.money-stat-card.balance::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+}
+
+.money-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.money-stat-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.money-stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.money-stat-card.income .money-stat-icon-wrapper {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.money-stat-card.expense .money-stat-icon-wrapper {
+  background: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.money-stat-card.balance .money-stat-icon-wrapper {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.money-stat-value {
+  font-size: 2.15rem;
+  font-weight: 800;
+  color: #000000;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-mono, monospace), system-ui;
+}
+
+.money-stat-card.income .money-stat-value {
+  color: #10b981;
+}
+
+.money-stat-card.expense .money-stat-value {
+  color: #ef4444;
+}
+
+.money-stat-card.balance .money-stat-value {
+  color: #38bdf8;
+}
+
+.money-stat-footer {
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Secondary Stat Strip */
+.money-substats-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  padding: 0.875rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.money-substat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.money-substat-item strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* --- Environment & Status Badges --- */
+.badge-env-sandbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  text-transform: uppercase;
+}
+
+.badge-env-sandbox::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  box-shadow: 0 0 6px #fbbf24;
+}
+
+.badge-env-production {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  text-transform: uppercase;
+}
+
+.badge-env-production::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+
+.badge-env-manual {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  text-transform: uppercase;
+}
+
+/* --- Filter & Action Bar --- */
+.money-toolbar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.money-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.money-pills-group {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.money-pill-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.money-pill-btn:hover {
+  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.money-pill-btn.active {
+  color: #000000;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-weight: 700;
+}
+
+/* --- Google Pay Style Transaction List --- */
+.gpay-transactions-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.gpay-txn-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.gpay-txn-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(16, 185, 129, 0.35);
+  transform: translateX(4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.gpay-txn-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  min-width: 0;
+  flex: 1;
+}
+
+.gpay-txn-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 800;
+}
+
+.gpay-txn-avatar.income {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+}
+
+.gpay-txn-avatar.expense {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1.5px solid rgba(239, 68, 68, 0.35);
+}
+
+.gpay-txn-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.gpay-txn-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.gpay-txn-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gpay-txn-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-dim);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 600px;
+}
+
+.gpay-txn-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+}
+
+.gpay-txn-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gpay-txn-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.gpay-txn-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace), system-ui;
+  letter-spacing: -0.01em;
+}
+
+.gpay-txn-amount.income {
+  color: #10b981;
+}
+
+.gpay-txn-amount.expense {
+  color: #ef4444;
+}
+
+.gpay-txn-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gpay-empty-state {
+  text-align: center;
+  padding: var(--space-3xl) var(--space-lg);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.gpay-empty-state-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-md);
+}
+
+/* Modal Transaction Type Switch */
+.txn-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.txn-type-btn {
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-dim);
+  transition: all 0.2s ease;
+}
+
+.txn-type-btn.active.income {
+  background: #10b981;
+  color: #070a12;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.txn-type-btn.active.expense {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
+/* Detail Modal Key-Value Grid */
+.txn-detail-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0.65rem 1rem;
+  font-size: 0.88rem;
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-md) 0;
+}
+
+.txn-detail-label {
+  color: var(--color-text-dim);
+  font-weight: 600;
+}
+
+.txn-detail-value {
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+@media (max-width: 600px) {
+  .gpay-txn-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+  .gpay-txn-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.5rem;
+  }
+  .txn-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}
+
+
