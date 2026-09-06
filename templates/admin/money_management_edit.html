@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% from 'components/icons.html' import icon %}
+
+{% block title %}Edit Transaction #{{ txn.id }} | Money Management | Anti-Matrix{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh; padding-bottom: 4rem;">
+  <div class="container" style="max-width: 1280px; margin: 0 auto; padding: 0 var(--space-xl);">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="admin-header-title">
+        <a href="{{ url_for('admin.money_management') }}" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; margin-bottom: 0.75rem; padding: 0.3rem 0.6rem; color: #64748b; font-weight: 600; font-size: 0.85rem;">
+          {{ icon('arrow-left', size=14) }} Back to Money Management
+        </a>
+        <div class="badge" style="margin-bottom: 0.35rem; display: inline-flex; align-items: center; gap: 6px;">
+          {{ icon('shield', size=11) }} Administrator Portal
+        </div>
+        <h1 style="display: flex; align-items: center; gap: 10px; margin-top: 0.2rem;">
+          {{ icon('edit', size=28, color='#059669') }} Edit Transaction #{{ txn.id }}
+        </h1>
+        <p>Modify details of manual financial transaction.</p>
+      </div>
+      <div style="display: flex; gap: var(--space-sm); align-items: center;">
+        <a href="{{ url_for('admin.money_management') }}" class="btn btn-outline" style="gap: 6px;">
+          {{ icon('wallet', size=14) }} View Ledger
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Nav Tabs -->
+    <div class="admin-nav-tabs">
+      <a href="{{ url_for('admin.dashboard') }}" class="admin-nav-tab">
+        {{ icon('layout', size=15) }} Overview
+      </a>
+      <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab">
+        {{ icon('briefcase', size=15) }} Job Postings <span class="admin-tab-count">{{ total_jobs }}</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
+        {{ icon('users', size=15) }} Candidate Applications <span class="admin-tab-count">{{ total_applications }}</span>
+        {% if new_applications > 0 %}
+          <span class="admin-tab-count new">{{ new_applications }} NEW</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
+        {{ icon('user-check', size=15) }} Employees <span class="admin-tab-count">{{ total_employees }}</span>
+      </a>
+      <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
+        {{ icon('file-text', size=15) }} Templates
+      </a>
+      <a href="{{ url_for('admin.money_management') }}" class="admin-nav-tab active">
+        {{ icon('wallet', size=15) }} Money Management
+      </a>
+    </div>
+
+    <!-- Centered Dedicated Edit Transaction Form Card -->
+    <div style="max-width: 800px; margin: 2rem auto 0;">
+      <div class="money-card" style="padding: 2.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06); border: 1px solid #e2e8f0; border-radius: 16px;">
+        
+        <div class="money-card-header" style="margin-bottom: 1.75rem; padding-bottom: 1rem;">
+          <div>
+            <h2 class="money-card-title" style="font-size: 1.25rem;">
+              Edit Financial Transaction
+            </h2>
+            <p class="money-card-subtitle">
+              Update manual ledger entry details. All financial totals recalculate automatically.
+            </p>
+          </div>
+          <span class="badge" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-weight: 600;">
+            Manual Entry #{{ txn.id }}
+          </span>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.edit_money_transaction', txn_id=txn.id) }}" id="editTransactionForm" onsubmit="handleEditSubmit(event)">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          
+          <!-- Segmented Type Selector -->
+          <div style="margin-bottom: 1.5rem;">
+            <label class="form-label" style="margin-bottom: 0.5rem; font-weight: 700; color: #334155;">
+              Transaction Type <span class="req">*</span>
+            </label>
+            <div class="money-segmented-control" style="padding: 6px; border-radius: 12px;">
+              <button type="button" id="typeIncomeBtn" class="money-segmented-btn {{ 'active income' if txn.transaction_type == 'INCOME' else '' }}" onclick="setTransactionType('INCOME')" style="padding: 0.75rem 1rem; font-size: 0.95rem;">
+                {{ icon('arrow-down-left', size=18) }} + Income
+              </button>
+              <button type="button" id="typeExpenseBtn" class="money-segmented-btn {{ 'active expense' if txn.transaction_type == 'EXPENSE' else '' }}" onclick="setTransactionType('EXPENSE')" style="padding: 0.75rem 1rem; font-size: 0.95rem;">
+                {{ icon('arrow-up-right', size=18) }} ↗ Expense
+              </button>
+            </div>
+            <input type="hidden" name="transaction_type" id="transactionTypeInput" value="{{ txn.transaction_type }}"/>
+          </div>
+
+          <!-- Responsive 2-Column Fields Grid -->
+          <div class="money-form-grid" style="gap: 1.25rem;">
+            
+            <!-- Amount (₹) -->
+            <div class="form-group">
+              <label class="form-label" for="editAmount" style="font-weight: 600;">
+                Amount (₹) <span class="req">*</span>
+              </label>
+              <div class="money-amount-wrapper">
+                <span class="money-amount-prefix" id="amountPrefix" style="color: {{ '#059669' if txn.transaction_type == 'INCOME' else '#dc2626' }};">₹</span>
+                <input type="number" step="0.01" min="0.01" id="editAmount" name="amount" class="form-input money-amount-input" value="{{ '%.2f'|format(txn.amount) }}" required autofocus />
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group">
+              <label class="form-label" for="editDate" style="font-weight: 600;">
+                Date <span class="req">*</span>
+              </label>
+              <input type="date" id="editDate" name="transaction_date" class="form-input" value="{{ txn.transaction_date.strftime('%Y-%m-%d') if txn.transaction_date else '' }}" required title="Supports historical dates" />
+            </div>
+
+            <!-- Time (Optional) -->
+            <div class="form-group">
+              <label class="form-label" for="editTime" style="font-weight: 600;">
+                Time (Optional)
+              </label>
+              <input type="text" id="editTime" name="transaction_time" class="form-input" value="{{ txn.transaction_time or '' }}" placeholder="e.g. 10:30 AM" />
+            </div>
+
+            <!-- Category / Purpose -->
+            <div class="form-group">
+              <label class="form-label" for="editCategory" style="font-weight: 600;">
+                Category / Purpose <span class="req">*</span>
+              </label>
+              <select id="editCategory" name="category" class="form-input admin-select" onchange="handleCategoryChange(this.value)" required style="width: 100%;">
+                <optgroup label="Income Categories" id="incomeOptGroup" style="{{ '' if txn.transaction_type == 'INCOME' else 'display: none;' }}">
+                  {% for cat in income_categories %}
+                    <option value="{{ cat }}" {{ 'selected' if cat == txn.category else '' }}>{{ cat }}</option>
+                  {% endfor %}
+                </optgroup>
+                <optgroup label="Expense Categories" id="expenseOptGroup" style="{{ '' if txn.transaction_type == 'EXPENSE' else 'display: none;' }}">
+                  {% for cat in expense_categories %}
+                    <option value="{{ cat }}" {{ 'selected' if cat == txn.category else '' }}>{{ cat }}</option>
+                  {% endfor %}
+                </optgroup>
+                <option value="Other" {{ 'selected' if is_custom_category else '' }}>Other (Custom Category)</option>
+              </select>
+            </div>
+
+            <!-- Custom Category (dynamically visible) -->
+            <div class="form-group money-form-full" id="customCategoryGroup" style="{{ 'display: block;' if is_custom_category else 'display: none;' }}">
+              <label class="form-label" for="customCategory" style="font-weight: 600;">
+                Custom Category Name <span class="req">*</span>
+              </label>
+              <input type="text" id="customCategory" name="custom_category" class="form-input" value="{{ txn.category if is_custom_category else '' }}" placeholder="Enter custom category name" />
+            </div>
+
+            <!-- Purpose / Title (Full Width) -->
+            <div class="form-group money-form-full">
+              <label class="form-label" for="editPurpose" style="font-weight: 600;">
+                Purpose / Title
+              </label>
+              <input type="text" id="editPurpose" name="purpose" class="form-input" value="{{ txn.purpose or '' }}" placeholder="Enter transaction purpose" />
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-group">
+              <label class="form-label" for="editPaymentMethod" style="font-weight: 600;">
+                Payment Method
+              </label>
+              <select id="editPaymentMethod" name="payment_method" class="form-input admin-select" style="width: 100%;">
+                {% for method in payment_methods %}
+                  <option value="{{ method }}" {{ 'selected' if method == txn.payment_method else '' }}>{{ method }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Reference / ID -->
+            <div class="form-group">
+              <label class="form-label" for="editReference" style="font-weight: 600;">
+                Reference / ID
+              </label>
+              <input type="text" id="editReference" name="reference" class="form-input" value="{{ txn.reference or '' }}" placeholder="UPI ref, Cheque #, Invoice #" />
+            </div>
+
+            <!-- Description / Notes (Full Width) -->
+            <div class="form-group money-form-full">
+              <label class="form-label" for="editDescription" style="font-weight: 600;">
+                Description / Notes
+              </label>
+              <textarea id="editDescription" name="description" class="form-textarea" rows="3" placeholder="Enter additional notes, context, or invoice specifics regarding this transaction">{{ txn.description or '' }}</textarea>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md); margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9;">
+            <a href="{{ url_for('admin.money_management') }}" class="btn btn-outline" style="padding: 0.65rem 1.4rem; font-size: 0.9rem;">
+              Cancel
+            </a>
+            <button type="submit" id="btnSaveTransaction" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-size: 0.9rem; gap: 8px; font-weight: 700;">
+              {{ icon('check', size=16) }} Save Changes
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  function setTransactionType(type) {
+    const input = document.getElementById('transactionTypeInput');
+    const incomeBtn = document.getElementById('typeIncomeBtn');
+    const expenseBtn = document.getElementById('typeExpenseBtn');
+    const incomeGroup = document.getElementById('incomeOptGroup');
+    const expenseGroup = document.getElementById('expenseOptGroup');
+    const categorySelect = document.getElementById('editCategory');
+    const amountPrefix = document.getElementById('amountPrefix');
+
+    if (!input || !incomeBtn || !expenseBtn || !categorySelect) return;
+
+    input.value = type;
+    if (type === 'INCOME') {
+      incomeBtn.classList.add('active', 'income');
+      expenseBtn.classList.remove('active', 'expense');
+      if (incomeGroup) incomeGroup.style.display = '';
+      if (expenseGroup) expenseGroup.style.display = 'none';
+      if (amountPrefix) amountPrefix.style.color = '#059669';
+    } else {
+      expenseBtn.classList.add('active', 'expense');
+      incomeBtn.classList.remove('active', 'income');
+      if (incomeGroup) incomeGroup.style.display = 'none';
+      if (expenseGroup) expenseGroup.style.display = '';
+      if (amountPrefix) amountPrefix.style.color = '#dc2626';
+    }
+  }
+
+  function handleCategoryChange(val) {
+    const customGroup = document.getElementById('customCategoryGroup');
+    if (customGroup) {
+      if (val === 'Other') {
+        customGroup.style.display = 'block';
+        const customInput = document.getElementById('customCategory');
+        if (customInput) customInput.focus();
+      } else {
+        customGroup.style.display = 'none';
+      }
+    }
+  }
+
+  function handleEditSubmit(e) {
+    const btn = document.getElementById('btnSaveTransaction');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-inline"></span> Saving...`;
+    }
+  }
+</script>
+{% endblock %}

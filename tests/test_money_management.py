@@ -266,6 +266,7 @@ class TestMoneyManagementSystem(unittest.TestCase):
     def test_05_manual_edit_and_delete(self):
         """
         TEST 5 — Manual Transaction Edit & Delete with Real-time Recalculation.
+        Tests GET pre-population, POST in-place update, type switching, and preservation of ID.
         """
         with self.client.session_transaction() as sess:
             sess['_user_id'] = str(self.admin.id)
@@ -276,39 +277,113 @@ class TestMoneyManagementSystem(unittest.TestCase):
             transaction_type='EXPENSE',
             amount=800.00,
             transaction_date=date(2026, 8, 20),
+            transaction_time='08:30 AM',
             category='Internet',
             purpose='TEST Internet Bill',
             source='MANUAL',
             provider='MANUAL',
             environment='MANUAL',
-            reference='TEST-EDIT-001'
+            reference='TEST-EDIT-001',
+            description='Initial monthly fiber charge'
+        )
+        db.session.add(txn)
+        db.session.commit()
+        txn_id = txn.id
+        initial_txn_count = MoneyTransaction.query.count()
+
+        # 1. GET Edit Page -> Verify pre-population
+        get_resp = self.client.get(f'/admin/money-management/transactions/{txn_id}/edit')
+        self.assertEqual(get_resp.status_code, 200)
+        self.assertIn(b'Edit Transaction', get_resp.data)
+        self.assertIn(b'800.0', get_resp.data)
+        self.assertIn(b'2026-08-20', get_resp.data)
+        self.assertIn(b'08:30 AM', get_resp.data)
+        self.assertIn(b'TEST Internet Bill', get_resp.data)
+        self.assertIn(b'TEST-EDIT-001', get_resp.data)
+        self.assertIn(b'Initial monthly fiber charge', get_resp.data)
+
+        # 2. POST Edit -> Update amount to ₹950, switch type to INCOME, change purpose
+        response = self.client.post(f'/admin/money-management/transactions/{txn_id}/edit', data={
+            'transaction_type': 'INCOME',
+            'amount': '950.00',
+            'transaction_date': '2026-08-22',
+            'transaction_time': '11:00 AM',
+            'category': 'Internet',
+            'purpose': 'TEST Refund for Internet Bill',
+            'payment_method': 'UPI',
+            'reference': 'TEST-EDIT-001-UPDATED',
+            'description': 'Updated to refund credit'
+        }, follow_redirects=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Transaction updated successfully', response.data)
+
+        # Verify exact same transaction was updated in-place (no duplicate, same ID)
+        self.assertEqual(MoneyTransaction.query.count(), initial_txn_count)
+        updated_txn = db.session.get(MoneyTransaction, txn_id)
+        self.assertIsNotNone(updated_txn)
+        self.assertEqual(updated_txn.id, txn_id)
+        self.assertEqual(updated_txn.amount, 950.00)
+        self.assertEqual(updated_txn.transaction_type, 'INCOME')
+        self.assertEqual(updated_txn.transaction_date, date(2026, 8, 22))
+        self.assertEqual(updated_txn.transaction_time, '11:00 AM')
+        self.assertEqual(updated_txn.purpose, 'TEST Refund for Internet Bill')
+        self.assertEqual(updated_txn.reference, 'TEST-EDIT-001-UPDATED')
+        self.assertEqual(updated_txn.description, 'Updated to refund credit')
+
+        # 3. Delete transaction
+        del_response = self.client.post(f'/admin/money-management/transactions/{txn_id}/delete', follow_redirects=True)
+        self.assertEqual(del_response.status_code, 200)
+        deleted_txn = db.session.get(MoneyTransaction, txn_id)
+        self.assertIsNone(deleted_txn)
+
+    def test_05b_edit_validation_and_errors(self):
+        """
+        TEST 5B — Edit Transaction Validation & Edge Cases.
+        """
+        with self.client.session_transaction() as sess:
+            sess['_user_id'] = str(self.admin.id)
+            sess['_fresh'] = True
+
+        txn = MoneyTransaction(
+            transaction_type='EXPENSE',
+            amount=500.00,
+            transaction_date=date(2026, 9, 1),
+            category='Office Supplies',
+            purpose='TEST Validation Purpose',
+            source='MANUAL',
+            reference='TEST-VAL-001'
         )
         db.session.add(txn)
         db.session.commit()
         txn_id = txn.id
 
-        # Edit transaction to ₹950
-        response = self.client.post(f'/admin/money-management/transactions/{txn_id}/edit', data={
-            'amount': '950.00',
-            'transaction_date': '2026-08-20',
-            'transaction_time': '11:00 AM',
-            'category': 'Internet',
-            'purpose': 'TEST Updated Internet Bill',
-            'payment_method': 'UPI',
-            'reference': 'TEST-EDIT-001',
-            'description': 'Updated amount with taxes'
+        # Invalid non-numeric / negative amount
+        resp_invalid_amt = self.client.post(f'/admin/money-management/transactions/{txn_id}/edit', data={
+            'amount': '-100',
+            'transaction_date': '2026-09-01',
+            'purpose': 'Invalid'
         }, follow_redirects=True)
+        self.assertEqual(resp_invalid_amt.status_code, 200)
+        self.assertIn(b'Please enter a valid numeric amount greater than zero.', resp_invalid_amt.data)
 
-        self.assertEqual(response.status_code, 200)
-        updated_txn = db.session.get(MoneyTransaction, txn_id)
-        self.assertEqual(updated_txn.amount, 950.00)
-        self.assertEqual(updated_txn.purpose, 'TEST Updated Internet Bill')
+        # Invalid date format
+        resp_invalid_date = self.client.post(f'/admin/money-management/transactions/{txn_id}/edit', data={
+            'amount': '500',
+            'transaction_date': 'invalid-date',
+            'purpose': 'Invalid Date'
+        }, follow_redirects=True)
+        self.assertEqual(resp_invalid_date.status_code, 200)
+        self.assertIn(b'Invalid date format. Please select a valid date', resp_invalid_date.data)
 
-        # Delete transaction
-        del_response = self.client.post(f'/admin/money-management/transactions/{txn_id}/delete', follow_redirects=True)
-        self.assertEqual(del_response.status_code, 200)
-        deleted_txn = db.session.get(MoneyTransaction, txn_id)
-        self.assertIsNone(deleted_txn)
+        # Non-existent transaction ID
+        resp_not_found = self.client.get('/admin/money-management/transactions/99999999/edit', follow_redirects=True)
+        self.assertEqual(resp_not_found.status_code, 200)
+        self.assertIn(b'Transaction not found', resp_not_found.data)
+
+        # Cleanup
+        db.session.delete(txn)
+        db.session.commit()
 
     def test_06_cashfree_transaction_deletion_lock(self):
         """
@@ -382,6 +457,15 @@ class TestMoneyManagementSystem(unittest.TestCase):
         post_legacy_resp = guest_client.post('/admin/money-management/transactions/create', data={'amount': '100'})
         self.assertEqual(post_legacy_resp.status_code, 302)
 
+        post_clear_resp = guest_client.post('/admin/money-management/transactions/clear-all', data={'confirmation': 'CLEAR'})
+        self.assertEqual(post_clear_resp.status_code, 302)
+
+        get_edit_resp = guest_client.get('/admin/money-management/transactions/1/edit')
+        self.assertEqual(get_edit_resp.status_code, 302)
+
+        post_edit_resp = guest_client.post('/admin/money-management/transactions/1/edit', data={'amount': '100'})
+        self.assertEqual(post_edit_resp.status_code, 302)
+
         # 2. Authenticated non-admin candidate/student
         self.login_user('student_test@example.com', 'StudentPass123!')
 
@@ -396,6 +480,15 @@ class TestMoneyManagementSystem(unittest.TestCase):
 
         student_post_legacy = self.client.post('/admin/money-management/transactions/create', data={'amount': '100'})
         self.assertEqual(student_post_legacy.status_code, 403)
+
+        student_clear = self.client.post('/admin/money-management/transactions/clear-all', data={'confirmation': 'CLEAR'})
+        self.assertEqual(student_clear.status_code, 403)
+
+        student_get_edit = self.client.get('/admin/money-management/transactions/1/edit')
+        self.assertEqual(student_get_edit.status_code, 403)
+
+        student_post_edit = self.client.post('/admin/money-management/transactions/1/edit', data={'amount': '100'})
+        self.assertEqual(student_post_edit.status_code, 403)
 
         self.logout_user()
 
@@ -442,9 +535,75 @@ class TestMoneyManagementSystem(unittest.TestCase):
         db.session.delete(txn)
         db.session.commit()
 
-    def test_09_data_preservation_verification(self):
+    def test_09_clear_all_transactions_safeguards_and_execution(self):
         """
-        TEST 9 — Non-Negotiable Data Preservation Verification.
+        TEST 9 — Clear All Transactions Safeguards & Destructive Ledger Reset.
+        Verify confirmation requirement ('CLEAR'), atomic deletion of MoneyTransaction only,
+        dashboard totals recalculation to zero, and complete data safety of Payment and Application records.
+        """
+        with self.client.session_transaction() as sess:
+            sess['_user_id'] = str(self.admin.id)
+            sess['_fresh'] = True
+
+        # 1. Seed two test transactions
+        t1 = MoneyTransaction(
+            transaction_type='INCOME',
+            amount=500.00,
+            transaction_date=date(2026, 9, 6),
+            category='Software',
+            purpose='TEST Inflow To Clear 1',
+            source='MANUAL',
+            reference='TEST-CLEAR-001'
+        )
+        t2 = MoneyTransaction(
+            transaction_type='EXPENSE',
+            amount=150.00,
+            transaction_date=date(2026, 9, 6),
+            category='Hosting',
+            purpose='TEST Outflow To Clear 2',
+            source='MANUAL',
+            reference='TEST-CLEAR-002'
+        )
+        db.session.add_all([t1, t2])
+        db.session.commit()
+
+        self.assertGreaterEqual(MoneyTransaction.query.count(), 2)
+
+        # 2. Attempt clear without confirmation -> Must FAIL
+        fail_resp_1 = self.client.post('/admin/money-management/transactions/clear-all', data={}, follow_redirects=True)
+        self.assertEqual(fail_resp_1.status_code, 200)
+        self.assertIn(b'Confirmation failed', fail_resp_1.data)
+        self.assertIsNotNone(MoneyTransaction.query.filter_by(reference='TEST-CLEAR-001').first())
+
+        # 3. Attempt clear with wrong confirmation -> Must FAIL
+        fail_resp_2 = self.client.post('/admin/money-management/transactions/clear-all', data={'confirmation': 'DELETE'}, follow_redirects=True)
+        self.assertEqual(fail_resp_2.status_code, 200)
+        self.assertIn(b'Confirmation failed', fail_resp_2.data)
+        self.assertIsNotNone(MoneyTransaction.query.filter_by(reference='TEST-CLEAR-001').first())
+
+        # 4. Attempt clear with exact confirmation 'CLEAR' -> Must SUCCEED
+        success_resp = self.client.post('/admin/money-management/transactions/clear-all', data={'confirmation': 'CLEAR'}, follow_redirects=True)
+        self.assertEqual(success_resp.status_code, 200)
+        self.assertIn(b'All transactions cleared successfully', success_resp.data)
+
+        # Verify ledger table is completely cleared
+        self.assertEqual(MoneyTransaction.query.count(), 0)
+
+        # Verify financial calculations recalculate to zero
+        cleared_summary = get_financial_summary()
+        self.assertEqual(cleared_summary['total_income'], 0.00)
+        self.assertEqual(cleared_summary['total_expense'], 0.00)
+        self.assertEqual(cleared_summary['balance'], 0.00)
+        self.assertEqual(cleared_summary['transaction_count'], 0)
+
+        # 5. Attempt clearing again when already empty -> Must handle safely without error
+        repeat_resp = self.client.post('/admin/money-management/transactions/clear-all', data={'confirmation': 'CLEAR'}, follow_redirects=True)
+        self.assertEqual(repeat_resp.status_code, 200)
+        self.assertIn(b'All transactions cleared successfully', repeat_resp.data)
+
+    def test_10_data_preservation_verification(self):
+        """
+        TEST 10 — Non-Negotiable Data Preservation Verification.
         Ensure that all pre-existing records, tables, and IDs remain 100% unchanged.
         """
         self.assertEqual(JobPosting.query.count(), self.baseline_counts['job_postings'])

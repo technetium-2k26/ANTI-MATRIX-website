@@ -1483,13 +1483,19 @@ def create_money_transaction():
     return add_money_transaction()
 
 
-@admin_bp.route('/money-management/transactions/<int:txn_id>/edit', methods=['POST'])
+@admin_bp.route('/money-management/transactions/<int:txn_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def edit_money_transaction(txn_id):
     """
-    Edit a manually created transaction.
-    Automatic Cashfree transactions are strictly locked and cannot be edited directly.
+    Edit an existing manual transaction.
+    GET: Renders dedicated Edit Transaction page with pre-populated values.
+    POST: Validates and updates the existing record in place, recalculating all metrics.
+    Automatic Cashfree transactions are strictly locked and cannot be edited.
     """
+    from services.money_service import (
+        STANDARD_INCOME_CATEGORIES, STANDARD_EXPENSE_CATEGORIES, PAYMENT_METHODS
+    )
+
     txn = db.session.get(MoneyTransaction, txn_id)
     if not txn:
         flash('Transaction not found.', 'danger')
@@ -1499,57 +1505,89 @@ def edit_money_transaction(txn_id):
         flash('Cashfree automatic transactions cannot be edited directly.', 'danger')
         return redirect(url_for('admin.money_management'))
 
-    amount_str = (request.form.get('amount') or '').strip()
-    txn_date_str = (request.form.get('transaction_date') or '').strip()
-    txn_time = (request.form.get('transaction_time') or '').strip()
-    category = (request.form.get('category') or '').strip()
-    custom_category = (request.form.get('custom_category') or '').strip()
-    purpose = (request.form.get('purpose') or '').strip()
-    description = (request.form.get('description') or '').strip()
-    payment_method = (request.form.get('payment_method') or 'Manual').strip()
-    reference = (request.form.get('reference') or '').strip()
+    if request.method == 'POST':
+        txn_type = (request.form.get('transaction_type') or '').strip().upper()
+        amount_str = (request.form.get('amount') or '').strip()
+        txn_date_str = (request.form.get('transaction_date') or '').strip()
+        txn_time = (request.form.get('transaction_time') or '').strip()
+        category = (request.form.get('category') or '').strip()
+        custom_category = (request.form.get('custom_category') or '').strip()
+        purpose = (request.form.get('purpose') or '').strip()
+        description = (request.form.get('description') or '').strip()
+        payment_method = (request.form.get('payment_method') or txn.payment_method or 'Manual').strip()
+        reference = (request.form.get('reference') or '').strip()
 
-    if category.lower() in ['other', 'custom', 'other income', 'other expense'] and custom_category:
-        category = custom_category
-    elif not category and custom_category:
-        category = custom_category
+        if category.lower() in ['other', 'custom', 'other income', 'other expense'] and custom_category:
+            category = custom_category
+        elif not category and custom_category:
+            category = custom_category
 
-    try:
-        amount = float(amount_str)
-        if amount <= 0:
-            raise ValueError("Amount must be greater than zero.")
-        txn.amount = amount
-    except (ValueError, TypeError):
-        flash('Please enter a valid numeric amount greater than zero.', 'danger')
-        return redirect(url_for('admin.money_management'))
+        # Validate Transaction Type
+        if txn_type in ['INCOME', 'EXPENSE']:
+            txn.transaction_type = txn_type
 
-    if txn_date_str:
+        # Validate Amount (must be positive numeric > 0)
         try:
-            txn.transaction_date = datetime.strptime(txn_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            flash('Invalid date format.', 'danger')
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError("Amount must be greater than zero.")
+            txn.amount = amount
+        except (ValueError, TypeError):
+            flash('Please enter a valid numeric amount greater than zero.', 'danger')
+            return redirect(url_for('admin.edit_money_transaction', txn_id=txn_id))
+
+        # Validate Date
+        if txn_date_str:
+            try:
+                txn.transaction_date = datetime.strptime(txn_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Invalid date format. Please select a valid date (YYYY-MM-DD).', 'danger')
+                return redirect(url_for('admin.edit_money_transaction', txn_id=txn_id))
+
+        if txn_time:
+            txn.transaction_time = txn_time
+
+        if category:
+            txn.category = category
+        if purpose:
+            txn.purpose = purpose
+        txn.description = description
+        txn.payment_method = payment_method
+        txn.reference = reference
+        txn.updated_at = datetime.now(timezone.utc)
+
+        try:
+            db.session.commit()
+            flash('Transaction updated successfully.', 'success')
             return redirect(url_for('admin.money_management'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating transaction: {str(e)}", 'danger')
+            return redirect(url_for('admin.edit_money_transaction', txn_id=txn_id))
 
-    if txn_time:
-        txn.transaction_time = txn_time
+    # GET Request: Prepare pre-populated form context
+    total_jobs = JobPosting.query.count()
+    total_applications = JobApplication.query.count()
+    new_applications = JobApplication.query.filter_by(status='New').count()
+    total_employees = Employee.query.count()
 
-    if category:
-        txn.category = category
-    if purpose:
-        txn.purpose = purpose
-    txn.description = description
-    txn.payment_method = payment_method
-    txn.reference = reference
-    txn.updated_at = datetime.now(timezone.utc)
+    is_custom_category = (
+        txn.category not in STANDARD_INCOME_CATEGORIES and 
+        txn.category not in STANDARD_EXPENSE_CATEGORIES
+    )
 
-    try:
-        db.session.commit()
-        flash('Transaction updated successfully!', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f"Error updating transaction: {str(e)}", 'danger')
-
-    return redirect(url_for('admin.money_management'))
+    return render_template(
+        'admin/money_management_edit.html',
+        txn=txn,
+        is_custom_category=is_custom_category,
+        income_categories=STANDARD_INCOME_CATEGORIES,
+        expense_categories=STANDARD_EXPENSE_CATEGORIES,
+        payment_methods=PAYMENT_METHODS,
+        total_jobs=total_jobs,
+        total_applications=total_applications,
+        new_applications=new_applications,
+        total_employees=total_employees
+    )
 
 
 @admin_bp.route('/money-management/transactions/<int:txn_id>/delete', methods=['POST'])
@@ -1606,6 +1644,32 @@ def reconcile_payments():
         flash(f"Reconciliation error: {str(e)}", 'danger')
 
     return redirect(url_for('admin.money_management'))
+
+
+@admin_bp.route('/money-management/transactions/clear-all', methods=['POST'])
+@admin_required
+def clear_all_money_transactions():
+    """
+    Destructive Admin-Only action to clear all MoneyManagement ledger transactions.
+    Requires explicit confirmation code ('CLEAR').
+    Preserves all Payment, Application, Employee, and User records.
+    """
+    from services.money_service import clear_all_transactions
+
+    confirmation = (request.form.get('confirmation') or '').strip()
+
+    if confirmation.upper() != 'CLEAR':
+        flash("Confirmation failed. You must type 'CLEAR' exactly to clear all transactions.", 'danger')
+        return redirect(url_for('admin.money_management'))
+
+    success, count, err = clear_all_transactions(admin_user=current_user)
+    if success:
+        flash("All transactions cleared successfully.", 'success')
+    else:
+        flash(f"Error clearing transactions: {err}", 'danger')
+
+    return redirect(url_for('admin.money_management'))
+
 
 
 

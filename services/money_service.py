@@ -324,3 +324,30 @@ def reconcile_cashfree_payments():
                 count_added += 1
 
     return count_added, len(paid_payments)
+
+
+def clear_all_transactions(admin_user=None):
+    """
+    Safely and permanently deletes ONLY records from the MoneyTransaction ledger table.
+    Preserves all Users, JobPostings, JobApplications, Payments, Employees, and DocumentTemplates.
+    Operates inside an atomic database transaction.
+    Returns (success, deleted_count, error_message).
+    """
+    try:
+        count = MoneyTransaction.query.count()
+        if count > 0:
+            # Delete only MoneyTransaction records
+            MoneyTransaction.query.delete()
+            db.session.commit()
+            if admin_user:
+                logger.warning(
+                    f"[MoneyService] Admin ID {getattr(admin_user, 'id', 'unknown')} ({getattr(admin_user, 'email', 'unknown')}) permanently cleared all {count} MoneyTransaction ledger records."
+                )
+            else:
+                logger.warning(f"[MoneyService] Permanently cleared all {count} MoneyTransaction ledger records.")
+        return True, count, None
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"[MoneyService] Error clearing MoneyTransaction ledger: {str(e)}", exc_info=True)
+        return False, 0, str(e)
+

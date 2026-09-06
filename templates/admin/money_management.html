@@ -215,7 +215,7 @@
 
     </div>
 
-    <!-- Transaction History Section Title -->
+    <!-- Transaction History Section Title & Actions -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; gap: var(--space-sm);">
       <div>
         <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;">
@@ -224,9 +224,20 @@
         </h2>
         <p style="font-size: 0.825rem; color: #64748b; margin: 0.15rem 0 0 0;">Chronological financial activity feed and transaction ledger</p>
       </div>
-      <a href="{{ url_for('admin.add_money_transaction') }}" class="btn btn-primary btn-sm" style="gap: 6px;">
-        {{ icon('plus', size=14) }} Add Transaction
-      </a>
+      <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;">
+        {% if summary.all_time_count > 0 %}
+          <button type="button" class="btn-danger-outline btn-sm" style="gap: 6px; font-size: 0.825rem;" onclick="openClearAllTransactionsModal()">
+            {{ icon('trash-2', size=13) }} Clear All Transactions
+          </button>
+        {% else %}
+          <button type="button" class="btn-danger-outline btn-sm" style="gap: 6px; font-size: 0.825rem;" disabled title="No transactions to clear.">
+            {{ icon('trash-2', size=13) }} Clear All Transactions
+          </button>
+        {% endif %}
+        <a href="{{ url_for('admin.add_money_transaction') }}" class="btn btn-primary btn-sm" style="gap: 6px;">
+          {{ icon('plus', size=14) }} Add Transaction
+        </a>
+      </div>
     </div>
 
     <!-- Toolbar & Filters -->
@@ -395,9 +406,9 @@
 
               <div class="gpay-txn-actions">
                 {% if txn.is_manual %}
-                  <button type="button" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openEditTransactionModal({{ txn.to_dict()|tojson }})" title="Edit manual transaction">
+                  <a href="{{ url_for('admin.edit_money_transaction', txn_id=txn.id) }}" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; text-decoration: none;" title="Edit manual transaction">
                     {{ icon('edit', size=12) }} Edit
-                  </button>
+                  </a>
                   <button type="button" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: #dc2626;" onclick="openDeleteTransactionModal({{ txn.id }}, '{{ txn.formatted_amount }}', '{{ txn.purpose or txn.category }}')" title="Delete manual transaction">
                     {{ icon('trash-2', size=12) }}
                   </button>
@@ -439,94 +450,6 @@
 
   </div>
 </section>
-
-<!-- ==============================================================================
-     MODAL: EDIT TRANSACTION (MANUAL ONLY)
-     ============================================================================== -->
-<div id="modalEditTransaction" class="modal-backdrop-wrapper" style="display: none;" onclick="if(event.target === this) closeEditTransactionModal()">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 class="modal-title">
-        {{ icon('edit', size=18, color='#059669') }} Edit Manual Transaction
-      </h3>
-      <button type="button" class="modal-close" onclick="closeEditTransactionModal()">
-        {{ icon('x', size=16) }}
-      </button>
-    </div>
-
-    <form id="editTransactionForm" method="POST" action="">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-      
-      <!-- Responsive 2-Column Fields Grid -->
-      <div class="money-form-grid">
-        
-        <!-- Amount -->
-        <div class="form-group">
-          <label class="form-label" for="editAmount">Amount (₹) <span class="req">*</span></label>
-          <div class="money-amount-wrapper">
-            <span class="money-amount-prefix">₹</span>
-            <input type="number" step="0.01" min="0.01" id="editAmount" name="amount" class="form-input money-amount-input" required />
-          </div>
-        </div>
-
-        <!-- Date -->
-        <div class="form-group">
-          <label class="form-label" for="editDate">Date <span class="req">*</span></label>
-          <input type="date" id="editDate" name="transaction_date" class="form-input" required />
-        </div>
-
-        <!-- Time -->
-        <div class="form-group">
-          <label class="form-label" for="editTime">Time</label>
-          <input type="text" id="editTime" name="transaction_time" class="form-input" />
-        </div>
-
-        <!-- Category -->
-        <div class="form-group">
-          <label class="form-label" for="editCategory">Category / Purpose <span class="req">*</span></label>
-          <input type="text" id="editCategory" name="category" class="form-input" required />
-        </div>
-
-        <!-- Specific Purpose -->
-        <div class="form-group money-form-full">
-          <label class="form-label" for="editPurpose">Purpose / Title</label>
-          <input type="text" id="editPurpose" name="purpose" class="form-input" />
-        </div>
-
-        <!-- Payment Method -->
-        <div class="form-group">
-          <label class="form-label" for="editPaymentMethod">Payment Method</label>
-          <select id="editPaymentMethod" name="payment_method" class="form-input admin-select" style="width: 100%;">
-            {% for method in payment_methods %}
-              <option value="{{ method }}">{{ method }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <!-- Reference -->
-        <div class="form-group">
-          <label class="form-label" for="editReference">Reference / ID</label>
-          <input type="text" id="editReference" name="reference" class="form-input" />
-        </div>
-
-        <!-- Description / Notes -->
-        <div class="form-group money-form-full">
-          <label class="form-label" for="editDescription">Description / Notes</label>
-          <textarea id="editDescription" name="description" class="form-textarea" rows="2"></textarea>
-        </div>
-
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline" onclick="closeEditTransactionModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" style="gap: 6px;">
-          {{ icon('check', size=15) }} Update Transaction
-        </button>
-      </div>
-
-    </form>
-  </div>
-</div>
 
 <!-- ==============================================================================
      MODAL: DELETE TRANSACTION CONFIRMATION
@@ -648,6 +571,63 @@
 </div>
 
 <!-- ==============================================================================
+     MODAL: CLEAR ALL TRANSACTIONS CONFIRMATION (2-STEP SAFEGUARD)
+     ============================================================================== -->
+<div id="modalClearAllTransactions" class="modal-backdrop-wrapper" style="display: none;" onclick="if(event.target === this) closeClearAllTransactionsModal()">
+  <div class="modal-card modal-danger" style="max-width: 520px;">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="modal-icon-danger">{{ icon('trash-2', size=22) }}</div>
+        <div>
+          <h3 class="modal-title" style="color: #dc2626; font-size: 1.15rem;">Clear All Transactions?</h3>
+          <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Destructive financial ledger reset</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeClearAllTransactionsModal()">{{ icon('x', size=16) }}</button>
+    </div>
+
+    <form id="clearAllTransactionsForm" method="POST" action="{{ url_for('admin.clear_all_money_transactions') }}" onsubmit="handleClearAllSubmit(event)" style="padding: 0; margin: 0;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div style="padding: 1.5rem 1.5rem 0.75rem;">
+        <p style="color: #1e293b; font-size: 0.925rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.45;">
+          This will permanently remove all transaction records from the Money Management ledger.
+        </p>
+
+        <div class="modal-warning-box" style="margin-bottom: 1rem;">
+          <div style="font-size: 0.825rem; color: #991b1b; line-height: 1.5;">
+            <strong>Warning:</strong> This action cannot be undone. All manual entries and logged Cashfree ledger copies will be permanently deleted.
+            <div style="margin-top: 4px; font-size: 0.775rem; color: #64748b;">
+              <em>(Original candidate applications, employee records, and gateway payment logs remain completely safe and intact).</em>
+            </div>
+          </div>
+        </div>
+
+        {% if type_filter != 'all' or env_filter != 'all' or date_filter != 'all' or category_filter != 'all' or search_query %}
+          <div style="padding: 0.65rem 0.85rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; color: #92400e;">
+            <strong>Note on Active Filters:</strong> This will clear <strong>ALL</strong> ledger transactions, not only the filtered records currently displayed on your screen.
+          </div>
+        {% endif %}
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="clearConfirmationInput" style="font-weight: 700; color: #0f172a; font-size: 0.875rem;">
+            Type <span style="color: #dc2626; font-family: var(--font-mono, monospace); font-weight: 800; letter-spacing: 0.05em;">CLEAR</span> to confirm:
+          </label>
+          <input type="text" id="clearConfirmationInput" name="confirmation" class="form-input" placeholder="Type CLEAR" oninput="validateClearConfirmation(this.value)" autocomplete="off" required style="font-family: var(--font-mono, monospace); font-weight: 700; text-transform: uppercase;" />
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 0.5rem;">
+        <button type="button" class="btn btn-outline" onclick="closeClearAllTransactionsModal()">Cancel</button>
+        <button type="submit" id="btnSubmitClearAll" class="btn btn-danger-solid" style="gap: 6px;" disabled>
+          {{ icon('trash-2', size=15) }} Permanently Clear Transactions
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==============================================================================
      CLIENT JAVASCRIPT FOR MONEY MANAGEMENT
      ============================================================================== -->
 <script>
@@ -660,30 +640,6 @@
         rangeDiv.style.display = 'none';
       }
     }
-  }
-
-  function openEditTransactionModal(txn) {
-    const modal = document.getElementById('modalEditTransaction');
-    const form = document.getElementById('editTransactionForm');
-    if (!modal || !form) return;
-
-    form.action = `/admin/money-management/transactions/${txn.id}/edit`;
-
-    document.getElementById('editAmount').value = txn.amount;
-    document.getElementById('editDate').value = txn.transaction_date;
-    document.getElementById('editTime').value = txn.transaction_time || '';
-    document.getElementById('editCategory').value = txn.category;
-    document.getElementById('editPurpose').value = txn.purpose || '';
-    document.getElementById('editPaymentMethod').value = txn.payment_method || 'Bank Transfer';
-    document.getElementById('editReference').value = txn.reference || '';
-    document.getElementById('editDescription').value = txn.description || '';
-
-    modal.style.display = 'flex';
-  }
-
-  function closeEditTransactionModal() {
-    const modal = document.getElementById('modalEditTransaction');
-    if (modal) modal.style.display = 'none';
   }
 
   function openDeleteTransactionModal(txnId, formattedAmount, purpose) {
@@ -701,6 +657,42 @@
   function closeDeleteTransactionModal() {
     const modal = document.getElementById('modalDeleteTransaction');
     if (modal) modal.style.display = 'none';
+  }
+
+  function openClearAllTransactionsModal() {
+    const modal = document.getElementById('modalClearAllTransactions');
+    const input = document.getElementById('clearConfirmationInput');
+    const btn = document.getElementById('btnSubmitClearAll');
+    if (!modal || !input || !btn) return;
+
+    input.value = '';
+    btn.disabled = true;
+    btn.innerHTML = `{{ icon('trash-2', size=15) }} Permanently Clear Transactions`;
+    modal.style.display = 'flex';
+    setTimeout(() => input.focus(), 150);
+  }
+
+  function closeClearAllTransactionsModal() {
+    const modal = document.getElementById('modalClearAllTransactions');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function validateClearConfirmation(val) {
+    const btn = document.getElementById('btnSubmitClearAll');
+    if (!btn) return;
+    if (val && val.trim().toUpperCase() === 'CLEAR') {
+      btn.disabled = false;
+    } else {
+      btn.disabled = true;
+    }
+  }
+
+  function handleClearAllSubmit(e) {
+    const btn = document.getElementById('btnSubmitClearAll');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-inline"></span> Clearing...`;
+    }
   }
 
   async function viewTransactionDetail(txnId) {
@@ -793,8 +785,8 @@
   // Close modals on Escape key
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      closeEditTransactionModal();
       closeDeleteTransactionModal();
+      closeClearAllTransactionsModal();
       closeTransactionDetailModal();
     }
   });
