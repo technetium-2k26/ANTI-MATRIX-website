@@ -12,33 +12,49 @@
       <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px; margin-bottom: 0.75rem;">
         {{ icon('arrow-left', size=14) }} Back to Employees
       </a>
-      <h1 style="font-size: 1.85rem; margin-bottom: 0.25rem;">Generate Offer Letter</h1>
-      <p style="color: var(--color-text-dim);">Create a personalized, 2-page Anti-Matrix Offer Letter DOCX from the active master template.</p>
+      <h1 style="font-size: 1.85rem; margin-bottom: 0.25rem;">Generate Job-Specific Offer Letter</h1>
+      <p style="color: var(--color-text-dim);">Generate a personalized, single-page Anti-Matrix Offer Letter DOCX using the job-specific master template.</p>
     </div>
 
-    <!-- Active Offer Letter Master Template Status (DATABASE DRIVEN) -->
+    <!-- Active Offer Letter Master Template Status (CATEGORY-SPECIFIC) -->
     <div class="card" style="padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-xl); border-color: {% if active_template and template_exists %}rgba(16, 185, 129, 0.35){% else %}rgba(239, 68, 68, 0.4){% endif %}; background: {% if active_template and template_exists %}rgba(16, 185, 129, 0.04){% else %}rgba(239, 68, 68, 0.04){% endif %}; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="color: {% if active_template and template_exists %}var(--color-primary-light){% else %}#ef4444{% endif %};">
           {{ icon('file-check', size=24) }}
         </div>
         <div>
-          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-dim); font-weight: 700;">
-            Active Offer Letter Template
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-dim); font-weight: 700;">
+              Matched Template Slot:
+            </span>
+            {% if category_info %}
+            <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); border-color: rgba(16, 185, 129, 0.3); font-size: 0.7rem; font-weight: 700;">
+              {{ category_info.badge }}
+            </span>
+            {% else %}
+            <span class="badge" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border-color: rgba(239, 68, 68, 0.3); font-size: 0.7rem; font-weight: 700;">
+              Unmatched Category
+            </span>
+            {% endif %}
           </div>
+          
           {% if active_template and template_exists %}
-          <div style="font-weight: 700; color: var(--color-text); font-family: var(--font-mono, monospace); font-size: 0.9rem;">
-            {{ active_template.filename }}
+          <div style="font-weight: 700; color: var(--color-text); font-family: var(--font-mono, monospace); font-size: 0.9rem; margin-top: 2px;">
+            {{ active_template.name }} &bull; <span style="font-size: 0.8rem; color: var(--color-primary-light);">{{ active_template.filename }}</span>
           </div>
           <div style="font-size: 0.75rem; color: var(--color-text-muted);">
             Status: <span class="badge-status active" style="font-size: 0.65rem; padding: 0.05rem 0.35rem;">Active</span> &bull; Uploaded: {{ active_template.created_at.strftime('%d %b %Y, %I:%M %p') }}
           </div>
           {% else %}
-          <div style="font-weight: 700; color: #ef4444; font-size: 0.9rem;">
-            Offer Letter Template Not Found or File Missing
+          <div style="font-weight: 700; color: #ef4444; font-size: 0.9rem; margin-top: 2px;">
+            {% if category_info %}
+            No active template uploaded for {{ category_info.card_title }}
+            {% else %}
+            No job-specific offer letter template is available for this internship
+            {% endif %}
           </div>
           <div style="font-size: 0.75rem; color: var(--color-text-muted);">
-            Please upload a master DOCX template before generating offer letters.
+            Please upload the appropriate template before generating the offer letter.
           </div>
           {% endif %}
         </div>
@@ -56,9 +72,10 @@
       <div style="color: #ef4444; margin-bottom: var(--space-sm);">
         {{ icon('alert-triangle', size=36) }}
       </div>
-      <h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.5rem;">Offer Letter Template Not Found</h3>
+      <h3 style="color: #ef4444; font-size: 1.25rem; margin-bottom: 0.5rem;">Template Required</h3>
       <p style="color: var(--color-text-dim); max-width: 600px; margin: 0 auto var(--space-lg); font-size: 0.9rem;">
-        Please upload an active Offer Letter template from <strong>Admin Dashboard &rarr; Templates &rarr; Document Templates &rarr; Offer Letter</strong> before generating an employee Offer Letter.
+        No job-specific offer letter template is available for this internship.
+        Please upload the appropriate template before generating the offer letter.
       </p>
       <a href="{{ url_for('admin.templates') }}" class="btn btn-primary" style="gap: 8px;">
         {{ icon('upload', size=16) }} Go to Template Management
@@ -84,7 +101,7 @@
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.875rem;">
         <div>
-          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Position</span>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Job Posting</span>
           <strong style="color: var(--color-text);">{{ job.title }}</strong>
         </div>
         <div>
@@ -93,11 +110,11 @@
         </div>
         <div>
           <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Duration</span>
-          <strong style="color: #60a5fa;">{{ app.duration_display or 'Standard' }}</strong>
+          <strong style="color: #60a5fa;">{{ app.duration_display or '1 Month' }}</strong>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Location / Mode</span>
-          <strong style="color: var(--color-text);">{{ job.location or 'Remote / Hybrid' }}</strong>
+          <span style="color: var(--color-text-muted); display: block; font-size: 0.75rem; text-transform: uppercase;">Domain Category</span>
+          <strong style="color: var(--color-primary-light);">{{ category_info.card_title if category_info else 'Not Mapped' }}</strong>
         </div>
       </div>
     </div>
@@ -108,13 +125,26 @@
         {{ icon('edit', size=16, color='var(--color-primary-light)') }} Offer Letter Parameters
       </h3>
       <p style="color: var(--color-text-dim); font-size: 0.85rem; margin-bottom: var(--space-lg);">
-        The fields below will be precisely mapped into the master Anti-Matrix DOCX document. Existing styles, logos, headers, footers, and page layouts will be strictly preserved.
+        The fields below will be precisely mapped into the job-specific Anti-Matrix master DOCX. The master template layout, formatting, borders, and typography are 100% preserved.
       </p>
 
       <form method="POST" action="{{ url_for('admin.generate_offer_letter', employee_id=employee.employee_id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}" />
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+              Job Title on Offer Letter <span style="color: var(--color-text-dim);">(&#123;&#123;job_title&#125;&#125;)</span>
+            </label>
+            <input
+              type="text"
+              name="job_title"
+              class="form-input"
+              value="{{ category_info.default_title if category_info else job.title }}"
+              required
+            />
+          </div>
+
           <div class="form-group">
             <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
               Date of Joining <span style="color: var(--color-text-dim);">(&#123;&#123;joining_date&#125;&#125;)</span>
@@ -127,7 +157,9 @@
               required
             />
           </div>
+        </div>
 
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
           <div class="form-group">
             <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
               Work Mode / Location <span style="color: var(--color-text-dim);">(&#123;&#123;work_mode&#125;&#125;)</span>
@@ -137,45 +169,6 @@
               name="work_mode"
               class="form-input"
               value="{{ job.location if job.location else 'Remote (Work from Home)' }}"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-md);">
-          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
-            Role Responsibilities <span style="color: var(--color-text-dim);">(&#123;&#123;responsibilities&#125;&#125;)</span>
-          </label>
-          <textarea
-            name="responsibilities"
-            rows="3"
-            class="form-input"
-            style="resize: vertical;"
-          >{{ job.description or 'work on cutting-edge engineering initiatives, software architecture design, and core product modules' }}</textarea>
-        </div>
-
-        <div class="form-group" style="margin-bottom: var(--space-md);">
-          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
-            Key Tasks / Deliverables <span style="color: var(--color-text-dim);">(&#123;&#123;key_tasks&#125;&#125;)</span>
-          </label>
-          <textarea
-            name="key_tasks"
-            rows="2"
-            class="form-input"
-            style="resize: vertical;"
-          >{{ job.requirements or 'core module development, code reviews, architectural documentation, and milestone deliverables' }}</textarea>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg);">
-          <div class="form-group">
-            <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
-              Offer Conditions <span style="color: var(--color-text-dim);">(&#123;&#123;conditions&#125;&#125;)</span>
-            </label>
-            <input
-              type="text"
-              name="conditions"
-              class="form-input"
-              value="satisfactory verification of academic credentials and submission of government identity documentation"
               required
             />
           </div>
@@ -194,6 +187,43 @@
           </div>
         </div>
 
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+            Role Responsibilities <span style="color: var(--color-text-dim);">(&#123;&#123;responsibilities&#125;&#125;)</span>
+          </label>
+          <textarea
+            name="responsibilities"
+            rows="3"
+            class="form-input"
+            style="resize: vertical;"
+          >{{ job.description or 'work on designated projects and deliverables for the internship role at Anti-Matrix' }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+            Key Tasks / Deliverables <span style="color: var(--color-text-dim);">(&#123;&#123;key_tasks&#125;&#125;)</span>
+          </label>
+          <textarea
+            name="key_tasks"
+            rows="2"
+            class="form-input"
+            style="resize: vertical;"
+          >{{ job.requirements or 'core technical assignments, engineering benchmarks, and team collaboration' }}</textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label class="form-label" style="font-size: 0.825rem; font-weight: 600;">
+            Offer Conditions <span style="color: var(--color-text-dim);">(&#123;&#123;conditions&#125;&#125;)</span>
+          </label>
+          <input
+            type="text"
+            name="conditions"
+            class="form-input"
+            value="satisfactory verification of academic credentials and submission of government identity documentation"
+            required
+          />
+        </div>
+
         <!-- Action Buttons -->
         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: var(--space-lg);">
           <a href="{{ url_for('admin.employees') }}" class="btn btn-ghost">Cancel</a>
@@ -203,7 +233,7 @@
           </button>
           {% else %}
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 0.8rem; color: #ef4444;">Upload template to enable generation</span>
+            <span style="font-size: 0.8rem; color: #ef4444;">Upload matching template to enable generation</span>
             <button type="button" class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed; gap: 8px;">
               {{ icon('file-text', size=16) }} Generate Offer Letter DOCX
             </button>

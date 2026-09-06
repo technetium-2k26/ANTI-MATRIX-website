@@ -276,172 +276,390 @@
     <!-- ================================================================= -->
     <div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg); padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
-        <h2 style="font-family: var(--font-admin-heading); font-size: 1.25rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 0;">
-          {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Document Templates
-        </h2>
-        <span style="font-size: 0.8rem; color: var(--color-text-dim);">Microsoft Word (.docx) Master Files</span>
+        <div>
+          <h2 style="font-family: var(--font-admin-heading); font-size: 1.25rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 0 0 0.2rem 0;">
+            {{ icon('file-text', size=18, color='var(--color-primary-light)') }} Document Templates
+          </h2>
+          <p style="font-size: 0.825rem; color: var(--color-text-dim); margin: 0;">Official Microsoft Word (.docx) Master Files &amp; Domain-Specific Templates</p>
+        </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
-        
-        <!-- 1. Offer Letter Master Template (DATABASE DRIVEN) -->
-        <div class="card" style="padding: var(--space-xl); border-color: {% if offer_doc_template and offer_template_file_exists %}rgba(16, 185, 129, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
+      <!-- Subsection: 4 Job-Specific Offer Letter Templates -->
+      <div style="margin-bottom: var(--space-2xl);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 6px;">
+            {{ icon('award', size=16, color='var(--color-primary-light)') }} Offer Letter Templates
+          </h3>
+          <span style="font-size: 0.775rem; color: var(--color-text-muted);">Manage job-specific internship offer letter templates</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+          
+          <!-- 1. AI & ML Internship Offer Letter -->
+          <div class="card" style="padding: var(--space-lg); border-color: {% if offer_ai_ml_template and offer_ai_ml_exists %}rgba(16, 185, 129, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-              {% if offer_doc_template and offer_template_file_exists %}
-              <div class="badge" style="background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); border-color: rgba(16, 185, 129, 0.3); margin-bottom: 0.25rem;">
-                Active Master Template
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                <div>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: var(--color-primary-light); border-color: rgba(16, 185, 129, 0.3); font-size: 0.7rem; font-weight: 700;">
+                    AI &amp; ML Domain
+                  </span>
+                  <h4 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0.35rem 0 0.15rem 0;">
+                    1. AI &amp; ML Internship
+                  </h4>
+                </div>
+                <div style="color: {% if offer_ai_ml_template and offer_ai_ml_exists %}var(--color-primary-light){% else %}#eab308{% endif %};">
+                  {{ icon('cpu', size=22) }}
+                </div>
               </div>
-              {% else %}
-              <div class="badge" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3); margin-bottom: 0.25rem;">
-                Not Uploaded / Inactive
+
+              <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-sm); line-height: 1.45;">
+                Offer letter template for AI &amp; ML, Deep Learning, and AI Research internships.
+              </p>
+
+              <!-- Template Status Box -->
+              <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); font-size: 0.8rem;">
+                <div style="margin-bottom: 0.25rem;">
+                  <span style="color: var(--color-text-dim); font-size: 0.725rem;">Current Template:</span>
+                  <strong style="color: {% if offer_ai_ml_template and offer_ai_ml_exists %}var(--color-primary-light){% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all; font-size: 0.775rem;">
+                    {{ offer_ai_ml_template.filename if (offer_ai_ml_template and offer_ai_ml_exists) else 'Not Uploaded' }}
+                  </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                  <div>
+                    <span style="color: var(--color-text-dim); font-size: 0.725rem;">Status:</span>
+                    {% if offer_ai_ml_template and offer_ai_ml_exists %}
+                    <span class="badge-status active" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem;">Active</span>
+                    {% else %}
+                    <span class="badge-status inactive" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
+                    {% endif %}
+                  </div>
+                  {% if offer_ai_ml_template %}
+                  <span style="font-size: 0.7rem; color: var(--color-text-muted);">{{ offer_ai_ml_template.created_at.strftime('%d %b %Y') }}</span>
+                  {% endif %}
+                </div>
               </div>
-              {% endif %}
-              <h3 style="font-family: var(--font-admin-heading); font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.2rem;">
-                1. Offer Letter
-              </h3>
             </div>
-            <div style="color: {% if offer_doc_template and offer_template_file_exists %}var(--color-primary-light){% else %}#eab308{% endif %};">
-              {{ icon('file-check', size=24) }}
+
+            <!-- Upload & Actions -->
+            <div>
+              <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter_ai_ml') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-xs);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                  <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.25rem 0.4rem; font-size: 0.75rem;" />
+                  <button type="submit" class="btn {% if offer_ai_ml_template and offer_ai_ml_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.725rem; padding: 0.25rem 0.55rem; white-space: nowrap;">
+                    {% if offer_ai_ml_template and offer_ai_ml_exists %}Replace{% else %}Upload{% endif %}
+                  </button>
+                </div>
+              </form>
+
+              {% if offer_ai_ml_template and offer_ai_ml_exists %}
+              <a href="{{ url_for('admin.download_document_template', template_type='offer_letter_ai_ml') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.75rem; gap: 4px; padding: 0.25rem;">
+                {{ icon('download', size=12) }} Download Template
+              </a>
+              {% endif %}
             </div>
           </div>
 
-          <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Official Offer Letter master template. Uploaded DOCX is cloned and dynamic fields are populated during employee generation.
-          </p>
+          <!-- 2. Web Development Internship Offer Letter -->
+          <div class="card" style="padding: var(--space-lg); border-color: {% if offer_web_dev_template and offer_web_dev_exists %}rgba(56, 189, 248, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                <div>
+                  <span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); font-size: 0.7rem; font-weight: 700;">
+                    Web Dev Domain
+                  </span>
+                  <h4 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0.35rem 0 0.15rem 0;">
+                    2. Web Development
+                  </h4>
+                </div>
+                <div style="color: {% if offer_web_dev_template and offer_web_dev_exists %}#38bdf8{% else %}#eab308{% endif %};">
+                  {{ icon('globe', size=22) }}
+                </div>
+              </div>
 
-          <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
-            <div style="margin-bottom: 0.35rem;">
-              <span style="color: var(--color-text-dim);">Current Template:</span>
-              <strong style="color: {% if offer_doc_template and offer_template_file_exists %}var(--color-primary-light){% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
-                {{ offer_doc_template.filename if (offer_doc_template and offer_template_file_exists) else 'No Offer Letter Template Uploaded' }}
-              </strong>
+              <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-sm); line-height: 1.45;">
+                Offer letter template for Frontend, Backend, and Full Stack Web Development internships.
+              </p>
+
+              <!-- Template Status Box -->
+              <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); font-size: 0.8rem;">
+                <div style="margin-bottom: 0.25rem;">
+                  <span style="color: var(--color-text-dim); font-size: 0.725rem;">Current Template:</span>
+                  <strong style="color: {% if offer_web_dev_template and offer_web_dev_exists %}#38bdf8{% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all; font-size: 0.775rem;">
+                    {{ offer_web_dev_template.filename if (offer_web_dev_template and offer_web_dev_exists) else 'Not Uploaded' }}
+                  </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                  <div>
+                    <span style="color: var(--color-text-dim); font-size: 0.725rem;">Status:</span>
+                    {% if offer_web_dev_template and offer_web_dev_exists %}
+                    <span class="badge-status active" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem;">Active</span>
+                    {% else %}
+                    <span class="badge-status inactive" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
+                    {% endif %}
+                  </div>
+                  {% if offer_web_dev_template %}
+                  <span style="font-size: 0.7rem; color: var(--color-text-muted);">{{ offer_web_dev_template.created_at.strftime('%d %b %Y') }}</span>
+                  {% endif %}
+                </div>
+              </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+
+            <!-- Upload & Actions -->
+            <div>
+              <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter_web_development') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-xs);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                  <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.25rem 0.4rem; font-size: 0.75rem;" />
+                  <button type="submit" class="btn {% if offer_web_dev_template and offer_web_dev_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.725rem; padding: 0.25rem 0.55rem; white-space: nowrap;">
+                    {% if offer_web_dev_template and offer_web_dev_exists %}Replace{% else %}Upload{% endif %}
+                  </button>
+                </div>
+              </form>
+
+              {% if offer_web_dev_template and offer_web_dev_exists %}
+              <a href="{{ url_for('admin.download_document_template', template_type='offer_letter_web_development') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.75rem; gap: 4px; padding: 0.25rem;">
+                {{ icon('download', size=12) }} Download Template
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- 3. App Development Internship Offer Letter -->
+          <div class="card" style="padding: var(--space-lg); border-color: {% if offer_app_dev_template and offer_app_dev_exists %}rgba(168, 85, 247, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                <div>
+                  <span class="badge" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); font-size: 0.7rem; font-weight: 700;">
+                    App Dev Domain
+                  </span>
+                  <h4 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0.35rem 0 0.15rem 0;">
+                    3. App Development
+                  </h4>
+                </div>
+                <div style="color: {% if offer_app_dev_template and offer_app_dev_exists %}#c084fc{% else %}#eab308{% endif %};">
+                  {{ icon('smartphone', size=22) }}
+                </div>
+              </div>
+
+              <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-sm); line-height: 1.45;">
+                Offer letter template for Mobile, Android, iOS, and Flutter App Development internships.
+              </p>
+
+              <!-- Template Status Box -->
+              <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); font-size: 0.8rem;">
+                <div style="margin-bottom: 0.25rem;">
+                  <span style="color: var(--color-text-dim); font-size: 0.725rem;">Current Template:</span>
+                  <strong style="color: {% if offer_app_dev_template and offer_app_dev_exists %}#c084fc{% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all; font-size: 0.775rem;">
+                    {{ offer_app_dev_template.filename if (offer_app_dev_template and offer_app_dev_exists) else 'Not Uploaded' }}
+                  </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                  <div>
+                    <span style="color: var(--color-text-dim); font-size: 0.725rem;">Status:</span>
+                    {% if offer_app_dev_template and offer_app_dev_exists %}
+                    <span class="badge-status active" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem;">Active</span>
+                    {% else %}
+                    <span class="badge-status inactive" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
+                    {% endif %}
+                  </div>
+                  {% if offer_app_dev_template %}
+                  <span style="font-size: 0.7rem; color: var(--color-text-muted);">{{ offer_app_dev_template.created_at.strftime('%d %b %Y') }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload & Actions -->
+            <div>
+              <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter_app_development') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-xs);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                  <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.25rem 0.4rem; font-size: 0.75rem;" />
+                  <button type="submit" class="btn {% if offer_app_dev_template and offer_app_dev_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.725rem; padding: 0.25rem 0.55rem; white-space: nowrap;">
+                    {% if offer_app_dev_template and offer_app_dev_exists %}Replace{% else %}Upload{% endif %}
+                  </button>
+                </div>
+              </form>
+
+              {% if offer_app_dev_template and offer_app_dev_exists %}
+              <a href="{{ url_for('admin.download_document_template', template_type='offer_letter_app_development') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.75rem; gap: 4px; padding: 0.25rem;">
+                {{ icon('download', size=12) }} Download Template
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- 4. Data Analytics Internship Offer Letter -->
+          <div class="card" style="padding: var(--space-lg); border-color: {% if offer_data_analytics_template and offer_data_analytics_exists %}rgba(245, 158, 11, 0.35){% else %}rgba(234, 179, 8, 0.35){% endif %}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-sm);">
+                <div>
+                  <span class="badge" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); font-size: 0.7rem; font-weight: 700;">
+                    Data Analytics Domain
+                  </span>
+                  <h4 style="font-family: var(--font-admin-heading); font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0.35rem 0 0.15rem 0;">
+                    4. Data Analytics
+                  </h4>
+                </div>
+                <div style="color: {% if offer_data_analytics_template and offer_data_analytics_exists %}#fbbf24{% else %}#eab308{% endif %};">
+                  {{ icon('bar-chart-2', size=22) }}
+                </div>
+              </div>
+
+              <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-sm); line-height: 1.45;">
+                Offer letter template for Data Analytics, Visualization, and BI internships.
+              </p>
+
+              <!-- Template Status Box -->
+              <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); font-size: 0.8rem;">
+                <div style="margin-bottom: 0.25rem;">
+                  <span style="color: var(--color-text-dim); font-size: 0.725rem;">Current Template:</span>
+                  <strong style="color: {% if offer_data_analytics_template and offer_data_analytics_exists %}#fbbf24{% else %}var(--color-text-muted){% endif %}; font-family: var(--font-mono, monospace); display: block; word-break: break-all; font-size: 0.775rem;">
+                    {{ offer_data_analytics_template.filename if (offer_data_analytics_template and offer_data_analytics_exists) else 'Not Uploaded' }}
+                  </strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                  <div>
+                    <span style="color: var(--color-text-dim); font-size: 0.725rem;">Status:</span>
+                    {% if offer_data_analytics_template and offer_data_analytics_exists %}
+                    <span class="badge-status active" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem;">Active</span>
+                    {% else %}
+                    <span class="badge-status inactive" style="font-size: 0.65rem; padding: 0.05rem 0.35rem; margin-left: 0.25rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
+                    {% endif %}
+                  </div>
+                  {% if offer_data_analytics_template %}
+                  <span style="font-size: 0.7rem; color: var(--color-text-muted);">{{ offer_data_analytics_template.created_at.strftime('%d %b %Y') }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload & Actions -->
+            <div>
+              <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter_data_analytics') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-xs);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+                  <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.25rem 0.4rem; font-size: 0.75rem;" />
+                  <button type="submit" class="btn {% if offer_data_analytics_template and offer_data_analytics_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.725rem; padding: 0.25rem 0.55rem; white-space: nowrap;">
+                    {% if offer_data_analytics_template and offer_data_analytics_exists %}Replace{% else %}Upload{% endif %}
+                  </button>
+                </div>
+              </form>
+
+              {% if offer_data_analytics_template and offer_data_analytics_exists %}
+              <a href="{{ url_for('admin.download_document_template', template_type='offer_letter_data_analytics') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.75rem; gap: 4px; padding: 0.25rem;">
+                {{ icon('download', size=12) }} Download Template
+              </a>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Placeholders Helper Pill Box for Offer Letters -->
+        <div style="margin-top: var(--space-md); font-size: 0.775rem; color: var(--color-text-dim); background: rgba(16, 185, 129, 0.05); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.15);">
+          <strong style="color: var(--color-primary-light);">Supported Offer Letter Placeholders:</strong> 
+          <code style="color: var(--color-primary-light);">&#123;&#123;offer_date&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;candidate_name&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;reference_number&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;job_title&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;internship_duration&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;joining_date&#125;&#125;</code>, 
+          <code style="color: var(--color-primary-light);">&#123;&#123;employee_id&#125;&#125;</code>
+        </div>
+      </div>
+
+      <!-- Subsection: Other Document Templates (Experience Letter, Certificate) -->
+      <div style="margin-top: var(--space-2xl);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 6px;">
+            {{ icon('file-plus', size=16, color='var(--color-primary-light)') }} Other Master Templates
+          </h3>
+          <span style="font-size: 0.775rem; color: var(--color-text-muted);">Additional master document files</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
+          
+          <!-- Experience Letter Template (UPLOAD ONLY) -->
+          <div class="card" style="padding: var(--space-xl); border-color: var(--color-border);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
               <div>
-                <span style="color: var(--color-text-dim);">Status:</span>
-                {% if offer_doc_template and offer_template_file_exists %}
-                <span class="badge-status active" style="font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.35rem;">Active</span>
-                {% else %}
-                <span class="badge-status inactive" style="font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.35rem; background: rgba(234,179,8,0.15); color: #eab308;">Not Uploaded</span>
-                {% endif %}
+                <div class="badge" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3); margin-bottom: 0.25rem;">
+                  Template Upload Only
+                </div>
+                <h3 style="font-family: var(--font-admin-heading); font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.2rem;">
+                  Experience Letter
+                </h3>
               </div>
-              {% if offer_doc_template %}
-              <span style="font-size: 0.75rem; color: var(--color-text-muted);">Uploaded: {{ offer_doc_template.created_at.strftime('%d %b %Y') }}</span>
-              {% endif %}
+              <div style="color: #eab308;">{{ icon('briefcase', size=24) }}</div>
             </div>
-          </div>
 
-          <div style="font-size: 0.775rem; color: var(--color-text-dim); margin-bottom: var(--space-md); background: rgba(16, 185, 129, 0.05); padding: var(--space-sm); border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.15);">
-            <strong style="color: var(--color-primary-light);">Available Placeholders:</strong><br />
-            <code style="color: var(--color-primary-light);">&#123;&#123;offer_date&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;employee_name&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;reference_number&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;job_title&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;responsibilities&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;key_tasks&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;joining_date&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;work_mode&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;conditions&#125;&#125;</code>, 
-            <code style="color: var(--color-primary-light);">&#123;&#123;acceptance_deadline&#125;&#125;</code>
-          </div>
+            <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
+              Upload and store master Experience Letter templates. <em style="color: var(--color-text-muted);">(Generation &amp; Email features are scheduled for future phase).</em>
+            </p>
 
-          <!-- Upload / Replace Template Form -->
-          <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='offer_letter') }}" enctype="multipart/form-data" style="margin-bottom: var(--space-sm);">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <div style="display: flex; gap: var(--space-xs); margin-bottom: var(--space-sm);">
-              <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
-              <button type="submit" class="btn {% if offer_doc_template and offer_template_file_exists %}btn-outline{% else %}btn-primary{% endif %} btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
-                {% if offer_doc_template and offer_template_file_exists %}Replace Template{% else %}Upload Template{% endif %}
-              </button>
-            </div>
-          </form>
-
-          {% if offer_doc_template and offer_template_file_exists %}
-          <a href="{{ url_for('admin.download_document_template', template_type='offer_letter') }}" class="btn btn-ghost btn-sm" style="width: 100%; justify-content: center; font-size: 0.8rem; gap: 6px;">
-            {{ icon('download', size=13) }} Download Master Template
-          </a>
-          {% endif %}
-        </div>
-
-        <!-- 2. Experience Letter Template (UPLOAD ONLY) -->
-        <div class="card" style="padding: var(--space-xl); border-color: var(--color-border);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
-            <div>
-              <div class="badge" style="background: rgba(234, 179, 8, 0.12); color: #eab308; border-color: rgba(234, 179, 8, 0.3); margin-bottom: 0.25rem;">
-                Template Upload Only
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
+              <div style="margin-bottom: 0.35rem;">
+                <span style="color: var(--color-text-dim);">Current File:</span>
+                <strong style="color: var(--color-text); font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
+                  {{ exp_doc_template.filename if exp_doc_template else 'Not uploaded yet' }}
+                </strong>
               </div>
-              <h3 style="font-family: var(--font-admin-heading); font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.2rem;">
-                2. Experience Letter
-              </h3>
             </div>
-            <div style="color: #eab308;">{{ icon('briefcase', size=24) }}</div>
-          </div>
 
-          <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Upload and store master Experience Letter templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for future phase).</em>
-          </p>
-
-          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
-            <div style="margin-bottom: 0.35rem;">
-              <span style="color: var(--color-text-dim);">Current File:</span>
-              <strong style="color: var(--color-text); font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
-                {{ exp_doc_template.filename if exp_doc_template else 'Not uploaded yet' }}
-              </strong>
-            </div>
-          </div>
-
-          <!-- Upload Form -->
-          <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='experience_letter') }}" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <div style="display: flex; gap: var(--space-xs);">
-              <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
-              <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
-                Upload
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- 3. Certificate Template (UPLOAD ONLY) -->
-        <div class="card" style="padding: var(--space-xl); border-color: var(--color-border);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
-            <div>
-              <div class="badge" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); margin-bottom: 0.25rem;">
-                Template Upload Only
+            <!-- Upload Form -->
+            <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='experience_letter') }}" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <div style="display: flex; gap: var(--space-xs);">
+                <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
+                <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
+                  Upload
+                </button>
               </div>
-              <h3 style="font-family: var(--font-admin-heading); font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.2rem;">
-                3. Certificate
-              </h3>
-            </div>
-            <div style="color: #c084fc;">{{ icon('award', size=24) }}</div>
+            </form>
           </div>
 
-          <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            Upload and store master Internship Certificate templates. <em style="color: var(--color-text-muted);">(Generation & Email features are scheduled for future phase).</em>
-          </p>
-
-          <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
-            <div style="margin-bottom: 0.35rem;">
-              <span style="color: var(--color-text-dim);">Current File:</span>
-              <strong style="color: var(--color-text); font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
-                {{ cert_doc_template.filename if cert_doc_template else 'Not uploaded yet' }}
-              </strong>
+          <!-- Certificate Template (UPLOAD ONLY) -->
+          <div class="card" style="padding: var(--space-xl); border-color: var(--color-border);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md);">
+              <div>
+                <div class="badge" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); margin-bottom: 0.25rem;">
+                  Template Upload Only
+                </div>
+                <h3 style="font-family: var(--font-admin-heading); font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.2rem;">
+                  Certificate
+                </h3>
+              </div>
+              <div style="color: #c084fc;">{{ icon('award', size=24) }}</div>
             </div>
+
+            <p style="font-size: 0.85rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
+              Upload and store master Internship Certificate templates. <em style="color: var(--color-text-muted);">(Generation &amp; Email features are scheduled for future phase).</em>
+            </p>
+
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); font-size: 0.85rem;">
+              <div style="margin-bottom: 0.35rem;">
+                <span style="color: var(--color-text-dim);">Current File:</span>
+                <strong style="color: var(--color-text); font-family: var(--font-mono, monospace); display: block; word-break: break-all;">
+                  {{ cert_doc_template.filename if cert_doc_template else 'Not uploaded yet' }}
+                </strong>
+              </div>
+            </div>
+
+            <!-- Upload Form -->
+            <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='certificate') }}" enctype="multipart/form-data">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <div style="display: flex; gap: var(--space-xs);">
+                <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
+                <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
+                  Upload
+                </button>
+              </div>
+            </form>
           </div>
 
-          <!-- Upload Form -->
-          <form method="POST" action="{{ url_for('admin.upload_document_template', template_type='certificate') }}" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <div style="display: flex; gap: var(--space-xs);">
-              <input type="file" name="template_file" accept=".docx" class="form-input" required style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" />
-              <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.775rem; white-space: nowrap;">
-                Upload
-              </button>
-            </div>
-          </form>
         </div>
-
       </div>
     </div>
 

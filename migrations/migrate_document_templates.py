@@ -23,24 +23,10 @@ def run_migration():
         os.makedirs(os.path.join(app.root_path, 'uploads', 'templates'), exist_ok=True)
         os.makedirs(os.path.join(app.root_path, 'uploads', 'generated_documents'), exist_ok=True)
 
-        # Check / Seed DocumentTemplate for Offer Letter
-        templates_dir = os.path.join(app.root_path, 'uploads', 'templates')
-        offer_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).first()
-        if not offer_template:
-            # Find any existing docx template file in uploads/templates/
-            existing_files = [f for f in os.listdir(templates_dir) if f.lower().endswith('.docx')]
-            if existing_files:
-                sample_file = existing_files[0]
-                sample_path = os.path.join(templates_dir, sample_file)
-                offer_template = DocumentTemplate(
-                    template_type='offer_letter',
-                    name='Anti-Matrix Master Offer Letter',
-                    filename=sample_file,
-                    file_path=sample_path,
-                    is_active=True
-                )
-                db.session.add(offer_template)
-                print(f"[MIGRATION] Seeded Offer Letter document template record pointing to {sample_path}.")
+        # Ensure default templates for all 4 internship categories are initialized
+        from services.offer_letter_service import ensure_default_templates_initialized
+        ensure_default_templates_initialized()
+        print("[MIGRATION] Verified / Seeded 4 job-specific Offer Letter master templates.")
 
         # Seed default EmailTemplate for Application Successful
         app_success_email = EmailTemplate.query.filter_by(template_type='application_successful').first()

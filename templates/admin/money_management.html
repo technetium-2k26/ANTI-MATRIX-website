@@ -5,25 +5,27 @@
 
 {% block content %}
 <section class="section" style="padding-top: calc(var(--nav-height, 80px) + 2rem); background: var(--color-bg); min-height: 85vh;">
-  <div class="container">
+  <div class="container" style="max-width: 1280px; margin: 0 auto; padding: 0 var(--space-xl);">
     
     <!-- Admin Header -->
     <div class="admin-header">
       <div class="admin-header-title">
-        <div class="badge" style="margin-bottom: 0.35rem;">{{ icon('shield', size=11) }} Administrator Portal</div>
-        <h1 style="display: flex; align-items: center; gap: 10px;">
-          {{ icon('wallet', size=28, color='var(--color-primary-light)') }} Money Management
+        <div class="badge" style="margin-bottom: 0.35rem; display: inline-flex; align-items: center; gap: 6px;">
+          {{ icon('shield', size=11) }} Administrator Portal
+        </div>
+        <h1 style="display: flex; align-items: center; gap: 10px; margin-top: 0.2rem;">
+          {{ icon('wallet', size=28, color='#059669') }} Money Management
         </h1>
         <p>Track Anti Matrix revenue, expenses, Cashfree application income, and live balance.</p>
       </div>
       <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center;">
-        <form method="POST" action="{{ url_for('admin.reconcile_payments') }}" style="display: inline;">
+        <form method="POST" action="{{ url_for('admin.reconcile_payments') }}" style="display: inline; margin: 0;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           <button type="submit" class="btn btn-outline" style="gap: 6px;" title="Scan and reconcile any missing Cashfree payment records">
             {{ icon('refresh-cw', size=14) }} Sync Payments
           </button>
         </form>
-        <button type="button" class="btn btn-primary" style="gap: 6px;" onclick="openAddTransactionModal()">
+        <button type="button" class="btn btn-primary" style="gap: 6px;" onclick="focusAddTransactionForm(event)">
           {{ icon('plus', size=15) }} Add Transaction
         </button>
       </div>
@@ -35,16 +37,16 @@
         {{ icon('layout', size=15) }} Overview
       </a>
       <a href="{{ url_for('admin.jobs') }}" class="admin-nav-tab">
-        {{ icon('briefcase', size=15) }} Job Postings ({{ total_jobs }})
+        {{ icon('briefcase', size=15) }} Job Postings <span class="admin-tab-count">{{ total_jobs }}</span>
       </a>
       <a href="{{ url_for('admin.applications') }}" class="admin-nav-tab">
-        {{ icon('users', size=15) }} Candidate Applications ({{ total_applications }})
+        {{ icon('users', size=15) }} Candidate Applications <span class="admin-tab-count">{{ total_applications }}</span>
         {% if new_applications > 0 %}
-          <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; background: #38bdf8; color: #070a12; font-weight: 800; border-radius: 999px;">{{ new_applications }} NEW</span>
+          <span class="admin-tab-count new">{{ new_applications }} NEW</span>
         {% endif %}
       </a>
       <a href="{{ url_for('admin.employees') }}" class="admin-nav-tab">
-        {{ icon('user-check', size=15) }} Employees ({{ total_employees }})
+        {{ icon('user-check', size=15) }} Employees <span class="admin-tab-count">{{ total_employees }}</span>
       </a>
       <a href="{{ url_for('admin.templates') }}" class="admin-nav-tab">
         {{ icon('file-text', size=15) }} Templates
@@ -54,7 +56,7 @@
       </a>
     </div>
 
-    <!-- Financial Summary Cards (3 Main Cards) -->
+    <!-- Financial Summary Cards (3 Equal-Width Cards) -->
     <div class="money-summary-grid">
       
       <!-- Total Income Card -->
@@ -62,7 +64,7 @@
         <div class="money-stat-header">
           <span class="money-stat-label">TOTAL INCOME</span>
           <div class="money-stat-icon-wrapper">
-            {{ icon('arrow-down-left', size=22) }}
+            {{ icon('arrow-down-left', size=20) }}
           </div>
         </div>
         <div class="money-stat-value">₹{{ "{:,.2f}".format(summary.total_income) }}</div>
@@ -79,7 +81,7 @@
         <div class="money-stat-header">
           <span class="money-stat-label">TOTAL EXPENSE</span>
           <div class="money-stat-icon-wrapper">
-            {{ icon('arrow-up-right', size=22) }}
+            {{ icon('arrow-up-right', size=20) }}
           </div>
         </div>
         <div class="money-stat-value">₹{{ "{:,.2f}".format(summary.total_expense) }}</div>
@@ -93,7 +95,7 @@
         <div class="money-stat-header">
           <span class="money-stat-label">AVAILABLE BALANCE</span>
           <div class="money-stat-icon-wrapper">
-            {{ icon('wallet', size=22) }}
+            {{ icon('wallet', size=20) }}
           </div>
         </div>
         <div class="money-stat-value">₹{{ "{:,.2f}".format(summary.balance) }}</div>
@@ -110,29 +112,279 @@
     <!-- Secondary Stat Strip -->
     <div class="money-substats-strip">
       <div class="money-substat-item">
-        {{ icon('calendar', size=15, color='var(--color-primary-light)') }}
+        {{ icon('calendar', size=15, color='#059669') }}
         <span>Today:</span>
-        <strong style="color: #10b981;">+₹{{ "{:,.2f}".format(summary.today_income) }}</strong>
-        <span style="color: var(--color-border);">|</span>
-        <strong style="color: #ef4444;">-₹{{ "{:,.2f}".format(summary.today_expense) }}</strong>
+        <strong style="color: #059669;">+₹{{ "{:,.2f}".format(summary.today_income) }}</strong>
+        <span style="color: #cbd5e1;">|</span>
+        <strong style="color: #dc2626;">-₹{{ "{:,.2f}".format(summary.today_expense) }}</strong>
       </div>
 
       <div class="money-substat-item">
-        {{ icon('trending-up', size=15, color='#38bdf8') }}
+        {{ icon('trending-up', size=15, color='#0284c7') }}
         <span>This Month:</span>
-        <strong style="color: #10b981;">+₹{{ "{:,.2f}".format(summary.month_income) }}</strong>
-        <span style="color: var(--color-border);">|</span>
-        <strong style="color: #ef4444;">-₹{{ "{:,.2f}".format(summary.month_expense) }}</strong>
+        <strong style="color: #059669;">+₹{{ "{:,.2f}".format(summary.month_income) }}</strong>
+        <span style="color: #cbd5e1;">|</span>
+        <strong style="color: #dc2626;">-₹{{ "{:,.2f}".format(summary.month_expense) }}</strong>
       </div>
 
       <div class="money-substat-item">
-        {{ icon('receipt', size=15, color='#c084fc') }}
+        {{ icon('receipt', size=15, color='#7c3aed') }}
         <span>Total Records:</span>
-        <strong>{{ summary.transaction_count }}</strong>
+        <strong style="color: #0f172a;">{{ summary.transaction_count }}</strong>
         {% if summary.transaction_count != summary.all_time_count %}
-          <span style="font-size: 0.75rem; color: var(--color-text-dim);">(of {{ summary.all_time_count }} all-time)</span>
+          <span style="font-size: 0.775rem; color: #64748b;">(of {{ summary.all_time_count }} all-time)</span>
         {% endif %}
       </div>
+    </div>
+
+    <!-- Main Responsive Two-Column Section (Desktop Grid) -->
+    <div class="money-main-grid" id="addTransactionSection">
+      
+      <!-- LEFT COLUMN: Redesigned Add Transaction Form Card -->
+      <div class="money-card" id="addTransactionCard">
+        <div class="money-card-header">
+          <div>
+            <h3 class="money-card-title">
+              {{ icon('plus-circle', size=18, color='#059669') }} Add Transaction
+            </h3>
+            <p class="money-card-subtitle">Record income or expense into the financial ledger</p>
+          </div>
+          <span class="badge" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
+            Manual Entry
+          </span>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.create_money_transaction') }}" id="inlineTransactionForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          
+          <!-- Segmented Type Selector -->
+          <div class="money-segmented-control">
+            <button type="button" id="inlineTypeIncomeBtn" class="money-segmented-btn active income" onclick="setInlineTransactionType('INCOME')">
+              {{ icon('arrow-down-left', size=16) }} + Income
+            </button>
+            <button type="button" id="inlineTypeExpenseBtn" class="money-segmented-btn expense" onclick="setInlineTransactionType('EXPENSE')">
+              {{ icon('arrow-up-right', size=16) }} - Expense
+            </button>
+          </div>
+          <input type="hidden" name="transaction_type" id="inlineTransactionTypeInput" value="INCOME"/>
+
+          <!-- Responsive 2-Column Fields Grid -->
+          <div class="money-form-grid">
+            
+            <!-- Amount (₹) -->
+            <div class="form-group">
+              <label class="form-label" for="inlineAmount">
+                Amount (₹) <span class="req">*</span>
+              </label>
+              <div class="money-amount-wrapper">
+                <span class="money-amount-prefix">₹</span>
+                <input type="number" step="0.01" min="0.01" id="inlineAmount" name="amount" class="form-input money-amount-input" placeholder="0.00" required />
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group">
+              <label class="form-label" for="inlineDate">
+                Date <span class="req">*</span>
+              </label>
+              <input type="date" id="inlineDate" name="transaction_date" class="form-input" value="{{ today_date_str }}" required title="Supports historical dates" />
+            </div>
+
+            <!-- Time (Optional) -->
+            <div class="form-group">
+              <label class="form-label" for="inlineTime">
+                Time (Optional)
+              </label>
+              <input type="text" id="inlineTime" name="transaction_time" class="form-input" placeholder="e.g. 10:30 AM" />
+            </div>
+
+            <!-- Category / Purpose -->
+            <div class="form-group">
+              <label class="form-label" for="inlineCategory">
+                Category / Purpose <span class="req">*</span>
+              </label>
+              <select id="inlineCategory" name="category" class="form-input admin-select" onchange="handleInlineCategoryChange(this.value)" required style="width: 100%;">
+                <optgroup label="Income Categories" id="inlineIncomeOptGroup">
+                  {% for cat in income_categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                  {% endfor %}
+                </optgroup>
+                <optgroup label="Expense Categories" id="inlineExpenseOptGroup" style="display: none;">
+                  {% for cat in expense_categories %}
+                    <option value="{{ cat }}">{{ cat }}</option>
+                  {% endfor %}
+                </optgroup>
+                <option value="Other">Other (Custom Category)</option>
+              </select>
+            </div>
+
+            <!-- Custom Category (dynamically visible) -->
+            <div class="form-group money-form-full" id="inlineCustomCategoryGroup" style="display: none;">
+              <label class="form-label" for="inlineCustomCategory">
+                Custom Category Name <span class="req">*</span>
+              </label>
+              <input type="text" id="inlineCustomCategory" name="custom_category" class="form-input" placeholder="Enter custom category name" />
+            </div>
+
+            <!-- Purpose / Title (Full Width) -->
+            <div class="form-group money-form-full">
+              <label class="form-label" for="inlinePurpose">
+                Purpose / Title (Optional)
+              </label>
+              <input type="text" id="inlinePurpose" name="purpose" class="form-input" placeholder="e.g. Website domain renewal for antimatrix.co.in" />
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-group">
+              <label class="form-label" for="inlinePaymentMethod">
+                Payment Method
+              </label>
+              <select id="inlinePaymentMethod" name="payment_method" class="form-input admin-select" style="width: 100%;">
+                {% for method in payment_methods %}
+                  <option value="{{ method }}" {{ 'selected' if method == 'Bank Transfer' else '' }}>{{ method }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Reference / ID -->
+            <div class="form-group">
+              <label class="form-label" for="inlineReference">
+                Reference / ID
+              </label>
+              <input type="text" id="inlineReference" name="reference" class="form-input" placeholder="UPI ref, Cheque #, Invoice #" />
+            </div>
+
+            <!-- Description / Notes (Full Width) -->
+            <div class="form-group money-form-full">
+              <label class="form-label" for="inlineDescription">
+                Description / Notes
+              </label>
+              <textarea id="inlineDescription" name="description" class="form-textarea" rows="2" placeholder="Additional notes or context regarding this transaction"></textarea>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-sm); margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid #f1f5f9;">
+            <button type="reset" class="btn btn-outline" style="padding: 0.55rem 1.1rem; font-size: 0.875rem;" onclick="resetInlineForm()">
+              Clear
+            </button>
+            <button type="submit" class="btn btn-primary" style="padding: 0.55rem 1.25rem; font-size: 0.875rem; gap: 6px;">
+              {{ icon('check', size=15) }} Add Transaction
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT COLUMN: Financial Ledger Overview & Quick Breakdown -->
+      <div class="money-overview-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.85rem;">
+          <div>
+            <h3 class="money-card-title">
+              {{ icon('activity', size=18, color='#059669') }} Ledger Health & Stream
+            </h3>
+            <p class="money-card-subtitle">Real-time financial status and environment metrics</p>
+          </div>
+          <span class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700;">
+            Live Audited
+          </span>
+        </div>
+
+        <!-- Cashflow Ratio Indicator -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+            <span style="color: #64748b; font-weight: 600;">Income vs Expense Flow</span>
+            <span style="font-weight: 700; color: #0f172a;">
+              {% set total_flow = (summary.total_income + summary.total_expense) %}
+              {% if total_flow > 0 %}
+                {% set income_pct = ((summary.total_income / total_flow) * 100)|round(1) %}
+                {{ income_pct }}% Inflow
+              {% else %}
+                0% Active Flow
+              {% endif %}
+            </span>
+          </div>
+          <div class="money-progress-bar">
+            {% if total_flow > 0 %}
+              <div class="money-progress-fill" style="width: {{ income_pct }}%;"></div>
+            {% else %}
+              <div class="money-progress-fill" style="width: 100%; background: #e2e8f0;"></div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Metric Rows -->
+        <div style="display: flex; flex-direction: column;">
+          <div class="money-metric-row">
+            <span class="money-metric-label">
+              {{ icon('shield-check', size=15, color='#059669') }} Cashfree Integration
+            </span>
+            <span class="badge-env-sandbox">Sandbox Mode</span>
+          </div>
+
+          <div class="money-metric-row">
+            <span class="money-metric-label">
+              {{ icon('check-circle', size=15, color='#059669') }} Production / Real Income
+            </span>
+            <span class="money-metric-value" style="color: #059669;">
+              ₹{{ "{:,.2f}".format(summary.production_income) }}
+            </span>
+          </div>
+
+          <div class="money-metric-row">
+            <span class="money-metric-label">
+              {{ icon('refresh-cw', size=15, color='#d97706') }} Sandbox Application Fees
+            </span>
+            <span class="money-metric-value" style="color: #d97706;">
+              ₹{{ "{:,.2f}".format(summary.sandbox_income) }}
+            </span>
+          </div>
+
+          <div class="money-metric-row">
+            <span class="money-metric-label">
+              {{ icon('arrow-up-right', size=15, color='#dc2626') }} Manual Recorded Expenses
+            </span>
+            <span class="money-metric-value" style="color: #dc2626;">
+              ₹{{ "{:,.2f}".format(summary.manual_expense) }}
+            </span>
+          </div>
+
+          <div class="money-metric-row">
+            <span class="money-metric-label">
+              {{ icon('receipt', size=15, color='#64748b') }} Total Filtered Entries
+            </span>
+            <span class="money-metric-value">
+              {{ summary.transaction_count }} records
+            </span>
+          </div>
+        </div>
+
+        <!-- Gateway Reconcile Action Banner -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Reconcile Gateway Payments</div>
+            <div style="font-size: 0.775rem; color: #64748b;">Verify and sync any missing Cashfree orders</div>
+          </div>
+          <form method="POST" action="{{ url_for('admin.reconcile_payments') }}" style="margin: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.8rem; gap: 5px; white-space: nowrap;">
+              {{ icon('refresh-cw', size=13) }} Sync
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Transaction History Section Title -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; margin: 0;">
+        {{ icon('receipt', size=18, color='#059669') }} Transaction History
+        <span style="font-size: 0.85rem; font-weight: 500; color: #64748b;">({{ transactions|length }})</span>
+      </h2>
+      <span style="font-size: 0.8rem; color: #64748b;">Chronological audit trail</span>
     </div>
 
     <!-- Toolbar & Filters -->
@@ -143,7 +395,7 @@
         
         <!-- Type Filter -->
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-          <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase;">Type:</span>
+          <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Type:</span>
           <div class="money-pills-group">
             <a href="{{ url_for('admin.money_management', type='all', env=env_filter, date=date_filter, category=category_filter, q=search_query, sort=sort_by) }}" class="money-pill-btn {{ 'active' if type_filter == 'all' else '' }}">All</a>
             <a href="{{ url_for('admin.money_management', type='income', env=env_filter, date=date_filter, category=category_filter, q=search_query, sort=sort_by) }}" class="money-pill-btn {{ 'active' if type_filter == 'income' else '' }}">Income</a>
@@ -153,7 +405,7 @@
 
         <!-- Environment Filter -->
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-          <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase;">Environment:</span>
+          <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">Environment:</span>
           <div class="money-pills-group">
             <a href="{{ url_for('admin.money_management', type=type_filter, env='all', date=date_filter, category=category_filter, q=search_query, sort=sort_by) }}" class="money-pill-btn {{ 'active' if env_filter == 'all' else '' }}">All</a>
             <a href="{{ url_for('admin.money_management', type=type_filter, env='production', date=date_filter, category=category_filter, q=search_query, sort=sort_by) }}" class="money-pill-btn {{ 'active' if env_filter == 'production' else '' }}">Production</a>
@@ -165,15 +417,15 @@
       </div>
 
       <!-- Bottom Row: Date Filter, Category, Search & Sort -->
-      <div class="money-toolbar-row" style="padding-top: var(--space-sm); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+      <div class="money-toolbar-row" style="padding-top: var(--space-sm); border-top: 1px solid #f1f5f9;">
         
-        <form method="GET" action="{{ url_for('admin.money_management') }}" style="display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; width: 100%;">
+        <form method="GET" action="{{ url_for('admin.money_management') }}" style="display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; width: 100%; margin: 0;">
           <input type="hidden" name="type" value="{{ type_filter }}"/>
           <input type="hidden" name="env" value="{{ env_filter }}"/>
 
           <!-- Date Quick Filter -->
           <div style="display: flex; align-items: center; gap: 6px;">
-            <select name="date" class="form-control form-control-sm" style="width: auto; min-width: 120px; font-size: 0.82rem;" onchange="handleDateFilterChange(this.value)">
+            <select name="date" class="form-input admin-select" style="width: auto; min-width: 120px; font-size: 0.825rem; padding: 0.45rem 0.75rem;" onchange="handleDateFilterChange(this.value)">
               <option value="all" {{ 'selected' if date_filter == 'all' else '' }}>All Dates</option>
               <option value="today" {{ 'selected' if date_filter == 'today' else '' }}>Today</option>
               <option value="this_week" {{ 'selected' if date_filter == 'this_week' else '' }}>This Week</option>
@@ -184,14 +436,14 @@
 
           <!-- Custom Date Range Inputs -->
           <div id="customDateRange" style="display: {{ 'flex' if date_filter == 'custom' else 'none' }}; align-items: center; gap: 6px;">
-            <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date or '' }}" style="width: auto; font-size: 0.82rem;" placeholder="Start Date"/>
-            <span style="color: var(--color-text-dim); font-size: 0.8rem;">to</span>
-            <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date or '' }}" style="width: auto; font-size: 0.82rem;" placeholder="End Date"/>
+            <input type="date" name="start_date" class="form-input" value="{{ start_date or '' }}" style="width: auto; font-size: 0.825rem; padding: 0.45rem 0.65rem;" placeholder="Start Date"/>
+            <span style="color: #64748b; font-size: 0.8rem;">to</span>
+            <input type="date" name="end_date" class="form-input" value="{{ end_date or '' }}" style="width: auto; font-size: 0.825rem; padding: 0.45rem 0.65rem;" placeholder="End Date"/>
           </div>
 
           <!-- Category Filter -->
           <div style="display: flex; align-items: center; gap: 6px;">
-            <select name="category" class="form-control form-control-sm" style="width: auto; min-width: 140px; font-size: 0.82rem;">
+            <select name="category" class="form-input admin-select" style="width: auto; min-width: 140px; font-size: 0.825rem; padding: 0.45rem 0.75rem;">
               <option value="all">All Categories</option>
               {% for cat in categories %}
                 <option value="{{ cat }}" {{ 'selected' if category_filter == cat else '' }}>{{ cat }}</option>
@@ -201,15 +453,15 @@
 
           <!-- Search Box -->
           <div style="flex: 1; min-width: 200px; position: relative;">
-            <input type="text" name="q" class="form-control form-control-sm" value="{{ search_query }}" placeholder="Search purpose, ref, ID, order..." style="font-size: 0.82rem; padding-left: 28px;"/>
-            <div style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-dim);">
+            <input type="text" name="q" class="form-input" value="{{ search_query }}" placeholder="Search purpose, ref, ID, order..." style="font-size: 0.825rem; padding: 0.45rem 0.75rem 0.45rem 28px; width: 100%;"/>
+            <div style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; display: flex; align-items: center;">
               {{ icon('search', size=13) }}
             </div>
           </div>
 
           <!-- Sort Selector -->
           <div style="display: flex; align-items: center; gap: 6px;">
-            <select name="sort" class="form-control form-control-sm" style="width: auto; font-size: 0.82rem;">
+            <select name="sort" class="form-input admin-select" style="width: auto; font-size: 0.825rem; padding: 0.45rem 0.75rem;">
               <option value="newest" {{ 'selected' if sort_by == 'newest' else '' }}>Newest First</option>
               <option value="oldest" {{ 'selected' if sort_by == 'oldest' else '' }}>Oldest First</option>
               <option value="highest" {{ 'selected' if sort_by == 'highest' else '' }}>Highest Amount</option>
@@ -218,11 +470,11 @@
           </div>
 
           <!-- Filter / Reset Buttons -->
-          <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.82rem; padding: 0.45rem 0.85rem;">
+          <button type="submit" class="btn btn-outline btn-sm" style="font-size: 0.825rem; padding: 0.45rem 0.85rem;">
             Apply
           </button>
           {% if type_filter != 'all' or env_filter != 'all' or date_filter != 'all' or category_filter != 'all' or search_query %}
-            <a href="{{ url_for('admin.money_management') }}" class="btn btn-ghost btn-sm" style="font-size: 0.82rem;" title="Reset all filters">
+            <a href="{{ url_for('admin.money_management') }}" class="btn btn-ghost btn-sm" style="font-size: 0.825rem;" title="Reset all filters">
               Reset
             </a>
           {% endif %}
@@ -232,16 +484,7 @@
 
     </div>
 
-    <!-- Transaction History Section Title -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
-      <h2 style="font-size: 1.25rem; font-weight: 700; color: #000000; display: flex; align-items: center; gap: 8px;">
-        {{ icon('receipt', size=18, color='var(--color-primary-light)') }} Transaction History
-        <span style="font-size: 0.85rem; font-weight: 500; color: var(--color-text-dim);">({{ transactions|length }})</span>
-      </h2>
-      <span style="font-size: 0.8rem; color: var(--color-text-dim);">Chronological record</span>
-    </div>
-
-    <!-- Google Pay-Style Transaction Cards -->
+    <!-- Google Pay / Stripe Style Transaction Cards List -->
     {% if transactions %}
       <div class="gpay-transactions-wrapper">
         {% for txn in transactions %}
@@ -251,9 +494,9 @@
             <div class="gpay-txn-left">
               <div class="gpay-txn-avatar {{ 'income' if txn.is_income else 'expense' }}">
                 {% if txn.is_income %}
-                  {{ icon('arrow-down', size=20) }}
+                  {{ icon('arrow-down-left', size=20) }}
                 {% else %}
-                  {{ icon('arrow-up', size=20) }}
+                  {{ icon('arrow-up-right', size=20) }}
                 {% endif %}
               </div>
 
@@ -262,7 +505,7 @@
                   <span class="gpay-txn-title">{{ txn.purpose or txn.category }}</span>
                   <span class="{{ txn.environment_badge_class }}">{{ txn.environment_display }}</span>
                   {% if txn.payment_method %}
-                    <span class="badge" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; background: rgba(255,255,255,0.05); color: var(--color-text-dim); border: 1px solid var(--color-border);">
+                    <span class="badge" style="font-size: 0.7rem; padding: 0.12rem 0.45rem; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">
                       {{ txn.payment_method }}
                     </span>
                   {% endif %}
@@ -279,7 +522,7 @@
                   </div>
 
                   {% if txn.application %}
-                    <div class="gpay-txn-meta-item" style="color: var(--color-primary-light);">
+                    <div class="gpay-txn-meta-item" style="color: #059669; font-weight: 600;">
                       {{ icon('users', size=12) }}
                       <span>App: {{ txn.application.formatted_code }}</span>
                     </div>
@@ -305,12 +548,12 @@
                   <button type="button" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="openEditTransactionModal({{ txn.to_dict()|tojson }})" title="Edit manual transaction">
                     {{ icon('edit', size=12) }} Edit
                   </button>
-                  <button type="button" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: #ef4444;" onclick="openDeleteTransactionModal({{ txn.id }}, '{{ txn.formatted_amount }}', '{{ txn.purpose or txn.category }}')" title="Delete manual transaction">
+                  <button type="button" class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: #dc2626;" onclick="openDeleteTransactionModal({{ txn.id }}, '{{ txn.formatted_amount }}', '{{ txn.purpose or txn.category }}')" title="Delete manual transaction">
                     {{ icon('trash-2', size=12) }}
                   </button>
                 {% else %}
-                  <span style="font-size: 0.72rem; color: var(--color-text-dim); display: flex; align-items: center; gap: 4px;">
-                    {{ icon('shield-check', size=12, color='#10b981') }} Auto-Logged
+                  <span style="font-size: 0.72rem; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 500;">
+                    {{ icon('shield-check', size=12, color='#059669') }} Auto-Logged
                   </span>
                 {% endif %}
               </div>
@@ -325,19 +568,19 @@
         <div class="gpay-empty-state-icon">
           {{ icon('wallet', size=26) }}
         </div>
-        <h3 style="font-size: 1.15rem; color: #000000; margin-bottom: 0.35rem;">No Transactions Found</h3>
-        <p style="color: var(--color-text-dim); font-size: 0.9rem; max-width: 480px; margin: 0 auto var(--space-lg);">
+        <h3 style="font-size: 1.15rem; color: #0f172a; margin-bottom: 0.35rem; font-weight: 700;">No Transactions Found</h3>
+        <p style="color: #64748b; font-size: 0.9rem; max-width: 480px; margin: 0 auto var(--space-lg); line-height: 1.5;">
           {% if type_filter != 'all' or env_filter != 'all' or date_filter != 'all' or category_filter != 'all' or search_query %}
             No transactions match your selected filter criteria. Try clearing filters or searching for another keyword.
           {% else %}
-            No financial income or expense transactions have been recorded yet. Click below to add your first transaction or sync Cashfree payments.
+            No financial income or expense transactions have been recorded yet. Use the Add Transaction form above to record your first transaction.
           {% endif %}
         </p>
         <div style="display: flex; gap: var(--space-md); justify-content: center;">
           {% if type_filter != 'all' or env_filter != 'all' or date_filter != 'all' or category_filter != 'all' or search_query %}
             <a href="{{ url_for('admin.money_management') }}" class="btn btn-outline btn-sm">Clear Filters</a>
           {% endif %}
-          <button type="button" class="btn btn-primary btn-sm" onclick="openAddTransactionModal()">
+          <button type="button" class="btn btn-primary btn-sm" onclick="focusAddTransactionForm(event)">
             {{ icon('plus', size=14) }} Add Transaction
           </button>
         </div>
@@ -348,188 +591,84 @@
 </section>
 
 <!-- ==============================================================================
-     MODAL: ADD TRANSACTION
-     ============================================================================== -->
-<div id="modalAddTransaction" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeAddTransactionModal()">
-  <div class="modal-card" style="max-width: 580px; width: 90%;">
-    <div class="modal-header">
-      <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-        {{ icon('wallet', size=20, color='var(--color-primary-light)') }} Record Transaction
-      </h3>
-      <button type="button" class="modal-close" onclick="closeAddTransactionModal()">{{ icon('x', size=18) }}</button>
-    </div>
-
-    <form method="POST" action="{{ url_for('admin.create_money_transaction') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-      
-      <!-- Transaction Type Switcher -->
-      <div class="txn-type-selector">
-        <button type="button" id="addTypeIncomeBtn" class="txn-type-btn active income" onclick="setAddTransactionType('INCOME')">
-          {{ icon('arrow-down-left', size=16) }} Income
-        </button>
-        <button type="button" id="addTypeExpenseBtn" class="txn-type-btn expense" onclick="setAddTransactionType('EXPENSE')">
-          {{ icon('arrow-up-right', size=16) }} Expense
-        </button>
-      </div>
-      <input type="hidden" name="transaction_type" id="addTransactionTypeInput" value="INCOME"/>
-
-      <!-- Amount -->
-      <div class="form-group">
-        <label class="form-label" for="addAmount">Amount (₹) *</label>
-        <div style="position: relative;">
-          <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--color-primary-light); font-size: 1.1rem;">₹</span>
-          <input type="number" step="0.01" min="0.01" id="addAmount" name="amount" class="form-control" placeholder="0.00" required style="padding-left: 36px; font-size: 1.15rem; font-weight: 700;"/>
-        </div>
-      </div>
-
-      <!-- Date & Time Row -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-        <div class="form-group">
-          <label class="form-label" for="addDate">Date *</label>
-          <input type="date" id="addDate" name="transaction_date" class="form-control" value="{{ today_date_str }}" required title="Supports historical dates"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="addTime">Time (Optional)</label>
-          <input type="text" id="addTime" name="transaction_time" class="form-control" placeholder="e.g. 10:30 AM"/>
-        </div>
-      </div>
-
-      <!-- Category Selector -->
-      <div class="form-group">
-        <label class="form-label" for="addCategory">Category / Purpose *</label>
-        <select id="addCategory" name="category" class="form-control" onchange="handleAddCategoryChange(this.value)" required>
-          <optgroup label="Income Categories" id="addIncomeOptGroup">
-            {% for cat in income_categories %}
-              <option value="{{ cat }}">{{ cat }}</option>
-            {% endfor %}
-          </optgroup>
-          <optgroup label="Expense Categories" id="addExpenseOptGroup" style="display: none;">
-            {% for cat in expense_categories %}
-              <option value="{{ cat }}">{{ cat }}</option>
-            {% endfor %}
-          </optgroup>
-          <option value="Other">Other (Custom Category)</option>
-        </select>
-      </div>
-
-      <!-- Custom Category input (hidden by default) -->
-      <div class="form-group" id="addCustomCategoryGroup" style="display: none;">
-        <label class="form-label" for="addCustomCategory">Custom Category Name *</label>
-        <input type="text" id="addCustomCategory" name="custom_category" class="form-control" placeholder="Enter custom category name"/>
-      </div>
-
-      <!-- Specific Purpose / Title -->
-      <div class="form-group">
-        <label class="form-label" for="addPurpose">Purpose / Title (Optional)</label>
-        <input type="text" id="addPurpose" name="purpose" class="form-control" placeholder="e.g. Website domain renewal for antimatrix.co.in"/>
-      </div>
-
-      <!-- Payment Method & Reference -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
-        <div class="form-group">
-          <label class="form-label" for="addPaymentMethod">Payment Method</label>
-          <select id="addPaymentMethod" name="payment_method" class="form-control">
-            {% for method in payment_methods %}
-              <option value="{{ method }}" {{ 'selected' if method == 'Bank Transfer' else '' }}>{{ method }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="addReference">Reference / ID</label>
-          <input type="text" id="addReference" name="reference" class="form-control" placeholder="UPI ref, Cheque #, Invoice #"/>
-        </div>
-      </div>
-
-      <!-- Description / Notes -->
-      <div class="form-group">
-        <label class="form-label" for="addDescription">Description / Notes</label>
-        <textarea id="addDescription" name="description" class="form-control" rows="2" placeholder="Additional notes or context regarding this transaction"></textarea>
-      </div>
-
-      <div class="modal-actions" style="margin-top: var(--space-lg);">
-        <button type="button" class="btn btn-ghost" onclick="closeAddTransactionModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" style="gap: 6px;">
-          {{ icon('check', size=15) }} Save Transaction
-        </button>
-      </div>
-
-    </form>
-  </div>
-</div>
-
-
-<!-- ==============================================================================
      MODAL: EDIT TRANSACTION (MANUAL ONLY)
      ============================================================================== -->
-<div id="modalEditTransaction" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeEditTransactionModal()">
-  <div class="modal-card" style="max-width: 580px; width: 90%;">
+<div id="modalEditTransaction" class="modal-backdrop-wrapper" style="display: none;" onclick="if(event.target === this) closeEditTransactionModal()">
+  <div class="modal-card">
     <div class="modal-header">
-      <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-        {{ icon('edit', size=20, color='var(--color-primary-light)') }} Edit Manual Transaction
+      <h3 class="modal-title">
+        {{ icon('edit', size=18, color='#059669') }} Edit Manual Transaction
       </h3>
-      <button type="button" class="modal-close" onclick="closeEditTransactionModal()">{{ icon('x', size=18) }}</button>
+      <button type="button" class="modal-close" onclick="closeEditTransactionModal()">
+        {{ icon('x', size=16) }}
+      </button>
     </div>
 
     <form id="editTransactionForm" method="POST" action="">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       
-      <!-- Amount -->
-      <div class="form-group">
-        <label class="form-label" for="editAmount">Amount (₹) *</label>
-        <div style="position: relative;">
-          <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--color-primary-light); font-size: 1.1rem;">₹</span>
-          <input type="number" step="0.01" min="0.01" id="editAmount" name="amount" class="form-control" required style="padding-left: 36px; font-size: 1.15rem; font-weight: 700;"/>
-        </div>
-      </div>
-
-      <!-- Date & Time Row -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+      <!-- Responsive 2-Column Fields Grid -->
+      <div class="money-form-grid">
+        
+        <!-- Amount -->
         <div class="form-group">
-          <label class="form-label" for="editDate">Date *</label>
-          <input type="date" id="editDate" name="transaction_date" class="form-control" required/>
+          <label class="form-label" for="editAmount">Amount (₹) <span class="req">*</span></label>
+          <div class="money-amount-wrapper">
+            <span class="money-amount-prefix">₹</span>
+            <input type="number" step="0.01" min="0.01" id="editAmount" name="amount" class="form-input money-amount-input" required />
+          </div>
         </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label" for="editDate">Date <span class="req">*</span></label>
+          <input type="date" id="editDate" name="transaction_date" class="form-input" required />
+        </div>
+
+        <!-- Time -->
         <div class="form-group">
           <label class="form-label" for="editTime">Time</label>
-          <input type="text" id="editTime" name="transaction_time" class="form-control"/>
+          <input type="text" id="editTime" name="transaction_time" class="form-input" />
         </div>
-      </div>
 
-      <!-- Category -->
-      <div class="form-group">
-        <label class="form-label" for="editCategory">Category / Purpose *</label>
-        <input type="text" id="editCategory" name="category" class="form-control" required/>
-      </div>
+        <!-- Category -->
+        <div class="form-group">
+          <label class="form-label" for="editCategory">Category / Purpose <span class="req">*</span></label>
+          <input type="text" id="editCategory" name="category" class="form-input" required />
+        </div>
 
-      <!-- Specific Purpose -->
-      <div class="form-group">
-        <label class="form-label" for="editPurpose">Purpose / Title</label>
-        <input type="text" id="editPurpose" name="purpose" class="form-control"/>
-      </div>
+        <!-- Specific Purpose -->
+        <div class="form-group money-form-full">
+          <label class="form-label" for="editPurpose">Purpose / Title</label>
+          <input type="text" id="editPurpose" name="purpose" class="form-input" />
+        </div>
 
-      <!-- Payment Method & Reference -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+        <!-- Payment Method -->
         <div class="form-group">
           <label class="form-label" for="editPaymentMethod">Payment Method</label>
-          <select id="editPaymentMethod" name="payment_method" class="form-control">
+          <select id="editPaymentMethod" name="payment_method" class="form-input admin-select" style="width: 100%;">
             {% for method in payment_methods %}
               <option value="{{ method }}">{{ method }}</option>
             {% endfor %}
           </select>
         </div>
+
+        <!-- Reference -->
         <div class="form-group">
           <label class="form-label" for="editReference">Reference / ID</label>
-          <input type="text" id="editReference" name="reference" class="form-control"/>
+          <input type="text" id="editReference" name="reference" class="form-input" />
         </div>
+
+        <!-- Description / Notes -->
+        <div class="form-group money-form-full">
+          <label class="form-label" for="editDescription">Description / Notes</label>
+          <textarea id="editDescription" name="description" class="form-textarea" rows="2"></textarea>
+        </div>
+
       </div>
 
-      <!-- Description / Notes -->
-      <div class="form-group">
-        <label class="form-label" for="editDescription">Description / Notes</label>
-        <textarea id="editDescription" name="description" class="form-control" rows="2"></textarea>
-      </div>
-
-      <div class="modal-actions" style="margin-top: var(--space-lg);">
-        <button type="button" class="btn btn-ghost" onclick="closeEditTransactionModal()">Cancel</button>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" onclick="closeEditTransactionModal()">Cancel</button>
         <button type="submit" class="btn btn-primary" style="gap: 6px;">
           {{ icon('check', size=15) }} Update Transaction
         </button>
@@ -539,36 +678,39 @@
   </div>
 </div>
 
-
 <!-- ==============================================================================
      MODAL: DELETE TRANSACTION CONFIRMATION
      ============================================================================== -->
-<div id="modalDeleteTransaction" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeDeleteTransactionModal()">
-  <div class="modal-card" style="max-width: 460px; width: 90%;">
+<div id="modalDeleteTransaction" class="modal-backdrop-wrapper" style="display: none;" onclick="if(event.target === this) closeDeleteTransactionModal()">
+  <div class="modal-card modal-danger" style="max-width: 480px;">
     <div class="modal-header">
-      <h3 class="modal-title" style="color: #ef4444; display: flex; align-items: center; gap: 8px;">
-        {{ icon('trash-2', size=20, color='#ef4444') }} Delete Manual Transaction?
-      </h3>
-      <button type="button" class="modal-close" onclick="closeDeleteTransactionModal()">{{ icon('x', size=18) }}</button>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="modal-icon-danger">{{ icon('trash-2', size=20) }}</div>
+        <div>
+          <h3 class="modal-title" style="color: #dc2626; font-size: 1.1rem;">Delete Transaction?</h3>
+          <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Permanent manual record deletion</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeDeleteTransactionModal()">{{ icon('x', size=16) }}</button>
     </div>
 
-    <div style="margin-bottom: var(--space-lg);">
-      <p style="color: var(--color-text); margin-bottom: 0.5rem;">
+    <div style="padding: 1.5rem 1.5rem 0.5rem;">
+      <p style="color: #1e293b; margin-bottom: 0.75rem; font-size: 0.9rem;">
         Are you sure you want to permanently delete this manual transaction?
       </p>
-      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-md); padding: 0.85rem 1rem;">
-        <div id="deleteTxnDetails" style="font-weight: 700; color: #ef4444;"></div>
+      <div class="modal-warning-box">
+        <div id="deleteTxnDetails" style="font-weight: 700; color: #dc2626;"></div>
       </div>
-      <p style="color: var(--color-text-dim); font-size: 0.82rem; margin-top: 0.5rem;">
+      <p style="color: #64748b; font-size: 0.8rem; margin: 0;">
         Financial totals and balances will be recalculated immediately.
       </p>
     </div>
 
-    <form id="deleteTransactionForm" method="POST" action="">
+    <form id="deleteTransactionForm" method="POST" action="" style="padding: 0;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" onclick="closeDeleteTransactionModal()">Cancel</button>
-        <button type="submit" class="btn btn-danger" style="gap: 6px; background: #ef4444; border-color: #ef4444; color: #ffffff;">
+        <button type="button" class="btn btn-outline" onclick="closeDeleteTransactionModal()">Cancel</button>
+        <button type="submit" class="btn btn-danger-solid" style="gap: 6px;">
           {{ icon('trash-2', size=15) }} Confirm Delete
         </button>
       </div>
@@ -576,84 +718,84 @@
   </div>
 </div>
 
-
 <!-- ==============================================================================
      MODAL: TRANSACTION AUDIT DETAILS
      ============================================================================== -->
-<div id="modalTransactionDetail" class="modal-backdrop" style="display: none;" onclick="if(event.target === this) closeTransactionDetailModal()">
-  <div class="modal-card" style="max-width: 620px; width: 90%;">
+<div id="modalTransactionDetail" class="modal-backdrop-wrapper" style="display: none;" onclick="if(event.target === this) closeTransactionDetailModal()">
+  <div class="modal-card" style="max-width: 620px;">
     <div class="modal-header">
-      <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-        {{ icon('receipt', size=20, color='var(--color-primary-light)') }} Transaction Details
+      <h3 class="modal-title">
+        {{ icon('receipt', size=18, color='#059669') }} Transaction Details
       </h3>
-      <button type="button" class="modal-close" onclick="closeTransactionDetailModal()">{{ icon('x', size=18) }}</button>
+      <button type="button" class="modal-close" onclick="closeTransactionDetailModal()">{{ icon('x', size=16) }}</button>
     </div>
 
-    <div id="detailLoading" style="text-align: center; padding: var(--space-xl) 0; color: var(--color-text-dim);">
-      Loading transaction data...
-    </div>
+    <div class="modal-body">
+      <div id="detailLoading" style="text-align: center; padding: 2rem 0; color: #64748b;">
+        Loading transaction data...
+      </div>
 
-    <div id="detailContent" style="display: none;">
-      
-      <!-- Top banner amount -->
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-md); margin-bottom: var(--space-md); border: 1px solid var(--color-border);">
-        <div>
-          <div id="detailTypeBadge" style="margin-bottom: 3px;"></div>
-          <div id="detailPurpose" style="font-weight: 700; font-size: 1.1rem; color: #000000;"></div>
+      <div id="detailContent" style="display: none;">
+        
+        <!-- Top banner amount -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; background: #f8fafc; border-radius: 10px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">
+          <div>
+            <div id="detailTypeBadge" style="margin-bottom: 3px;"></div>
+            <div id="detailPurpose" style="font-weight: 700; font-size: 1.05rem; color: #0f172a;"></div>
+          </div>
+          <div id="detailAmount" style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono, monospace);"></div>
         </div>
-        <div id="detailAmount" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono, monospace);"></div>
+
+        <!-- Key-Value Grid -->
+        <div class="txn-detail-grid">
+          <div class="txn-detail-label">Environment:</div>
+          <div class="txn-detail-value" id="detailEnvironment"></div>
+
+          <div class="txn-detail-label">Source:</div>
+          <div class="txn-detail-value" id="detailSource"></div>
+
+          <div class="txn-detail-label">Date & Time:</div>
+          <div class="txn-detail-value" id="detailDateTime"></div>
+
+          <div class="txn-detail-label">Category:</div>
+          <div class="txn-detail-value" id="detailCategory"></div>
+
+          <div class="txn-detail-label">Payment Method:</div>
+          <div class="txn-detail-value" id="detailPaymentMethod"></div>
+
+          <div class="txn-detail-label">Reference ID:</div>
+          <div class="txn-detail-value" id="detailReference"></div>
+
+          <div class="txn-detail-label" id="detailAppLabel">Application:</div>
+          <div class="txn-detail-value" id="detailApp"></div>
+
+          <div class="txn-detail-label" id="detailOrderLabel">Cashfree Order ID:</div>
+          <div class="txn-detail-value" id="detailOrder"></div>
+
+          <div class="txn-detail-label" id="detailPayIdLabel">Payment ID:</div>
+          <div class="txn-detail-value" id="detailPayId"></div>
+
+          <div class="txn-detail-label">Created By:</div>
+          <div class="txn-detail-value" id="detailCreatedBy"></div>
+
+          <div class="txn-detail-label">Recorded At:</div>
+          <div class="txn-detail-value" id="detailCreatedAt"></div>
+        </div>
+
+        <!-- Description Note -->
+        <div id="detailDescSection" style="margin-top: 0.75rem; display: none;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Notes / Description</div>
+          <div id="detailDescription" style="font-size: 0.88rem; color: #1e293b; padding: 0.75rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap;"></div>
+        </div>
+
       </div>
-
-      <!-- Key-Value Grid -->
-      <div class="txn-detail-grid">
-        <div class="txn-detail-label">Environment:</div>
-        <div class="txn-detail-value" id="detailEnvironment"></div>
-
-        <div class="txn-detail-label">Source:</div>
-        <div class="txn-detail-value" id="detailSource"></div>
-
-        <div class="txn-detail-label">Date & Time:</div>
-        <div class="txn-detail-value" id="detailDateTime"></div>
-
-        <div class="txn-detail-label">Category:</div>
-        <div class="txn-detail-value" id="detailCategory"></div>
-
-        <div class="txn-detail-label">Payment Method:</div>
-        <div class="txn-detail-value" id="detailPaymentMethod"></div>
-
-        <div class="txn-detail-label">Reference ID:</div>
-        <div class="txn-detail-value" id="detailReference"></div>
-
-        <div class="txn-detail-label" id="detailAppLabel">Application:</div>
-        <div class="txn-detail-value" id="detailApp"></div>
-
-        <div class="txn-detail-label" id="detailOrderLabel">Cashfree Order ID:</div>
-        <div class="txn-detail-value" id="detailOrder"></div>
-
-        <div class="txn-detail-label" id="detailPayIdLabel">Payment ID:</div>
-        <div class="txn-detail-value" id="detailPayId"></div>
-
-        <div class="txn-detail-label">Created By:</div>
-        <div class="txn-detail-value" id="detailCreatedBy"></div>
-
-        <div class="txn-detail-label">Recorded At:</div>
-        <div class="txn-detail-value" id="detailCreatedAt"></div>
-      </div>
-
-      <!-- Description Note -->
-      <div id="detailDescSection" style="margin-top: var(--space-md); display: none;">
-        <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-dim); text-transform: uppercase; margin-bottom: 4px;">Notes / Description</div>
-        <div id="detailDescription" style="font-size: 0.88rem; color: var(--color-text); padding: 0.75rem; background: rgba(0,0,0,0.25); border-radius: var(--radius-sm); border: 1px solid var(--color-border); white-space: pre-wrap;"></div>
-      </div>
-
     </div>
 
-    <div class="modal-actions" style="margin-top: var(--space-lg);">
+    <div class="modal-actions">
       <button type="button" class="btn btn-outline" onclick="closeTransactionDetailModal()">Close</button>
     </div>
   </div>
 </div>
-
 
 <!-- ==============================================================================
      CLIENT JAVASCRIPT FOR MONEY MANAGEMENT
@@ -661,58 +803,76 @@
 <script>
   function handleDateFilterChange(val) {
     const rangeDiv = document.getElementById('customDateRange');
-    if (val === 'custom') {
-      rangeDiv.style.display = 'flex';
-    } else {
-      rangeDiv.style.display = 'none';
+    if (rangeDiv) {
+      if (val === 'custom') {
+        rangeDiv.style.display = 'flex';
+      } else {
+        rangeDiv.style.display = 'none';
+      }
     }
   }
 
-  function setAddTransactionType(type) {
-    const input = document.getElementById('addTransactionTypeInput');
-    const incomeBtn = document.getElementById('addTypeIncomeBtn');
-    const expenseBtn = document.getElementById('addTypeExpenseBtn');
-    const incomeGroup = document.getElementById('addIncomeOptGroup');
-    const expenseGroup = document.getElementById('addExpenseOptGroup');
-    const categorySelect = document.getElementById('addCategory');
+  function setInlineTransactionType(type) {
+    const input = document.getElementById('inlineTransactionTypeInput');
+    const incomeBtn = document.getElementById('inlineTypeIncomeBtn');
+    const expenseBtn = document.getElementById('inlineTypeExpenseBtn');
+    const incomeGroup = document.getElementById('inlineIncomeOptGroup');
+    const expenseGroup = document.getElementById('inlineExpenseOptGroup');
+    const categorySelect = document.getElementById('inlineCategory');
+
+    if (!input || !incomeBtn || !expenseBtn || !categorySelect) return;
 
     input.value = type;
     if (type === 'INCOME') {
       incomeBtn.classList.add('active');
       expenseBtn.classList.remove('active');
-      incomeGroup.style.display = '';
-      expenseGroup.style.display = 'none';
+      if (incomeGroup) incomeGroup.style.display = '';
+      if (expenseGroup) expenseGroup.style.display = 'none';
       categorySelect.value = "Internship Application Fee";
     } else {
       expenseBtn.classList.add('active');
       incomeBtn.classList.remove('active');
-      incomeGroup.style.display = 'none';
-      expenseGroup.style.display = '';
+      if (incomeGroup) incomeGroup.style.display = 'none';
+      if (expenseGroup) expenseGroup.style.display = '';
       categorySelect.value = "Domain";
     }
-    handleAddCategoryChange(categorySelect.value);
+    handleInlineCategoryChange(categorySelect.value);
   }
 
-  function handleAddCategoryChange(val) {
-    const customGroup = document.getElementById('addCustomCategoryGroup');
-    if (val === 'Other') {
-      customGroup.style.display = 'block';
-    } else {
-      customGroup.style.display = 'none';
+  function handleInlineCategoryChange(val) {
+    const customGroup = document.getElementById('inlineCustomCategoryGroup');
+    if (customGroup) {
+      if (val === 'Other') {
+        customGroup.style.display = 'block';
+      } else {
+        customGroup.style.display = 'none';
+      }
     }
   }
 
-  function openAddTransactionModal() {
-    document.getElementById('modalAddTransaction').style.display = 'flex';
+  function resetInlineForm() {
+    setTimeout(() => {
+      setInlineTransactionType('INCOME');
+    }, 10);
   }
 
-  function closeAddTransactionModal() {
-    document.getElementById('modalAddTransaction').style.display = 'none';
+  function focusAddTransactionForm(e) {
+    if (e) e.preventDefault();
+    const section = document.getElementById('addTransactionSection');
+    const amountInput = document.getElementById('inlineAmount');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (amountInput) {
+        setTimeout(() => amountInput.focus(), 300);
+      }
+    }
   }
 
   function openEditTransactionModal(txn) {
     const modal = document.getElementById('modalEditTransaction');
     const form = document.getElementById('editTransactionForm');
+    if (!modal || !form) return;
+
     form.action = `/admin/money-management/transactions/${txn.id}/edit`;
 
     document.getElementById('editAmount').value = txn.amount;
@@ -728,26 +888,32 @@
   }
 
   function closeEditTransactionModal() {
-    document.getElementById('modalEditTransaction').style.display = 'none';
+    const modal = document.getElementById('modalEditTransaction');
+    if (modal) modal.style.display = 'none';
   }
 
   function openDeleteTransactionModal(txnId, formattedAmount, purpose) {
     const modal = document.getElementById('modalDeleteTransaction');
     const form = document.getElementById('deleteTransactionForm');
+    if (!modal || !form) return;
+
     form.action = `/admin/money-management/transactions/${txnId}/delete`;
 
-    document.getElementById('deleteTxnDetails').textContent = `${formattedAmount} — ${purpose}`;
+    const detailsEl = document.getElementById('deleteTxnDetails');
+    if (detailsEl) detailsEl.textContent = `${formattedAmount} — ${purpose}`;
     modal.style.display = 'flex';
   }
 
   function closeDeleteTransactionModal() {
-    document.getElementById('modalDeleteTransaction').style.display = 'none';
+    const modal = document.getElementById('modalDeleteTransaction');
+    if (modal) modal.style.display = 'none';
   }
 
   async function viewTransactionDetail(txnId) {
     const modal = document.getElementById('modalTransactionDetail');
     const loading = document.getElementById('detailLoading');
     const content = document.getElementById('detailContent');
+    if (!modal || !loading || !content) return;
 
     modal.style.display = 'flex';
     loading.style.display = 'block';
@@ -755,7 +921,7 @@
 
     try {
       const resp = await fetch(`/admin/money-management/transactions/${txnId}`);
-      if (!resp.ok) throw new Error('Could not fetch transaction');
+      if (!resp.ok) throw new Error('Could not fetch transaction details');
       const data = await resp.json();
 
       document.getElementById('detailPurpose').textContent = data.purpose || data.category;
@@ -763,18 +929,18 @@
       const amtElem = document.getElementById('detailAmount');
       if (data.transaction_type === 'INCOME') {
         amtElem.textContent = `+ ${data.formatted_amount}`;
-        amtElem.style.color = '#10b981';
+        amtElem.style.color = '#059669';
       } else {
         amtElem.textContent = `- ${data.formatted_amount}`;
-        amtElem.style.color = '#ef4444';
+        amtElem.style.color = '#dc2626';
       }
 
       document.getElementById('detailTypeBadge').innerHTML = data.transaction_type === 'INCOME' 
-        ? '<span class="badge badge-success" style="font-size:0.75rem; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">INCOME</span>' 
-        : '<span class="badge badge-danger" style="font-size:0.75rem; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);">EXPENSE</span>';
+        ? '<span class="badge" style="font-size:0.75rem; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-weight:700;">INCOME</span>' 
+        : '<span class="badge" style="font-size:0.75rem; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-weight:700;">EXPENSE</span>';
 
       document.getElementById('detailEnvironment').innerHTML = `<span class="${data.is_cashfree ? (['SANDBOX','TEST'].includes(data.environment) ? 'badge-env-sandbox' : 'badge-env-production') : 'badge-env-manual'}">${data.environment_display}</span>`;
-      document.getElementById('detailSource').textContent = data.is_cashfree ? 'Automatically recorded from Cashfree' : 'Manually added';
+      document.getElementById('detailSource').textContent = data.is_cashfree ? 'Automatically recorded from Cashfree' : 'Manually recorded by Admin';
       document.getElementById('detailDateTime').textContent = data.formatted_datetime || data.transaction_date;
       document.getElementById('detailCategory').textContent = data.category;
       document.getElementById('detailPaymentMethod').textContent = data.payment_method || 'N/A';
@@ -826,8 +992,18 @@
   }
 
   function closeTransactionDetailModal() {
-    document.getElementById('modalTransactionDetail').style.display = 'none';
+    const modal = document.getElementById('modalTransactionDetail');
+    if (modal) modal.style.display = 'none';
   }
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeEditTransactionModal();
+      closeDeleteTransactionModal();
+      closeTransactionDetailModal();
+    }
+  });
 </script>
 
 {% endblock %}

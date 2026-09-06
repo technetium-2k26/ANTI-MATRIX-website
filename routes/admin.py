@@ -17,7 +17,8 @@ from models import (
 from services.offer_letter_service import (
     generate_offer_letter_docx, send_offer_letter_email,
     OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError,
-    get_active_offer_letter_template
+    get_active_offer_letter_template, determine_job_category,
+    OFFER_LETTER_CATEGORIES, ensure_default_templates_initialized
 )
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -893,9 +894,20 @@ def templates():
     offer_letter_email = EmailTemplate.query.filter_by(template_type='offer_letter').first()
     joining_email = EmailTemplate.query.filter_by(template_type='joining_credentials').first()
     
-    # Active document templates
-    offer_doc_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
-    offer_template_file_exists = bool(offer_doc_template and offer_doc_template.file_path and os.path.exists(offer_doc_template.file_path))
+    # 4 Category-Specific Offer Letter Master Templates
+    offer_ai_ml_template = DocumentTemplate.query.filter_by(template_type='offer_letter_ai_ml', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    if not offer_ai_ml_template:
+        offer_ai_ml_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    offer_ai_ml_exists = bool(offer_ai_ml_template and offer_ai_ml_template.file_path and os.path.exists(offer_ai_ml_template.file_path))
+
+    offer_web_dev_template = DocumentTemplate.query.filter_by(template_type='offer_letter_web_development', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    offer_web_dev_exists = bool(offer_web_dev_template and offer_web_dev_template.file_path and os.path.exists(offer_web_dev_template.file_path))
+
+    offer_app_dev_template = DocumentTemplate.query.filter_by(template_type='offer_letter_app_development', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    offer_app_dev_exists = bool(offer_app_dev_template and offer_app_dev_template.file_path and os.path.exists(offer_app_dev_template.file_path))
+
+    offer_data_analytics_template = DocumentTemplate.query.filter_by(template_type='offer_letter_data_analytics', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    offer_data_analytics_exists = bool(offer_data_analytics_template and offer_data_analytics_template.file_path and os.path.exists(offer_data_analytics_template.file_path))
 
     exp_doc_template = DocumentTemplate.query.filter_by(template_type='experience_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
     exp_template_file_exists = bool(exp_doc_template and exp_doc_template.file_path and os.path.exists(exp_doc_template.file_path))
@@ -908,12 +920,19 @@ def templates():
         app_success_email=app_success_email,
         offer_letter_email=offer_letter_email,
         joining_email=joining_email,
-        offer_doc_template=offer_doc_template,
-        offer_template_file_exists=offer_template_file_exists,
+        offer_ai_ml_template=offer_ai_ml_template,
+        offer_ai_ml_exists=offer_ai_ml_exists,
+        offer_web_dev_template=offer_web_dev_template,
+        offer_web_dev_exists=offer_web_dev_exists,
+        offer_app_dev_template=offer_app_dev_template,
+        offer_app_dev_exists=offer_app_dev_exists,
+        offer_data_analytics_template=offer_data_analytics_template,
+        offer_data_analytics_exists=offer_data_analytics_exists,
         exp_doc_template=exp_doc_template,
         exp_template_file_exists=exp_template_file_exists,
         cert_doc_template=cert_doc_template,
-        cert_template_file_exists=cert_template_file_exists
+        cert_template_file_exists=cert_template_file_exists,
+        categories=OFFER_LETTER_CATEGORIES
     )
 
 
@@ -996,8 +1015,16 @@ def send_test_email_route(template_type):
 @admin_bp.route('/templates/document/<string:template_type>/upload', methods=['POST'])
 @admin_required
 def upload_document_template(template_type):
-    """Upload / replace a master DOCX template (Offer Letter, Experience Letter, Certificate)."""
-    valid_types = ['offer_letter', 'experience_letter', 'certificate']
+    """Upload / replace a master DOCX template (Offer Letters for 4 categories, Experience Letter, Certificate)."""
+    valid_types = [
+        'offer_letter',
+        'offer_letter_ai_ml',
+        'offer_letter_web_development',
+        'offer_letter_app_development',
+        'offer_letter_data_analytics',
+        'experience_letter',
+        'certificate'
+    ]
     if template_type not in valid_types:
         flash('Invalid document template type.', 'danger')
         return redirect(url_for('admin.templates'))
@@ -1024,12 +1051,19 @@ def upload_document_template(template_type):
 
     name_map = {
         'offer_letter': 'Anti-Matrix Master Offer Letter',
+        'offer_letter_ai_ml': 'AI & ML Internship Offer Letter',
+        'offer_letter_web_development': 'Web Development Internship Offer Letter',
+        'offer_letter_app_development': 'App Development Internship Offer Letter',
+        'offer_letter_data_analytics': 'Data Analytics Internship Offer Letter',
         'experience_letter': 'Anti-Matrix Master Experience Letter',
         'certificate': 'Anti-Matrix Master Internship Certificate'
     }
 
-    # Deactivate previous active templates of this type
+    # Deactivate previous active templates of this specific type only
     DocumentTemplate.query.filter_by(template_type=template_type, is_active=True).update({'is_active': False})
+    if template_type == 'offer_letter_ai_ml':
+        # Also deactivate generic offer_letter active flag so offer_letter_ai_ml takes precedence
+        DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).update({'is_active': False})
 
     new_doc_tmpl = DocumentTemplate(
         template_type=template_type,
@@ -1041,7 +1075,7 @@ def upload_document_template(template_type):
     db.session.add(new_doc_tmpl)
     db.session.commit()
 
-    flash(f"Document template '{uploaded_file.filename}' uploaded and set as ACTIVE successfully.", 'success')
+    flash(f"Document template '{uploaded_file.filename}' uploaded and set as ACTIVE for {name_map.get(template_type, template_type)} successfully.", 'success')
     return redirect(url_for('admin.templates'))
 
 
@@ -1050,6 +1084,9 @@ def upload_document_template(template_type):
 def download_document_template(template_type):
     """Download / preview the active master DOCX template file."""
     doc_tmpl = DocumentTemplate.query.filter_by(template_type=template_type, is_active=True).order_by(DocumentTemplate.id.desc()).first()
+    if not doc_tmpl and template_type == 'offer_letter_ai_ml':
+        doc_tmpl = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
+
     if not doc_tmpl or not doc_tmpl.file_path or not os.path.exists(doc_tmpl.file_path):
         flash('Requested master template file is not available on storage. Please upload a template.', 'warning')
         return redirect(url_for('admin.templates'))
@@ -1078,11 +1115,27 @@ def generate_offer_letter(employee_id):
         flash('Employee is missing linked application or job posting data.', 'danger')
         return redirect(url_for('admin.view_employee', employee_id=employee.employee_id))
 
-    active_template = DocumentTemplate.query.filter_by(template_type='offer_letter', is_active=True).order_by(DocumentTemplate.id.desc()).first()
-    template_exists = bool(active_template and active_template.file_path and os.path.exists(active_template.file_path))
+    # Determine job category and look up category-specific active template
+    cat_key = determine_job_category(job)
+    cat_info = OFFER_LETTER_CATEGORIES.get(cat_key) if cat_key else None
+
+    active_template = None
+    template_exists = False
+    if cat_key:
+        try:
+            active_template = get_active_offer_letter_template(cat_key)
+            template_exists = bool(active_template and active_template.file_path and os.path.exists(active_template.file_path))
+        except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError):
+            active_template = None
+            template_exists = False
 
     if request.method == 'POST':
+        if not cat_key or not active_template or not template_exists:
+            flash("No job-specific offer letter template is available for this internship. Please upload the appropriate template before generating the offer letter.", 'danger')
+            return redirect(url_for('admin.generate_offer_letter', employee_id=employee.employee_id))
+
         custom_params = {
+            'job_title': (request.form.get('job_title') or '').strip() or (cat_info['default_title'] if cat_info else job.title),
             'responsibilities': (request.form.get('responsibilities') or '').strip() or None,
             'key_tasks': (request.form.get('key_tasks') or '').strip() or None,
             'joining_date': (request.form.get('joining_date') or '').strip() or 'Immediate / As mutually agreed',
@@ -1093,7 +1146,7 @@ def generate_offer_letter(employee_id):
 
         try:
             emp_doc, output_path = generate_offer_letter_docx(employee, custom_params)
-            flash(f"Offer Letter for {employee.candidate_name} ({employee.employee_id}) generated successfully!", 'success')
+            flash(f"Offer Letter for {employee.candidate_name} ({employee.employee_id}) generated successfully using {cat_info['name'] if cat_info else 'Offer Letter Template'}!", 'success')
             return redirect(url_for('admin.verify_offer_letter', employee_id=employee.employee_id))
         except (OfferLetterTemplateNotFoundError, OfferLetterTemplateFileMissingError) as e:
             flash(str(e), 'danger')
@@ -1108,6 +1161,8 @@ def generate_offer_letter(employee_id):
         employee=employee,
         app=app_record,
         job=job,
+        category_key=cat_key,
+        category_info=cat_info,
         active_template=active_template,
         template_exists=template_exists
     )
