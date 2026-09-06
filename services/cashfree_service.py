@@ -117,6 +117,12 @@ class CashfreeService:
         customer_id = f"cust_{application.id}_{application.email.split('@')[0][:15]}"
         customer_id = re.sub(r'[^a-zA-Z0-9_-]', '_', customer_id)
 
+        # Standard Cashfree return_url format: Cashfree API expects {order_id} placeholder so the gateway replaces it upon redirect
+        formatted_return_url = return_url
+        if '{order_id}' not in formatted_return_url:
+            separator = '&' if '?' in formatted_return_url else '?'
+            formatted_return_url = f"{formatted_return_url}{separator}order_id={{order_id}}"
+
         payload = {
             "order_id": order_id,
             "order_amount": amount,
@@ -128,7 +134,7 @@ class CashfreeService:
                 "customer_phone": phone
             },
             "order_meta": {
-                "return_url": return_url.replace('{order_id}', order_id) if '{order_id}' in return_url else f"{return_url}?order_id={order_id}"
+                "return_url": formatted_return_url
             },
             "order_note": f"Anti-Matrix Application Fee - {job.title} ({job.duration_display})"
         }
@@ -139,6 +145,7 @@ class CashfreeService:
         # Safe structured logging (no credentials or secrets logged)
         logger.info(f"Cashfree environment: {env}")
         logger.info(f"Cashfree order creation started (Order ID: {order_id}, Amount: INR {amount})")
+        logger.info(f"Cashfree order return URL configured: {formatted_return_url}")
 
         # Isolated automated unit testing mode
         if env == 'test':

@@ -10,7 +10,7 @@
 
 {% block content %}
 <section class="section" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, 0.08) 0%, var(--color-bg) 70%);">
-  <div class="container" style="max-width: 620px; text-align: center;">
+  <div class="container" style="max-width: 640px; text-align: center;">
     
     <div class="card" style="padding: var(--space-3xl) var(--space-2xl); border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
       
@@ -21,52 +21,60 @@
         {{ icon('credit-card', size=11) }} Cashfree Secure Checkout
       </div>
 
-      <h1 style="font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-xs);">
-        Connecting to Payment Gateway...
+      <h1 id="checkout-title" style="font-size: clamp(1.5rem, 3vw, 1.85rem); font-weight: 800; color: var(--color-white); margin-bottom: var(--space-xs);">
+        Connecting to Cashfree Gateway...
       </h1>
       
-      <p style="color: var(--color-text-dim); font-size: 0.95rem; margin-bottom: var(--space-xl);">
-        Please do not refresh or close this window while we redirect you to complete the payment for <strong style="color: var(--color-white);">{{ job.title }}</strong>.
+      <p id="checkout-subtitle" style="color: var(--color-text-dim); font-size: 0.95rem; margin-bottom: var(--space-xl); line-height: 1.5;">
+        Redirecting to complete the application payment for <strong style="color: var(--color-white);">{{ job.title }}</strong>.
       </p>
 
       <!-- Payment Summary Pill -->
-      <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-2xl); display: flex; justify-content: space-between; align-items: center;">
+      <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); margin-bottom: var(--space-xl); display: flex; justify-content: space-between; align-items: center;">
         <div style="text-align: left;">
-          <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700;">Order Reference</div>
+          <div style="font-size: 0.72rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Order Reference</div>
           <div style="font-size: 0.85rem; color: var(--color-white); font-family: var(--font-mono, monospace);">{{ payment.cashfree_order_id }}</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700;">Application Fee</div>
-          <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">₹{{ payment.amount|int }}</div>
+          <div style="font-size: 0.72rem; color: var(--color-text-dim); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Application Fee</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: var(--color-primary-light); font-family: var(--font-mono, monospace);">₹{{ payment.amount|int }}</div>
         </div>
       </div>
 
-      {% if is_simulation %}
-        <!-- Development / Test Sandbox Simulation Controls -->
-        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); text-align: left;">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #60a5fa; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 6px;">
-            {{ icon('zap', size=14) }} Sandbox Test Environment Active
+      <!-- Sandbox Testing Guidance Box (Displayed in Sandbox Environment) -->
+      {% if cashfree_env == 'sandbox' or is_simulation %}
+        <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-xl); text-align: left;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-primary-light); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+            {{ icon('zap', size=15) }} Cashfree Sandbox Test Mode Instructions
           </div>
-          <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: var(--space-md);">
-            You can test the complete server verification lifecycle using the simulation actions below:
+          <p style="font-size: 0.8rem; color: var(--color-text-dim); margin-bottom: 0.75rem; line-height: 1.45;">
+            <strong style="color: #fca5a5;">Note:</strong> The QR code on Cashfree Sandbox is a simulation and cannot be scanned with real UPI apps. Complete your test payment using either method below:
           </p>
 
-          <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
-            <a href="{{ url_for('main.cashfree_return', order_id=payment.cashfree_order_id, sim_status='SUCCESS') }}" class="btn btn-primary btn-sm" style="gap: 6px;">
-              {{ icon('check', size=14) }} Simulate Successful Payment (₹{{ payment.amount|int }})
-            </a>
-            <a href="{{ url_for('main.cashfree_return', order_id=payment.cashfree_order_id, sim_status='FAILED') }}" class="btn btn-danger-outline btn-sm" style="gap: 6px;">
-              {{ icon('x', size=14) }} Simulate Payment Failure
-            </a>
+          <div style="display: grid; gap: 0.5rem; font-size: 0.8rem; margin-bottom: 0.5rem;">
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="color: var(--color-text-muted); font-weight: 600;">Option 1 (UPI VPA):</span> Select <strong>UPI</strong> &rarr; Enter VPA <code style="color: var(--color-primary-light); background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px; font-weight: 700; user-select: all;">testsuccess@gocash</code> &rarr; Pay
+            </div>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="color: var(--color-text-muted); font-weight: 600;">Option 2 (Card):</span> Card <code style="color: #93c5fd; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; user-select: all;">4706 1312 1121 2123</code> | Exp <code style="color: #93c5fd;">12/28</code> | CVV <code style="color: #93c5fd;">123</code> | OTP <code style="color: #93c5fd;">111000</code>
+            </div>
           </div>
         </div>
       {% endif %}
 
-      <!-- Manual Action Buttons -->
+      <!-- Error Message Banner (Hidden by default) -->
+      <div id="checkout-error-banner" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-xl); color: #fca5a5; font-size: 0.875rem;">
+        {{ icon('alert-circle', size=15) }} <span id="checkout-error-text">Unable to initialize payment. Please try again.</span>
+      </div>
+
+      <!-- Action Buttons -->
       <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
-        <button type="button" class="btn btn-primary" id="launch-checkout-btn" style="gap: 6px;">
-          {{ icon('external-link', size=15) }} Open Cashfree Checkout
+        <button type="button" class="btn btn-primary btn-lg" id="launch-checkout-btn" style="gap: 8px;">
+          {{ icon('external-link', size=16) }} Open Cashfree Checkout
         </button>
+        <a href="{{ url_for('main.cashfree_return', order_id=payment.cashfree_order_id) }}" class="btn btn-outline" id="check-status-btn" style="gap: 6px;" title="Check server-side payment status directly">
+          {{ icon('refresh-cw', size=14) }} Check Payment Status
+        </a>
         <a href="{{ url_for('main.job_apply_review', app_id=app.id) }}" class="btn btn-ghost">
           Cancel & Return
         </a>
@@ -88,17 +96,41 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const sessionId = "{{ payment.cashfree_payment_session_id }}";
+  const sessionId = "{{ payment.cashfree_payment_session_id or '' }}";
   const envMode = "{{ cashfree_env }}";
   const isSim = {{ 'true' if is_simulation else 'false' }};
+  const orderId = "{{ payment.cashfree_order_id }}";
+
+  function showError(message) {
+    const errorBanner = document.getElementById('checkout-error-banner');
+    const errorText = document.getElementById('checkout-error-text');
+    const spinner = document.getElementById('checkout-spinner');
+    const title = document.getElementById('checkout-title');
+
+    if (spinner) spinner.style.display = 'none';
+    if (title) title.innerText = 'Payment Checkout Ready';
+    if (errorBanner && errorText) {
+      errorText.innerText = message || 'Unable to initialize payment. Please try again.';
+      errorBanner.style.display = 'block';
+    }
+  }
 
   function triggerCheckout() {
-    if (isSim || !sessionId || sessionId.startsWith('session_test_')) {
-      console.log('Sandbox simulation mode active.');
+    if (!sessionId || sessionId.startsWith('session_test_')) {
+      if (isSim) {
+        console.log('Automated simulation mode active.');
+        return;
+      }
+      showError('Payment session token is missing. Please return and retry.');
       return;
     }
 
     try {
+      if (typeof Cashfree === 'undefined') {
+        showError('Cashfree SDK is loading or blocked by your browser. Click Open Cashfree Checkout or Check Payment Status.');
+        return;
+      }
+
       const cashfree = Cashfree({
         mode: envMode === 'production' ? 'production' : 'sandbox'
       });
@@ -109,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     } catch (err) {
       console.error('Error launching Cashfree SDK:', err);
+      showError('Unable to open checkout automatically: ' + (err.message || 'SDK error'));
     }
   }
 
@@ -117,9 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
     launchBtn.addEventListener('click', triggerCheckout);
   }
 
-  // Auto-initiate checkout after 800ms
+  // Auto-initiate checkout after 600ms if session is valid and not in mock simulation
   if (!isSim && sessionId && !sessionId.startsWith('session_test_')) {
-    setTimeout(triggerCheckout, 800);
+    setTimeout(triggerCheckout, 600);
   }
 });
 </script>

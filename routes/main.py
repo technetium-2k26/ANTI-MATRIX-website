@@ -571,10 +571,28 @@ def job_apply_checkout(app_id):
     if application.payment_status == 'paid':
         return redirect(url_for('main.job_apply_success', app_id=application.id))
 
-    # Construct Return & Webhook URLs
-    host_url = request.host_url.rstrip('/')
-    return_url = current_app.config.get('CASHFREE_RETURN_URL') or f"{host_url}/payment/cashfree/return"
-    webhook_url = current_app.config.get('CASHFREE_WEBHOOK_URL') or f"{host_url}/payment/cashfree/webhook"
+    # Construct Dynamic Canonical Return & Webhook URLs
+    # Priority:
+    # 1. Configured CASHFREE_RETURN_URL if explicitly customized (and not a localhost default when running publicly)
+    # 2. Canonical public host: request host with https scheme (or APP_URL)
+    app_url = (current_app.config.get('APP_URL') or '').strip().rstrip('/')
+    is_https = request.is_secure or request.headers.get('X-Forwarded-Proto', '').lower() == 'https'
+    scheme = 'https' if (is_https or (app_url and app_url.startswith('https://'))) else request.scheme
+    host = request.host
+    canonical_base = f"{scheme}://{host}".rstrip('/')
+
+    configured_return = (current_app.config.get('CASHFREE_RETURN_URL') or '').strip()
+    is_local_host = ('127.0.0.1' in host or 'localhost' in host)
+    if configured_return and not (('127.0.0.1' in configured_return or 'localhost' in configured_return) and not is_local_host):
+        return_url = configured_return
+    else:
+        return_url = f"{canonical_base}/payment/cashfree/return?order_id={{order_id}}"
+
+    configured_webhook = (current_app.config.get('CASHFREE_WEBHOOK_URL') or '').strip()
+    if configured_webhook and not (('127.0.0.1' in configured_webhook or 'localhost' in configured_webhook) and not is_local_host):
+        webhook_url = configured_webhook
+    else:
+        webhook_url = f"{canonical_base}/payment/cashfree/webhook"
 
     success, order_data, err_msg = CashfreeService.create_order(
         application=application,
@@ -634,13 +652,25 @@ def cashfree_return():
     Cashfree Return Endpoint.
     Verifies transaction status server-side from Cashfree Sandbox before updating state.
     """
-    order_id = request.args.get('order_id') or request.form.get('order_id')
+    order_id = (
+        request.args.get('order_id') or 
+        request.args.get('cf_order_id') or 
+        request.args.get('orderId') or 
+        request.form.get('order_id') or 
+        request.form.get('cf_order_id') or 
+        ''
+    ).strip()
+
     if not order_id:
+        current_app.logger.warning("Cashfree return received without order_id parameter.")
         flash('Invalid payment return request: missing order ID.', 'danger')
         return redirect(url_for('main.careers'))
 
+    current_app.logger.info(f"Return URL received for Cashfree Order ID: {order_id}")
+
     payment = Payment.query.filter_by(cashfree_order_id=order_id).first()
     if not payment:
+        current_app.logger.warning(f"Payment record not found for Cashfree order ID: {order_id}")
         flash('Payment record not found for this transaction.', 'danger')
         return redirect(url_for('main.careers'))
 
@@ -692,7 +722,14 @@ def cashfree_return():
         except Exception as e:
             current_app.logger.warning(f"Failed to record money transaction for Cashfree order {order_id}: {e}")
 
-        current_app.logger.info(f"Application finalized: {application.id} ({application.application_code}) for Cashfree order {order_id}")
+        # Send application success email notification
+        try:
+            from services.email_service import send_application_successful_email
+            send_application_successful_email(application)
+        except Exception as e:
+            current_app.logger.warning(f"Failed to send confirmation email for application {application.id}: {e}")
+
+        current_app.logger.info(f"Application finalization completed: {application.id} ({application.application_code}) for Cashfree order {order_id}")
         flash("Payment verified successfully! Your application has been submitted.", "success")
         return redirect(url_for('main.job_apply_success', app_id=application.id))
     
@@ -773,6 +810,13 @@ def cashfree_webhook():
                 record_cashfree_income(application, payment, payment_info, env=cfg['environment'])
             except Exception as e:
                 current_app.logger.warning(f"Failed to record money transaction for webhook order {order_id}: {e}")
+
+            # Send application success email notification
+            try:
+                from services.email_service import send_application_successful_email
+                send_application_successful_email(application)
+            except Exception as e:
+                current_app.logger.warning(f"Failed to send confirmation email for webhook application {application.id}: {e}")
 
             current_app.logger.info(f"Application finalized via Webhook: {application.id} ({application.application_code}) for Cashfree order {order_id}")
 

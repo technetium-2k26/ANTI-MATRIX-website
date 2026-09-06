@@ -310,6 +310,117 @@ class CashfreeSandboxEnvironmentTestCase(unittest.TestCase):
         is_invalid = CashfreeService.verify_webhook_signature('wrong_signature', timestamp, body)
         self.assertFalse(is_invalid)
 
+    def test_08_return_url_order_id_placeholder_format(self):
+        """Verify CashfreeService.create_order formats return_url with {order_id} placeholder."""
+        job = self._create_job(duration='1_month')
+        app_record = JobApplication(
+            job_id=job.id,
+            user_id=self.candidate.id,
+            first_name='Test',
+            last_name='Candidate',
+            full_name='Test Candidate',
+            email='test.candidate@example.com',
+            phone='9876543210',
+            state='Tamil Nadu',
+            city='Chennai',
+            pincode='600001',
+            education_level="Bachelor's Degree",
+            degree='B.Tech',
+            major='CS',
+            graduation_year=2026,
+            resume_filename='resume.pdf',
+            resume_path='uploads/resumes/resume.pdf',
+            payment_status='pending',
+            application_fee=199
+        )
+        db.session.add(app_record)
+        db.session.commit()
+
+        success, order_data, err = CashfreeService.create_order(
+            application=app_record,
+            job=job,
+            return_url="https://www.antimatrix.co.in/payment/cashfree/return"
+        )
+        self.assertTrue(success)
+        self.assertIsNotNone(order_data)
+        self.assertEqual(order_data['order_amount'], 199.0)
+
+    def test_09_complete_199_and_399_sandbox_flows(self):
+        """Verify complete flows for both ₹199 (1 Month) and ₹399 (3 Months)."""
+        # Test 1 Month (₹199)
+        job_1m = self._create_job(duration='1_month')
+        app_1m = JobApplication(
+            job_id=job_1m.id,
+            user_id=self.candidate.id,
+            first_name='OneMonth',
+            last_name='Tester',
+            full_name='OneMonth Tester',
+            email='onemonth@example.com',
+            phone='9876543210',
+            state='Tamil Nadu',
+            city='Chennai',
+            pincode='600001',
+            education_level="Bachelor's Degree",
+            degree='B.Tech',
+            major='CS',
+            graduation_year=2026,
+            resume_filename='resume_1m.pdf',
+            resume_path='uploads/resumes/resume_1m.pdf',
+            payment_status='pending',
+            application_fee=199
+        )
+        db.session.add(app_1m)
+        db.session.commit()
+
+        chk_1m = self.client.post(f'/careers/apply/checkout/{app_1m.id}', follow_redirects=False)
+        self.assertEqual(chk_1m.status_code, 302)
+        pay_1m = Payment.query.filter_by(application_id=app_1m.id).first()
+        self.assertEqual(pay_1m.amount, 199.0)
+
+        ret_1m = self.client.get(f'/payment/cashfree/return?order_id={pay_1m.cashfree_order_id}&sim_status=SUCCESS', follow_redirects=True)
+        self.assertEqual(ret_1m.status_code, 200)
+        db.session.refresh(app_1m)
+        self.assertEqual(app_1m.payment_status, 'paid')
+        self.assertEqual(app_1m.application_status, 'APPLIED')
+        self.assertEqual(app_1m.application_fee, 199)
+
+        # Test 3 Months (₹399)
+        job_3m = self._create_job(duration='3_months')
+        app_3m = JobApplication(
+            job_id=job_3m.id,
+            user_id=self.candidate.id,
+            first_name='ThreeMonths',
+            last_name='Tester',
+            full_name='ThreeMonths Tester',
+            email='threemonths@example.com',
+            phone='9876543210',
+            state='Tamil Nadu',
+            city='Chennai',
+            pincode='600001',
+            education_level="Bachelor's Degree",
+            degree='B.Tech',
+            major='CS',
+            graduation_year=2026,
+            resume_filename='resume_3m.pdf',
+            resume_path='uploads/resumes/resume_3m.pdf',
+            payment_status='pending',
+            application_fee=399
+        )
+        db.session.add(app_3m)
+        db.session.commit()
+
+        chk_3m = self.client.post(f'/careers/apply/checkout/{app_3m.id}', follow_redirects=False)
+        self.assertEqual(chk_3m.status_code, 302)
+        pay_3m = Payment.query.filter_by(application_id=app_3m.id).first()
+        self.assertEqual(pay_3m.amount, 399.0)
+
+        ret_3m = self.client.get(f'/payment/cashfree/return?order_id={pay_3m.cashfree_order_id}&sim_status=SUCCESS', follow_redirects=True)
+        self.assertEqual(ret_3m.status_code, 200)
+        db.session.refresh(app_3m)
+        self.assertEqual(app_3m.payment_status, 'paid')
+        self.assertEqual(app_3m.application_status, 'APPLIED')
+        self.assertEqual(app_3m.application_fee, 399)
+
 
 if __name__ == '__main__':
     unittest.main()
