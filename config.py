@@ -264,6 +264,19 @@ class Config:
     # Payment Test Mode Switch (Defaults to false so real Cashfree Sandbox is used)
     PAYMENT_TEST_MODE = os.environ.get('PAYMENT_TEST_MODE', 'false').lower() in ('true', '1', 'yes')
 
+    # Application Public URL (used for OAuth redirects & notifications)
+    APP_URL = os.environ.get('APP_URL', 'http://localhost:5000').rstrip('/')
+
+    # Google OAuth 2.0 Settings
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '').strip()
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '').strip()
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', '').strip()
+
+    # GitHub OAuth Settings
+    GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID', '').strip()
+    GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET', '').strip()
+    GITHUB_REDIRECT_URI = os.environ.get('GITHUB_REDIRECT_URI', '').strip()
+
 
 class DevelopmentConfig(Config):
     """Development configuration."""

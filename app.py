@@ -30,6 +30,14 @@ def create_app(config_name=None):
     csrf.init_app(app)
     login_manager.init_app(app)
 
+    # Initialize OAuth (Google & GitHub)
+    from services.oauth_service import init_oauth
+    init_oauth(app)
+
+    # Reverse proxy header support (ensures correct HTTPS redirects behind proxies)
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
     # Exempt Cashfree webhook endpoint from CSRF
     from routes.main import cashfree_webhook
     csrf.exempt(cashfree_webhook)
@@ -225,6 +233,25 @@ def create_app(config_name=None):
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE employees ADD COLUMN temp_password_encrypted VARCHAR(500)"))
                         conn.commit()
+
+            # Ensure users table has OAuth & profile columns
+            if 'users' in inspector.get_table_names():
+                user_cols = [c['name'] for c in inspector.get_columns('users')]
+                with db.engine.connect() as conn:
+                    if 'profile_picture' not in user_cols:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN profile_picture VARCHAR(500)"))
+                    if 'provider' not in user_cols:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN provider VARCHAR(50) DEFAULT 'email' NOT NULL"))
+                    if 'provider_id' not in user_cols:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN provider_id VARCHAR(255)"))
+                        try:
+                            conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_provider_id ON users (provider_id)"))
+                        except Exception:
+                            pass
+                    if 'last_login' not in user_cols:
+                        type_str = "DATETIME" if dialect_is_sqlite else "TIMESTAMP"
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN last_login {type_str}"))
+                    conn.commit()
         except Exception as e:
             app.logger.warning(f"Database auto-migration note: {str(e)}")
 

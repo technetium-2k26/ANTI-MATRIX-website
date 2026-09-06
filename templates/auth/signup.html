@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% from 'components/logo.html' import render_logo %}
-{% from 'components/icons.html' import icon %}
+{% from 'components/icons.html' import icon, google_icon, github_icon %}
 
 {% block title %}Create Account | Anti-Matrix{% endblock %}
 
@@ -177,6 +177,22 @@
         Create Account
       </button>
     </form>
+
+    {# OAuth Social Registration #}
+    <div class="auth-divider">
+      <span>or continue with</span>
+    </div>
+
+    <div class="oauth-group">
+      <a href="{{ url_for('auth.google_login', next=redirect_target) if redirect_target else url_for('auth.google_login') }}" class="btn-oauth btn-oauth-google" id="btn-google-signup">
+        {{ google_icon(size=18) }}
+        <span>Continue with Google</span>
+      </a>
+      <a href="{{ url_for('auth.github_login', next=redirect_target) if redirect_target else url_for('auth.github_login') }}" class="btn-oauth btn-oauth-github" id="btn-github-signup">
+        {{ github_icon(size=18) }}
+        <span>Continue with GitHub</span>
+      </a>
+    </div>
 
     <p class="auth-switch">
       Already have an account?

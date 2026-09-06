@@ -10,9 +10,16 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=True)
     role = db.Column(db.String(20), default='member', nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    
+    # Social OAuth & Profile fields
+    profile_picture = db.Column(db.String(500), nullable=True)
+    provider = db.Column(db.String(50), default='email', nullable=False)  # 'email', 'google', 'github'
+    provider_id = db.Column(db.String(255), nullable=True, index=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -22,6 +29,8 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password: str) -> bool:
+        if not self.password_hash:
+            return False
         return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
@@ -29,7 +38,10 @@ class User(UserMixin, db.Model):
             'id': self.id,
             'name': self.name,
             'email': self.email,
-            'role': self.role
+            'role': self.role,
+            'profile_picture': self.profile_picture,
+            'provider': self.provider,
+            'last_login': self.last_login.isoformat() if self.last_login else None
         }
 
     def __repr__(self):

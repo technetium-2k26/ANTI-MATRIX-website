@@ -1,8 +1,16 @@
 import re
 from urllib.parse import urlparse
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, Employee, JobApplication
+from services.oauth_service import (
+    oauth,
+    is_google_configured,
+    is_github_configured,
+    get_google_redirect_uri,
+    get_github_redirect_uri,
+    find_or_create_oauth_user
+)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -250,4 +258,190 @@ def logout():
     if current_user.is_authenticated:
         logout_user()
     return redirect(url_for('main.home'))
+
+
+# ============================================================================
+# Google OAuth 2.0 Authentication Routes
+# ============================================================================
+
+@auth_bp.route('/auth/google')
+@auth_bp.route('/login/google')
+def google_login():
+    """Initiate Google OAuth 2.0 authorization redirect."""
+    if current_user.is_authenticated:
+        return redirect(get_safe_redirect(request.args.get('next') or request.args.get('redirect')))
+
+    if not is_google_configured():
+        flash("Google Login is currently not configured. Please sign in with your email or contact support.", "warning")
+        return redirect(url_for('auth.login'))
+
+    target_url = get_safe_redirect(request.args.get('next') or request.args.get('redirect'))
+    session['oauth_next'] = target_url
+    redirect_uri = get_google_redirect_uri()
+
+    try:
+        return oauth.google.authorize_redirect(redirect_uri)
+    except Exception as e:
+        current_app.logger.error(f"Failed to initiate Google OAuth redirect: {str(e)}")
+        flash("Unable to initiate Google sign-in. Please try again or use email login.", "error")
+        return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/auth/google/callback')
+def google_callback():
+    """Handle Google OAuth 2.0 callback, verify token, and create/link session."""
+    # Check for authorization error or user cancellation
+    error = request.args.get('error')
+    if error:
+        if error in ('access_denied', 'user_cancelled_authorize'):
+            flash("Google sign-in was cancelled.", "info")
+        else:
+            flash("Google authorization was not completed. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    try:
+        token = oauth.google.authorize_access_token()
+    except Exception as e:
+        current_app.logger.warning(f"Google OAuth token exchange failed: {str(e)}")
+        flash("Unable to sign you in with Google. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    # Extract user profile from OpenID token or userinfo endpoint
+    user_info = token.get('userinfo')
+    if not user_info:
+        try:
+            user_info = oauth.google.userinfo()
+        except Exception as e:
+            current_app.logger.warning(f"Failed to fetch Google userinfo: {str(e)}")
+            flash("Unable to retrieve your Google profile. Please try again.", "error")
+            return redirect(url_for('auth.login'))
+
+    email = user_info.get('email')
+    if not email:
+        flash("Google account did not provide an email address. Please sign in with another method.", "error")
+        return redirect(url_for('auth.login'))
+
+    name = user_info.get('name') or user_info.get('given_name')
+    picture = user_info.get('picture')
+    provider_id = user_info.get('sub')
+
+    try:
+        user = find_or_create_oauth_user(
+            provider='google',
+            provider_id=provider_id,
+            email=email,
+            name=name,
+            picture=picture
+        )
+        login_user(user, remember=True)
+        flash(f"Welcome back, {user.name}!", "success")
+    except Exception as e:
+        current_app.logger.error(f"Error saving Google OAuth user: {str(e)}")
+        flash("An error occurred during sign-in. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    redirect_target = get_safe_redirect(session.pop('oauth_next', None) or '/')
+    return redirect(redirect_target)
+
+
+# ============================================================================
+# GitHub OAuth 2.0 Authentication Routes
+# ============================================================================
+
+@auth_bp.route('/auth/github')
+@auth_bp.route('/login/github')
+def github_login():
+    """Initiate GitHub OAuth authorization redirect."""
+    if current_user.is_authenticated:
+        return redirect(get_safe_redirect(request.args.get('next') or request.args.get('redirect')))
+
+    if not is_github_configured():
+        flash("GitHub Login is currently not configured. Please sign in with your email or contact support.", "warning")
+        return redirect(url_for('auth.login'))
+
+    target_url = get_safe_redirect(request.args.get('next') or request.args.get('redirect'))
+    session['oauth_next'] = target_url
+    redirect_uri = get_github_redirect_uri()
+
+    try:
+        return oauth.github.authorize_redirect(redirect_uri)
+    except Exception as e:
+        current_app.logger.error(f"Failed to initiate GitHub OAuth redirect: {str(e)}")
+        flash("Unable to initiate GitHub sign-in. Please try again or use email login.", "error")
+        return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/auth/github/callback')
+def github_callback():
+    """Handle GitHub OAuth callback, retrieve verified profile/email, and create/link session."""
+    error = request.args.get('error')
+    if error:
+        if error in ('access_denied', 'user_cancelled_authorize'):
+            flash("GitHub sign-in was cancelled.", "info")
+        else:
+            flash("GitHub authorization was not completed. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    try:
+        token = oauth.github.authorize_access_token()
+    except Exception as e:
+        current_app.logger.warning(f"GitHub OAuth token exchange failed: {str(e)}")
+        flash("Unable to sign you in with GitHub. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    # Fetch GitHub user profile
+    try:
+        resp = oauth.github.get('user', token=token)
+        profile = resp.json()
+    except Exception as e:
+        current_app.logger.warning(f"Failed to fetch GitHub profile: {str(e)}")
+        flash("Unable to retrieve your GitHub profile. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    provider_id = profile.get('id')
+    name = profile.get('name') or profile.get('login')
+    picture = profile.get('avatar_url')
+    email = profile.get('email')
+
+    # If email is private in GitHub user profile, fetch from /user/emails endpoint
+    if not email:
+        try:
+            emails_resp = oauth.github.get('user/emails', token=token)
+            emails_data = emails_resp.json()
+            if isinstance(emails_data, list):
+                for em in emails_data:
+                    if em.get('primary') and em.get('verified'):
+                        email = em.get('email')
+                        break
+                if not email and emails_data:
+                    for em in emails_data:
+                        if em.get('verified'):
+                            email = em.get('email')
+                            break
+                    if not email:
+                        email = emails_data[0].get('email')
+        except Exception as e:
+            current_app.logger.warning(f"Failed to fetch GitHub emails: {str(e)}")
+
+    if not email:
+        flash("GitHub account does not have a verified email address. Please sign in with another method.", "error")
+        return redirect(url_for('auth.login'))
+
+    try:
+        user = find_or_create_oauth_user(
+            provider='github',
+            provider_id=provider_id,
+            email=email,
+            name=name,
+            picture=picture
+        )
+        login_user(user, remember=True)
+        flash(f"Welcome back, {user.name}!", "success")
+    except Exception as e:
+        current_app.logger.error(f"Error saving GitHub OAuth user: {str(e)}")
+        flash("An error occurred during sign-in. Please try again.", "error")
+        return redirect(url_for('auth.login'))
+
+    redirect_target = get_safe_redirect(session.pop('oauth_next', None) or '/')
+    return redirect(redirect_target)
 
