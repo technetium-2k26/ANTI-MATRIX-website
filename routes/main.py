@@ -607,20 +607,34 @@ def job_apply_checkout(app_id):
 
     order_id = order_data.get('order_id')
     payment_session_id = order_data.get('payment_session_id')
+    if not payment_session_id:
+        flash("Unable to initialize payment: Payment session token was not returned by gateway.", 'danger')
+        return redirect(url_for('main.job_apply_review', app_id=application.id))
+
     amount = float(order_data.get('order_amount', job.fee_inr))
 
-    # Create Payment record
-    payment = Payment(
-        application_id=application.id,
-        cashfree_order_id=order_id,
-        cashfree_payment_session_id=payment_session_id,
-        amount=amount,
-        currency='INR',
-        payment_status='pending',
-        gateway='cashfree',
-        gateway_response=json.dumps(order_data)
-    )
-    db.session.add(payment)
+    # Reuse existing pending Payment record if present, or create a new one
+    payment = Payment.query.filter_by(application_id=application.id, payment_status='pending').order_by(Payment.created_at.desc()).first()
+    if not payment:
+        payment = Payment(
+            application_id=application.id,
+            cashfree_order_id=order_id,
+            cashfree_payment_session_id=payment_session_id,
+            amount=amount,
+            currency='INR',
+            payment_status='pending',
+            gateway='cashfree',
+            gateway_response=json.dumps(order_data)
+        )
+        db.session.add(payment)
+    else:
+        payment.cashfree_order_id = order_id
+        payment.cashfree_payment_session_id = payment_session_id
+        payment.amount = amount
+        payment.currency = 'INR'
+        payment.payment_status = 'pending'
+        payment.gateway = 'cashfree'
+        payment.gateway_response = json.dumps(order_data)
     db.session.commit()
 
     return redirect(url_for('main.cashfree_checkout_page', payment_id=payment.id))
@@ -675,6 +689,17 @@ def cashfree_return():
         return redirect(url_for('main.careers'))
 
     application = payment.application
+
+    # Security check: User authorization (Test Case 9)
+    # If user is authenticated, ensure they own the application (or are admin)
+    if current_user.is_authenticated:
+        if application.user_id and application.user_id != current_user.id and getattr(current_user, 'role', '') != 'admin':
+            current_app.logger.warning(f"Unauthorized payment return access attempt: User {current_user.id} tried to access order {order_id} belonging to User {application.user_id}")
+            flash('Access denied: You do not have permission to view this transaction.', 'danger')
+            return redirect(url_for('main.careers'))
+    else:
+        if application.user_id:
+            return redirect(url_for('auth.login', next=request.full_path))
 
     # If already verified paid, safely redirect to success (Idempotent)
     if payment.payment_status == 'paid' and application.payment_status == 'paid':

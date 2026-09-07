@@ -30,6 +30,10 @@ class EmployeeCredentialsTestCase(unittest.TestCase):
             self.admin.set_password('Admin@AntiMatrix2026!')
             db.session.add(self.admin)
             db.session.commit()
+        else:
+            self.admin.role = 'admin'
+            self.admin.set_password('Admin@AntiMatrix2026!')
+            db.session.commit()
 
         # Create normal member
         self.member = User.query.filter_by(email='member@example.com').first()
@@ -37,6 +41,10 @@ class EmployeeCredentialsTestCase(unittest.TestCase):
             self.member = User(name='Regular Member', email='member@example.com', role='member', is_active=True)
             self.member.set_password('Member@2026!')
             db.session.add(self.member)
+            db.session.commit()
+        else:
+            self.member.role = 'member'
+            self.member.set_password('Member@2026!')
             db.session.commit()
 
         # Ensure a base internship job posting exists

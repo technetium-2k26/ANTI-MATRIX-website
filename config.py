@@ -244,7 +244,7 @@ class Config:
     CASHFREE_CLIENT_SECRET = CASHFREE_SECRET_KEY
     CASHFREE_ENV = (os.environ.get('CASHFREE_ENV', '').strip() or os.environ.get('CASHFREE_ENVIRONMENT', '').strip() or 'sandbox').lower()
     CASHFREE_ENVIRONMENT = CASHFREE_ENV
-    CASHFREE_API_VERSION = os.environ.get('CASHFREE_API_VERSION', '2023-08-01').strip()
+    CASHFREE_API_VERSION = (os.environ.get('CASHFREE_API_VERSION', '').strip() or '2025-01-01')
     CASHFREE_RETURN_URL = os.environ.get('CASHFREE_RETURN_URL', '').strip()
     CASHFREE_WEBHOOK_URL = os.environ.get('CASHFREE_WEBHOOK_URL', '').strip()
 

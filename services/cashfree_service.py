@@ -54,7 +54,7 @@ class CashfreeService:
         api_version = (
             app_api_version or
             os.environ.get('CASHFREE_API_VERSION', '').strip() or 
-            '2023-08-01'
+            '2025-01-01'
         )
         
         # Determine base URL based on environment (defaults to Sandbox)
@@ -176,6 +176,10 @@ class CashfreeService:
             )
             data = response.json()
             if response.status_code in [200, 201]:
+                payment_session_id = data.get('payment_session_id')
+                if not payment_session_id:
+                    logger.warning(f"Cashfree order created but payment_session_id missing: {order_id}")
+                    return False, data, "Cashfree gateway did not return a valid payment_session_id."
                 logger.info(f"Cashfree order created: {order_id}")
                 return True, data, None
             else:
@@ -183,7 +187,7 @@ class CashfreeService:
                 logger.warning(f"Cashfree order creation failed ({response.status_code}): {error_msg}")
                 return False, data, error_msg
         except Exception as e:
-            logger.error(f"Network error connecting to Cashfree PG: {str(e)}")
+            logger.error(f"Network error connecting to Cashfree PG: {type(e).__name__}")
             return False, None, f"Network error connecting to Cashfree PG: {str(e)}"
 
     @classmethod
